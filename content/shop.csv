@@ -1,0 +1,8 @@
+id,name,kind,price,robux_product,frame,rec,text,blurb,note
+vf_classic,Factory,viewfinder,0,0,#ffffff,#ff2a2a,#ffffff,The camcorder as it left the shop.,owned by everyone
+vf_amber,Sodium,viewfinder,350,0,#ffc46b,#ff6a2a,#ffd9a0,Warm like the street lamps.,
+vf_ice,Cold Storage,viewfinder,500,0,#9fe6ff,#ff3355,#d6f6ff,Blue as the P3 at 4 AM.,
+vf_mil,Night Ops,viewfinder,800,0,#7dff8a,#ffe14a,#c8ffcf,Green phosphor. Military surplus.,
+vf_brass,Old Guard,viewfinder,1500,0,#d9a94e,#c0392b,#f0d79a,Brass trim from before 1979.,
+vip,VIP Guard,robux,0,0,#c9a46a,#ff2a2a,#ffffff,Exclusive uniform and private server controls.,plan section 10: 499 R$; Adrien creates the product
+payboost,Overtime,robux,0,0,#7dff8a,#ff2a2a,#ffffff,+25% pay every night.,plan section 10: 299 R$; Adrien creates the product

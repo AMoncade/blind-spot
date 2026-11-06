@@ -17,6 +17,7 @@ local Actions = require(Server:WaitForChild("Core"):WaitForChild("Actions"))
 local PowerDirector = require(script.Parent:WaitForChild("PowerDirector"))
 local UnseenService = require(script.Parent:WaitForChild("UnseenService"))
 local CamcorderService = require(script.Parent:WaitForChild("CamcorderService"))
+local Data = require(Server:WaitForChild("Core"):WaitForChild("Data"))
 
 local C = Config.C
 
@@ -26,6 +27,7 @@ local dead: { [Player]: boolean } = {}
 local playing: { [Player]: boolean } = {} -- the guards on this shift
 local done: { [string]: boolean } = {}
 local deaths = 0
+local diedThisShift: { [Player]: boolean } = {}
 local running = false
 local shift = 0 -- counts shifts, so a late return to the lobby never touches the next one
 local nightNumber = C.night_test
@@ -85,6 +87,7 @@ function NightService.kill(player: Player)
 	end
 	dead[player] = true
 	deaths += 1
+	diedThisShift[player] = true
 	CamcorderService.block(player, true)
 	root.Anchored = true
 	Net.event():FireClient(player, "Death", C.death_seconds)
@@ -123,7 +126,22 @@ local function endNight()
 		table.insert(guards, player)
 	end
 	for _, player in guards do
-		Net.event():FireClient(player, "NightEnd", { night = nightNumber, rounds = n, total = total, deaths = deaths })
+		-- the night's pay (plan section 3): the shift, the team's rounds, and a bonus for never being caught
+		local pay = C.pay_shift + C.pay_round * n + (if diedThisShift[player] then 0 else C.pay_no_death)
+		Data.addPay(player, pay)
+		local profile = Data.get(player)
+		if profile then
+			profile.nights += 1
+			if diedThisShift[player] then
+				profile.deaths += 1
+			end
+		end
+		Net.event()
+			:FireClient(
+				player,
+				"NightEnd",
+				{ night = nightNumber, rounds = n, total = total, deaths = deaths, pay = pay }
+			)
 	end
 	print(`[NightService] night {nightNumber} ended: {n}/{total} rounds, {deaths} deaths`)
 	local ended = shift
@@ -151,6 +169,7 @@ function NightService.launch(guards: { Player }, night: number?): boolean
 	table.clear(done)
 	table.clear(playing)
 	table.clear(dead)
+	table.clear(diedThisShift)
 	deaths = 0
 	running = true
 	shift += 1

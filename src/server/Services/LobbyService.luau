@@ -34,6 +34,7 @@ type Lift = {
 	status: TextLabel?,
 	doors: { Door },
 	guards: { Player }, -- in the order they stepped in
+	solo: Player?, -- SOLO: this lift is one guard's, it leaves at once
 	deadline: number?, -- os.clock() when the doors close
 	state: "open" | "leaving" | "closed",
 }
@@ -123,6 +124,7 @@ local function remove(lift: Lift, player: Player)
 	end
 	if #lift.guards == 0 then
 		lift.deadline = nil
+		lift.solo = nil
 	end
 	for _, other in lift.guards do
 		sendLift(other, lift)
@@ -155,6 +157,7 @@ local function launch(lift: Lift)
 	end
 	table.clear(lift.guards)
 	lift.deadline = nil
+	lift.solo = nil
 	if #stillHere > 0 then
 		if C.game_place_id ~= 0 and not RunService:IsStudio() then
 			-- to check on the published game: a reserved server of the game place for this group
@@ -217,8 +220,8 @@ local function scan()
 				and not NightService.isPlaying(player)
 				and inside(lift.zone, root.Position)
 			then
-				if #lift.guards >= C.lift_capacity then
-					stepOut(lift, player) -- full
+				if #lift.guards >= C.lift_capacity or (lift.solo and lift.solo ~= player) then
+					stepOut(lift, player) -- full, or one guard's SOLO lift
 				else
 					table.insert(lift.guards, player)
 					if not lift.deadline then
@@ -243,7 +246,50 @@ local function scan()
 	end
 end
 
+-- PLAY: into the open lift with the most guards (a group forms faster); SOLO: into an empty one that leaves at once.
+local function play(player: Player, mode: string)
+	if liftOf(player) or NightService.isPlaying(player) then
+		return
+	end
+	local best: Lift? = nil
+	for _, lift in lifts do
+		if lift.state == "open" and not lift.solo and #lift.guards < C.lift_capacity then
+			if mode == "solo" then
+				if #lift.guards == 0 then
+					best = lift
+					break
+				end
+			elseif not best or #lift.guards > #best.guards then
+				best = lift
+			end
+		end
+	end
+	local root = rootOf(player)
+	if not best or not root then
+		Net.event():FireClient(player, "Notice", "ALL LIFTS ARE BUSY", false)
+		return
+	end
+	local lift = best :: Lift
+	if mode == "solo" then
+		lift.solo = player
+	end
+	root.AssemblyLinearVelocity = Vector3.zero
+	root.CFrame = CFrame.new(lift.zone.Position.X, root.Position.Y, lift.zone.Position.Z - 1)
+
+	table.insert(lift.guards, player)
+	local closeAt = os.clock() + (if mode == "solo" then C.lift_start_now else C.lift_countdown)
+	lift.deadline = if lift.deadline then math.min(lift.deadline, closeAt) else closeAt
+	for _, p in lift.guards do
+		sendLift(p, lift)
+	end
+end
+
 function LobbyService.init()
+	Actions.on("Play", function(player: Player, mode: unknown)
+		if mode == "group" or mode == "solo" then
+			play(player, mode)
+		end
+	end)
 	Actions.on("Lift", function(player: Player, command: unknown)
 		local lift = liftOf(player)
 		if not lift or lift.state ~= "open" then
@@ -291,6 +337,7 @@ function LobbyService.start()
 				status = if status and status:IsA("TextLabel") then status else nil,
 				doors = if elevator then collectDoors(elevator) else {},
 				guards = {},
+				solo = nil,
 				deadline = nil,
 				state = "closed", -- the first scan opens them
 			}

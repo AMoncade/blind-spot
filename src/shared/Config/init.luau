@@ -14,6 +14,14 @@ Config.Rounds = Content.Rounds
 Config.LobbyMap = Content.LobbyMap
 Config.Lifts = Content.Lifts
 Config.LobbyProps = Content.LobbyProps
+Config.Shop = Content.Shop
+Config.Daily = Content.Daily
+Config.Codes = Content.Codes
+
+Config.shopById = {} :: { [string]: typeof(Content.Shop[1]) }
+for _, item in Content.Shop do
+	Config.shopById[item.id] = item
+end
 
 Config.cameraById = {} :: { [string]: typeof(Content.Cameras[1]) }
 for _, cam in Content.Cameras do

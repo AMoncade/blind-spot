@@ -2,7 +2,7 @@
 -- The lobby on the client: the lift panel while the guard stands in a service lift (who is in, when the doors close,
 -- START to go now, LEAVE to step out), and the fade to black while the lift goes down. The server decides who is in a
 -- lift and when it leaves (server Services/LobbyService); this only shows it and sends the two intentions.
--- Style: the game's dark horror look (near-black panels, a thin brass outline, Gotham), 48 px touch targets.
+-- Style: the game's UI kit (Ui/Kit: worn steel art, brass, Oswald), 48 px touch targets.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -11,6 +11,7 @@ local TweenService = game:GetService("TweenService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared:WaitForChild("Net"))
 local State = require(script.Parent.Parent:WaitForChild("State"))
+local Kit = require(script.Parent.Parent:WaitForChild("Ui"):WaitForChild("Kit"))
 
 local player = Players.LocalPlayer
 
@@ -21,9 +22,6 @@ local THEME = {
 	outline = Color3.fromRGB(201, 164, 106),
 	text = Color3.fromRGB(232, 226, 214),
 	dim = Color3.fromRGB(150, 144, 134),
-	start = Color3.fromRGB(176, 52, 40),
-	leave = Color3.fromRGB(46, 48, 52),
-	font = Enum.Font.GothamBold,
 }
 
 local function text(parent: Instance, name: string, value: string, size: UDim2, pos: UDim2, color: Color3): TextLabel
@@ -31,7 +29,7 @@ local function text(parent: Instance, name: string, value: string, size: UDim2, 
 	l.Name = name
 	l.BackgroundTransparency = 1
 	l.BorderSizePixel = 0
-	l.Font = THEME.font
+	l.FontFace = Kit.FONT.title
 	l.Text = value
 	l.TextColor3 = color
 	l.TextScaled = true
@@ -46,40 +44,14 @@ local function text(parent: Instance, name: string, value: string, size: UDim2, 
 	return l
 end
 
-local function button(parent: Instance, name: string, label: string, fill: Color3, pos: UDim2): TextButton
-	local b = Instance.new("TextButton")
-	b.Name = name
-	b.AutoButtonColor = true
-	b.BackgroundColor3 = fill
-	b.BackgroundTransparency = 0
-	b.BorderSizePixel = 0
-	b.Font = THEME.font
-	b.Text = label
-	b.TextColor3 = THEME.text
-	b.TextScaled = true
-	b.AnchorPoint = Vector2.new(0, 1)
-	b.Position = pos
-	b.Size = UDim2.new(0.5, -21, 0, 48) -- 48 px tall (CLAUDE.md: 44 px minimum)
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 6)
-	corner.Parent = b
-	local stroke = Instance.new("UIStroke")
-	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	stroke.Color = THEME.outline
-	stroke.Transparency = 0.4
-	stroke.Thickness = 1
-	stroke.Parent = b
-	local pad = Instance.new("UIPadding")
-	pad.PaddingLeft = UDim.new(0.08, 0)
-	pad.PaddingRight = UDim.new(0.08, 0)
-	pad.PaddingTop = UDim.new(0, 10)
-	pad.PaddingBottom = UDim.new(0, 10)
-	pad.Parent = b
-	local limit = Instance.new("UITextSizeConstraint")
-	limit.MinTextSize = 12
-	limit.MaxTextSize = 24
-	limit.Parent = b
-	b.Parent = parent
+local function button(parent: Instance, name: string, label: string, red: boolean, pos: UDim2): ImageButton
+	local b = Kit.button(parent, if red then Kit.ART.PlayButton else Kit.ART.DarkButton, label, {
+		Name = name,
+		AnchorPoint = Vector2.new(0, 1),
+		Position = pos,
+		Size = UDim2.new(0.5, -21, 0, 48), -- 48 px tall (CLAUDE.md: 44 px minimum)
+		TextSize = 24,
+	})
 	return b
 end
 
@@ -115,8 +87,8 @@ function Lobby.start()
 	count.TextXAlignment = Enum.TextXAlignment.Right
 	local timer =
 		text(panel, "Timer", "DOORS CLOSE IN 15", UDim2.new(1, -28, 0, 26), UDim2.new(0, 14, 0, 38), THEME.text)
-	local startButton = button(panel, "Start", "START", THEME.start, UDim2.new(0, 14, 1, -12))
-	local leaveButton = button(panel, "Leave", "LEAVE", THEME.leave, UDim2.new(0.5, 7, 1, -12))
+	local startButton = button(panel, "Start", "START", true, UDim2.new(0, 14, 1, -12))
+	local leaveButton = button(panel, "Leave", "LEAVE", false, UDim2.new(0.5, 7, 1, -12))
 
 	local black = Instance.new("Frame")
 	black.Name = "Fade"

@@ -129,6 +129,18 @@ def build():
         {"id": r["id"], "label": r["label"], "x": num(r["x"]), "y": num(r["y"]), "z": num(r["z"])}
         for r in rows("rounds.csv")])
 
+    mods["Shop"] = ("shop.csv", [
+        {"id": r["id"], "name": r["name"], "kind": r["kind"], "price": num(r["price"]),
+         "product": int(r["robux_product"]), "frame": r["frame"], "rec": r["rec"], "text": r["text"],
+         "blurb": r["blurb"]}
+        for r in rows("shop.csv")])
+
+    mods["Daily"] = ("daily.csv", [
+        {"day": int(r["day"]), "pay": num(r["pay"])} for r in rows("daily.csv")])
+
+    mods["Codes"] = ("codes.csv", [
+        {"code": r["code"].strip().upper(), "pay": num(r["pay"])} for r in rows("codes.csv")])
+
     out = {}
     for name, (src, data) in mods.items():
         out[name + ".luau"] = HEADER.format(src=src) + "return " + lua(data) + "\n"

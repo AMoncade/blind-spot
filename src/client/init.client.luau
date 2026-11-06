@@ -2,15 +2,16 @@
 -- Boots the client: the settings and the State listeners first (so no event is missed), then the controllers. Each one
 -- starts in its own pcall, so one broken controller never takes the others down.
 local Controllers = script:WaitForChild("Controllers")
+local Ui = script:WaitForChild("Ui")
 
 local Settings = require(script:WaitForChild("Settings"))
 local State = require(script:WaitForChild("State"))
 
 -- background: the controller waits for the streamed level, so it starts in its own thread
-local function start(name: string, background: boolean?)
+local function start(name: string, background: boolean?, container: Instance?)
 	local function run()
 		local ok, err = pcall(function()
-			local mod = require(Controllers:WaitForChild(name) :: ModuleScript) :: any
+			local mod = require((container or Controllers):WaitForChild(name) :: ModuleScript) :: any
 			mod.start()
 		end)
 		if not ok then
@@ -33,5 +34,6 @@ start("UnseenView")
 start("Death")
 start("Hud")
 start("Lobby")
+start("Menu", false, Ui)
 State.start() -- last: the controllers are listening when the server answers Ready
 print("[boot] BLIND SPOT client")

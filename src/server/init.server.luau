@@ -8,12 +8,14 @@ local Services = script:WaitForChild("Services")
 local ORDER = {
 	{ Core, "World" },
 	{ Core, "Actions" },
+	{ Core, "Data" },
 	{ Services, "WatchService" },
 	{ Services, "CamcorderService" },
 	{ Services, "PowerDirector" },
 	{ Services, "UnseenService" },
 	{ Services, "NightService" },
 	{ Services, "LobbyService" },
+	{ Services, "MenuService" },
 	{ Services, "DebugService" },
 }
 

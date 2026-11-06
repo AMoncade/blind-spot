@@ -52,7 +52,7 @@ camera_turn_speed,35,degrees per second a camera turns toward a player it films
 camera_turn_max,40,degrees a camera may turn away from its rest aim
 fov_default,70,vertical field of view (degrees)
 fov_max,90,largest field of view in the settings
-headbob_default,0.6,head bob 0 to 1 (settings)
+headbob_default,0.5,head bob 0 to 1 (settings)
 headbob_amount,0.12,head bob height at 1 (studs)
 headbob_freq,0.55,head bob cycles per stud walked
 muffle_hz,1100,low-pass cutoff when the player is off camera
@@ -105,8 +105,8 @@ lift_door_travel,2.9,studs each lift door slides
 lobby_return_delay,8,seconds of the 6 AM screen before the guards are back in the lobby
 lobby_scan,0.25,seconds between two checks of who stands in a lift
 game_place_id,0,the game place in a published universe; 0 = play the night in this place (Studio and phase 0)
-lobby_color_floor,#2e2b28,lobby terrazzo
-lobby_color_wall,#6f6a62,lobby walls
+lobby_color_floor,#5b554d,lobby terrazzo
+lobby_color_wall,#8a847a,lobby walls
 lobby_color_trim,#1c1d1f,lobby trims and mullions
 lobby_lamp_color,#ffd8a8,warm lobby ceiling lamps
 lobby_lamp_brightness,2.6,
@@ -122,3 +122,23 @@ street_lamp_brightness,2.2,
 street_lamp_range,24,
 lobby_glass_color,#5f7480,the glass front
 lobby_glass_transparency,0.8,
+lobby_ambient,#5a524a,lobby: warm base light (readable at any graphics level)
+lobby_outdoor,#3c3a38,
+lobby_exposure,0.3,
+p3_live_ambient,#2a3336,P3 in LIVE: cold base light under the tubes
+p3_live_outdoor,#1e2528,
+p3_live_exposure,0,
+p3_flicker_ambient,#1e2629,P3 in FLICKER
+p3_flicker_outdoor,#151b1d,
+p3_flicker_exposure,-0.1,
+p3_blackout_ambient,#0f1315,P3 in BLACKOUT: dark but never black (plan section 2)
+p3_blackout_outdoor,#0b0e10,
+p3_blackout_exposure,-0.2,
+grade_ease_seconds,0.8,how fast the base light follows a phase change
+pay_shift,100,pay for finishing a shift (reaching 6 AM)
+pay_round,30,pay per round checkpoint scanned by the team
+pay_no_death,60,bonus when the guard never died during the shift
+daily_day_seconds,86400,a daily reward day (UTC days)
+profile_send_every,0.25,seconds between two profile snapshots to the client
+settings_fov_steps,70;80;90,field of view choices in Settings
+settings_bob_steps,0;0.5;1,head bob choices in Settings

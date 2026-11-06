@@ -7,6 +7,7 @@
 --   BLACKOUT: the tubes are dead; the exit signs, the booth and the holdouts' blinking LEDs are the only glows.
 -- Tubes also sputter when the Unseen passes under them (plan section 4, his signs).
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Lighting = game:GetService("Lighting")
 local RunService = game:GetService("RunService")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
@@ -93,9 +94,53 @@ local function collect()
 	end
 end
 
-local function update()
+-- The base light per zone and phase (plan section 2: "Jamais un noir total"; section 7: readable without shadows on a
+-- low graphics level). Local lights alone go black on a weak device or a low quality level, so the ambient carries a
+-- floor of light: warm in the lobby, cold in the P3, lower in a BLACKOUT but never zero. Client side, eased.
+type Grade = { ambient: Color3, outdoor: Color3, exposure: number }
+
+local function grade(prefix: string): Grade
+	local c = C :: any
+	return {
+		ambient = Color3.fromRGB(Config.rgb(c[prefix .. "_ambient"])),
+		outdoor = Color3.fromRGB(Config.rgb(c[prefix .. "_outdoor"])),
+		exposure = c[prefix .. "_exposure"],
+	}
+end
+
+local GRADES: { [string]: Grade } = {}
+local current: Grade? = nil
+
+local function applyGrade(name: string, dt: number)
+	local target = GRADES[name]
+	if not current then
+		current = { ambient = target.ambient, outdoor = target.outdoor, exposure = target.exposure }
+	end
+	local g = current :: Grade
+	local a = math.min(1, dt / math.max(C.grade_ease_seconds, 0.01))
+	g.ambient = g.ambient:Lerp(target.ambient, a)
+	g.outdoor = g.outdoor:Lerp(target.outdoor, a)
+	g.exposure += (target.exposure - g.exposure) * a
+	Lighting.Ambient = g.ambient
+	Lighting.OutdoorAmbient = g.outdoor
+	-- the camcorder raises the exposure on top (Camcorder.luau); this is the base it returns to
+	Lighting:SetAttribute("BaseExposure", g.exposure)
+	if not Lighting:GetAttribute("CamcorderRaised") then
+		Lighting.ExposureCompensation = g.exposure
+	end
+end
+
+local function update(dt: number)
 	local t, seg = State.now()
 	local phase = if seg then seg.phase else "LIVE"
+	applyGrade(
+		if not State.shift
+			then "lobby"
+			elseif phase == "BLACKOUT" then "blackout"
+			elseif phase == "FLICKER" then "flicker"
+			else "live",
+		dt
+	)
 	local holdouts: { [string]: boolean } = {}
 	if seg and seg.holdouts then
 		for _, id in seg.holdouts do
@@ -143,6 +188,10 @@ local function update()
 end
 
 function Atmosphere.start()
+	GRADES.lobby = grade("lobby")
+	GRADES.live = grade("p3_live")
+	GRADES.flicker = grade("p3_flicker")
+	GRADES.blackout = grade("p3_blackout")
 	onColor = Color3.fromRGB(Config.rgb(C.tube_color))
 	collect()
 	RunService.Heartbeat:Connect(update)

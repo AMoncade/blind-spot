@@ -14,6 +14,7 @@ local Net = require(Shared:WaitForChild("Net"))
 local Timeline = require(Shared:WaitForChild("Logic"):WaitForChild("Timeline"))
 local State = require(script.Parent.Parent:WaitForChild("State"))
 local Settings = require(script.Parent.Parent:WaitForChild("Settings"))
+local Kit = require(script.Parent.Parent:WaitForChild("Ui"):WaitForChild("Kit"))
 
 local C = Config.C
 local player = Players.LocalPlayer
@@ -24,7 +25,7 @@ local function text(parent: Instance, name: string, pos: UDim2, size: UDim2, anc
 	local l = Instance.new("TextLabel")
 	l.Name = name
 	l.BackgroundTransparency = 1
-	l.Font = Enum.Font.Code
+	l.FontFace = Kit.FONT.mono
 	l.TextColor3 = Color3.fromRGB(220, 226, 230)
 	l.TextStrokeTransparency = 0.5
 	l.TextScaled = true
@@ -47,7 +48,9 @@ function Hud.start()
 	local rounds = text(gui, "Rounds", UDim2.new(0, 16, 1, -48), UDim2.new(0, 160, 0, 22), Vector2.new(0, 1))
 	rounds.TextXAlignment = Enum.TextXAlignment.Left
 	local title = text(gui, "Title", UDim2.new(0.5, 0, 0.4, 0), UDim2.new(0.6, 0, 0.09, 0), Vector2.new(0.5, 0.5))
+	title.FontFace = Kit.FONT.title
 	local sub = text(gui, "Sub", UDim2.new(0.5, 0, 0.49, 0), UDim2.new(0.6, 0, 0.045, 0), Vector2.new(0.5, 0.5))
+	sub.FontFace = Kit.FONT.paper
 
 	local dot = Instance.new("Frame")
 	dot.Name = "RecDot"
@@ -75,7 +78,7 @@ function Hud.start()
 		end
 	end)
 	State.on("NightEnd", function(summary: any)
-		show("6:00 AM", `Rounds {summary.rounds}/{summary.total}   Lost {summary.deaths}`, 8)
+		show("6:00 AM", `Rounds {summary.rounds}/{summary.total}   Lost {summary.deaths}   Pay +${summary.pay or 0}`, 8)
 	end)
 	State.on("Rounds", function(n: number, total: number)
 		rounds.Text = `Rounds {n}/{total}`

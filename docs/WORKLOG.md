@@ -36,3 +36,18 @@ Studio n'était pas connecté : tout est écrit et vérifié hors de Studio (Sty
   - Client : `Controllers/Lobby` (panneau d'ascenseur, boutons de 48 px), troisième personne au lobby et première personne pendant le quart ; montre, rondes et bouton REC seulement pendant le quart.
   - Testé en playtest : apparition au lobby, portes ouvertes, panneau « LIFT B · P3 · 1/4 », départ, poste du P3 en première personne, SHIFT IN PROGRESS, fin de nuit et retour au lobby, sans erreur. **Pas vérifié** : les boutons START et LEAVE (l'outil de clic simulé n'a pas répondu de la session) ; à essayer à la main.
   - À vérifier sur le jeu publié : avec `game_place_id` réglé, le groupe part dans un serveur réservé de la place de jeu (TeleportService), ce qui ne se prouve pas dans Studio. Il faut qu'Adrien crée la place de jeu dans l'univers.
+
+## 2026-11-06 (soir) : l'écran noir, et les menus du lobby
+
+- **Le playtest tout noir** (signalé par Adrien) : rien de cassé (personnage, caméra, interface normaux), mais une lumière ambiante quasi nulle (RGB 5-7), sans lune, avec seulement quelques lampes : selon la qualité graphique, tout devenait noir. `Controllers/Atmosphere` règle maintenant la lumière de base par zone et par phase, côté client (constantes `lobby_*`, `p3_live_*`, `p3_flicker_*`, `p3_blackout_*`) : chaude au lobby, froide au P3, plus sombre en BLACKOUT mais jamais à zéro (plan, section 2). Le sol et les murs du lobby sont plus clairs. Le caméscope part de cette base pour sa vision nocturne.
+- **La sauvegarde** : `Core/Data` (ProfileStore, copié de Roll an Anomaly), un profil par joueur, expulsion avec un message s'il ne charge pas. Dans Studio, ProfileStore tourne sur sa base simulée (rien n'est sauvé) : les vrais DataStores sont à vérifier sur le jeu publié.
+- **Les menus du lobby** (demande d'Adrien), disposés comme dans DOORS et Pressure : la paie en haut à gauche, une rangée d'icônes-objets (SHOP, DAILY, INVITE, SETTINGS ; les codes sont dans Settings), PLAY et SOLO en bas au centre, loin du joystick et du bouton de saut.
+  - Art généré dans un seul style (bureau de sécurité des années 90 : métal usé, laiton, papier, rouge REC), ids dans `src/shared/Config/UiArt.luau` ; polices Oswald, Special Elite et Roboto Mono partout (plus aucune police Roblox par défaut, ni Gotham), `Ui/Kit`.
+  - SHOP (« Supply Room ») : des viseurs de caméscope payés avec la paie des quarts (`content/shop.csv`) ; le viseur équipé colore le caméscope en jeu. VIP et Overtime affichent SOON tant qu'Adrien n'a pas créé leurs produits.
+  - DAILY : 7 jours (`content/daily.csv`), une réclamation par jour UTC, la série recommence si on rate un jour (`Logic/Daily`, specs).
+  - INVITE : l'invitation de Roblox (`SocialService`), sans récompense.
+  - SETTINGS : balancement de tête, champ de vision, réduire les flashs, point REC, et les codes (`content/codes.csv`), sauvés dans le profil.
+  - PLAY entre dans l'ascenseur qui a le plus de gardes ; SOLO prend un ascenseur vide qui part en 3 s.
+  - La paie d'un quart : `pay_shift` + `pay_round` par borne de l'équipe + `pay_no_death` si le garde n'a jamais été pris.
+  - `scripts/studio-ui-preview.luau` dessine l'écran du lobby en Edit avec un faux profil (captures sans playtest).
+- **Testé en playtest** : daily, codes, achat, équiper, réglages, SOLO jusqu'au P3, sans erreur. Les clics simulés n'ont jamais répondu de la session : chaque action est passée par son intention réseau ; les boutons sont à essayer à la main.

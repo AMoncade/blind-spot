@@ -250,7 +250,7 @@ local function signGui(p: BasePart, lines: { { string } })
 		l.BackgroundTransparency = 1
 		l.BorderSizePixel = 0
 		l.Size = UDim2.new(0.94, 0, tonumber(line[2]) or 0.5, 0)
-		l.Font = Enum.Font.GothamBold
+		l.FontFace = Font.new("rbxasset://fonts/families/Oswald.json", Enum.FontWeight.Bold)
 		l.Text = line[1]
 		l.TextColor3 = rgb(line[3] or "#e8e2d6")
 		l.TextScaled = true

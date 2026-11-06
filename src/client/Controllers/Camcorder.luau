@@ -14,6 +14,7 @@ local Config = require(Shared:WaitForChild("Config"))
 local Net = require(Shared:WaitForChild("Net"))
 local Timeline = require(Shared:WaitForChild("Logic"):WaitForChild("Timeline"))
 local State = require(script.Parent.Parent:WaitForChild("State"))
+local Kit = require(script.Parent.Parent:WaitForChild("Ui"):WaitForChild("Kit"))
 
 local C = Config.C
 local player = Players.LocalPlayer
@@ -43,7 +44,7 @@ local function label(parent: Instance, name: string, text: string, pos: UDim2, a
 	local l = Instance.new("TextLabel")
 	l.Name = name
 	l.BackgroundTransparency = 1
-	l.Font = Enum.Font.Code
+	l.FontFace = Kit.FONT.mono
 	l.TextColor3 = Color3.new(1, 1, 1)
 	l.TextStrokeTransparency = 0.4
 	l.TextScaled = true
@@ -56,6 +57,8 @@ local function label(parent: Instance, name: string, text: string, pos: UDim2, a
 	return l
 end
 
+local brackets: { Frame } = {}
+
 local function corner(parent: Instance, ax: number, ay: number)
 	-- an L bracket in each corner of the viewfinder
 	for _, horizontal in { true, false } do
@@ -66,6 +69,7 @@ local function corner(parent: Instance, ax: number, ay: number)
 		f.Position = UDim2.new(0.04 + ax * 0.92, 0, 0.06 + ay * 0.88, 0)
 		f.Size = if horizontal then UDim2.new(0.06, 0, 0, 3) else UDim2.new(0, 3, 0.1, 0)
 		f.Parent = parent
+		table.insert(brackets, f)
 	end
 end
 
@@ -158,17 +162,29 @@ local function setRaised(raised: boolean)
 	end
 	Camcorder.raised = raised
 	gui.Enabled = raised
+	if raised then
+		-- the viewfinder bought in the supply room (content/shop.csv)
+		local profile = State.profile
+		local item = Config.shopById[profile and profile.viewfinder or "vf_classic"] or Config.shopById.vf_classic
+		for _, f in brackets do
+			f.BackgroundColor3 = rgb(item.frame)
+		end
+		recLabel.TextColor3 = rgb(item.rec)
+		clockLabel.TextColor3 = rgb(item.text)
+	end
 	grade.Parent = workspace.CurrentCamera
 	grade.Enabled = raised
 	irPart.Parent = if raised then workspace.CurrentCamera else nil
 	local spot = irPart:FindFirstChildOfClass("SpotLight") :: SpotLight
 	spot.Enabled = raised
 	if raised then
-		baseExposure = Lighting.ExposureCompensation
+		baseExposure = Lighting:GetAttribute("BaseExposure") or Lighting.ExposureCompensation
+		Lighting:SetAttribute("CamcorderRaised", true)
 		Lighting.ExposureCompensation = baseExposure + C.nv_exposure
 		sendIn = 0
 	else
-		Lighting.ExposureCompensation = baseExposure
+		Lighting:SetAttribute("CamcorderRaised", nil)
+		Lighting.ExposureCompensation = Lighting:GetAttribute("BaseExposure") or baseExposure
 		Net.send("Camcorder", false)
 	end
 end
@@ -197,7 +213,7 @@ local function touchButton()
 	button.BackgroundColor3 = Color3.fromRGB(20, 22, 24)
 	button.BackgroundTransparency = 0.3
 	button.Text = "REC"
-	button.Font = Enum.Font.Code
+	button.FontFace = Kit.FONT.mono
 	button.TextColor3 = rgb(C.rec_color)
 	button.TextScaled = true
 	local round = Instance.new("UICorner")

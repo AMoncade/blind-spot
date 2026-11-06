@@ -14,6 +14,13 @@ Net.ACTIONS = {
 	Ready = 2, -- the client listens: send it the night
 	Camcorder = 14,
 	Lift = 4, -- ("start" | "leave"): only for the guard standing in that lift -- (raised, yaw, pitch): 10 Hz while filming, plus raise and lower
+	Play = 2, -- ("group" | "solo"): into the best open lift, or an empty one that leaves at once
+	Profile = 2, -- send me my profile again
+	ClaimDaily = 2,
+	Buy = 4, -- (shop id)
+	Equip = 6, -- (shop id)
+	Redeem = 2, -- (code)
+	SetSetting = 10, -- (name, value)
 	Debug = 10, -- Studio only (Core/Actions refuses it in a live server)
 }
 

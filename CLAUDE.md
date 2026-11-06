@@ -53,6 +53,7 @@ Pièges de Break a Gem qui toucheront ce jeu aussi :
 - **Charger dans Studio sans Rojo :** `py scripts/manifest.py`, `py scripts/serve.py` en arrière-plan (port 34896 ; 34893-34894 sont à Break a Gem, 34895 à Roll an Anomaly), puis en Edit : `return loadstring(game:GetService("HttpService"):GetAsync("http://127.0.0.1:34896/scripts/studio-load.luau?t=" .. os.clock(), true))()`. Ou ouvrir `build/BlindSpot.rbxl` que la porte construit.
 - **En jeu, dans Studio :** F6 peint le sol (vert filmé, rouge angle mort), F7 passe à la phase suivante, F8 joue la nuit suivante. Le P3 gris se construit au démarrage du serveur depuis `content/map_p3.csv` (et supprime la Baseplate du gabarit).
 - **L'éclairage** : Lighting.LightingStyle Realistic et PrioritizeLightingQuality sont déjà réglés dans la place (un script de jeu ne peut pas les changer, le plugin en Edit oui).
+- **Les menus du lobby** : `src/client/Ui/Kit.luau` (le style : art de `Config/UiArt`, polices Oswald, Special Elite, Roboto Mono ; jamais Gotham ni une police par défaut) et `Ui/Menu.luau` ; côté serveur `Core/Data` (ProfileStore) et `Services/MenuService`. Aperçu en Edit sans playtest : `scripts/studio-ui-preview.luau` (`_G.BS_PREVIEW = "Shop"`, `"Daily"`, `"Settings"`, `"clear"`).
 - **Le lobby** : les joueurs apparaissent au lobby (z 108 à 161, au nord du P3) ; un ascenseur lance le quart (`LobbyService`, puis `NightService.launch`). F8 en Studio relance une nuit avec les gardes en quart (ou tout le monde).
 
 ## Où on en est (6 novembre 2026)
