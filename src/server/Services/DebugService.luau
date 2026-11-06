@@ -15,6 +15,7 @@ local PowerDirector = require(script.Parent:WaitForChild("PowerDirector"))
 local NightService = require(script.Parent:WaitForChild("NightService"))
 local TaskService = require(script.Parent:WaitForChild("TaskService"))
 local StoryService = require(script.Parent:WaitForChild("StoryService"))
+local UnseenService = require(script.Parent:WaitForChild("UnseenService"))
 
 local DebugService = {}
 
@@ -82,6 +83,9 @@ function DebugService.init()
 			return
 		elseif command == "done" then
 			TaskService.completeAll()
+			return
+		elseif command == "sight" then
+			UnseenService.forceSighting() -- his next far sighting now
 			return
 		elseif command == "tape" then
 			StoryService.debugTake(player) -- as if the guard found tonight's tape

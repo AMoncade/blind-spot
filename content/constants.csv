@@ -171,3 +171,14 @@ cable_cut_margin,0.15,no line is cut in the first or last 15% of the night
 junction_height,3.4,a junction box's bottom above the floor
 splice_hold,3,seconds to splice a cut line
 pay_splice,40,pay for a spliced line
+sighting_first,40,seconds into a LIVE before his first far sighting
+sighting_min,55,shortest gap between two far sightings
+sighting_max,110,longest gap between two far sightings
+sighting_stare,3.5,seconds he stands and stares
+sighting_near,26,closest distance of a far sighting
+sighting_far,64,farthest distance of a far sighting
+sighting_cone,32,degrees from where the guard faces
+drip_min,6,shortest gap between two water drops (s)
+drip_max,16,longest gap between two water drops (s)
+hush_volume,0.06,the beds' volume while the Unseen closes in (the silence)
+hush_seconds,0.5,how fast the sound dies

@@ -41,3 +41,19 @@ Le générateur, le fusible de la caméra 07 : tant qu'ils ne sont pas faits, de
 ## Les modèles Blender gardent les boîtes de la config (6 novembre 2026)
 
 Les piliers et les voitures sont des modèles Blender, mais les boîtes de `map_p3.csv` restent, invisibles, comme collisions et comme bloqueurs des rayons de caméra : les champs ne dépendent jamais du détail d'un modèle (voir « Les champs se calculent sur les boîtes de la config »).
+
+## Une nuit se réussit en finissant la ronde avant 6 h (6 novembre 2026)
+
+Survivre ne suffit pas : la nuit est réussie seulement si toute la ronde est faite avant 6 h, et seule une nuit réussie débloque la suivante. Les tâches poussent à sortir des champs (les objets sont dans des angles morts) : c'est la tension du jeu.
+
+## Solo : 3 vies ; coop : le badge (6 novembre 2026)
+
+Le plan disait qu'en solo la nuit reprend à la dernière tâche. Sans limite, la mort ne coûtait rien : trois prises par nuit, puis la nuit est perdue. En coop, le plan est suivi : le garde pris surveille par les caméras, et son badge rapporté au poste le ramène une fois.
+
+## L'apparition au loin peut changer d'île (6 novembre 2026)
+
+L'Invisible voyage par l'ombre (règle 4), mais le plan veut aussi qu'il « se montre au bout d'un couloir sombre, immobile, puis n'y est plus ». Pour une apparition, il peut se tenir sur n'importe quelle case d'ombre en vue du garde, jamais dans un champ (règle 1). Le reste du temps, il marche par l'ombre.
+
+## Nos sons sont synthétisés (6 novembre 2026)
+
+Aucun outil ne téléverse de l'audio ; les sons sont donc faits par code (`tools/audio/make_sounds.py`), à nous sans licence à suivre, et Adrien les importe dans Studio. Freesound CC0 reste possible pour les remplacer.

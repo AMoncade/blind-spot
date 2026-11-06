@@ -157,6 +157,11 @@ def build():
 
     mods["Logbook"] = ("logbook.csv", [{"night": int(r["night"]), "line": r["line"]} for r in rows("logbook.csv")])
 
+    mods["Sounds"] = ("sounds.csv", [
+        {"id": r["id"], "file": r["file"], "asset": r["asset"].strip(), "volume": num(r["volume"]),
+         "loop": flag(r["loop"]), "caption": r["caption"]}
+        for r in rows("sounds.csv")])
+
     mods["Items"] = ("items.csv", [{"id": r["id"], "name": r["name"]} for r in rows("items.csv")])
 
     mods["Shop"] = ("shop.csv", [

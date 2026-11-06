@@ -15,3 +15,5 @@ FuseBox,mesh+texture,own (tools/blender/level_props.py),own work,,2026-11-06,,
 VHSTape,mesh+texture,own (tools/blender/level_props.py),own work,,2026-11-06,,
 VCR,mesh+texture,own (tools/blender/level_props.py),own work,,2026-11-06,,
 UI art (2 sets),image,generated with Ropilot (style: 1990s night security office),generated for the game,,2026-11-06,see src/shared/Config/UiArt.luau,
+Sounds (8),audio,own (tools/audio/make_sounds.py: synthesised),own work,,2026-11-06,set in content/sounds.csv after import,hum vent drone drip motor clack static tear
+TapesIcon,image,generated with Ropilot (same style as the UI art),generated for the game,,2026-11-06,rbxassetid://122036744672501,

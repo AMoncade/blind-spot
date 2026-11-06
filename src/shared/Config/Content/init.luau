@@ -16,6 +16,7 @@ return {
 	Radio = require(if script then script:WaitForChild("Radio") else "@self/Radio"),
 	Shop = require(if script then script:WaitForChild("Shop") else "@self/Shop"),
 	Signs = require(if script then script:WaitForChild("Signs") else "@self/Signs"),
+	Sounds = require(if script then script:WaitForChild("Sounds") else "@self/Sounds"),
 	Spots = require(if script then script:WaitForChild("Spots") else "@self/Spots"),
 	Tapes = require(if script then script:WaitForChild("Tapes") else "@self/Tapes"),
 	Tasks = require(if script then script:WaitForChild("Tasks") else "@self/Tasks"),

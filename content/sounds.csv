@@ -1,0 +1,9 @@
+id,file,asset,volume,loop,caption,note
+hum,hum.wav,,0.35,1,,the tubes' hum in LIVE and FLICKER: it stops in a BLACKOUT (the silence is the sign)
+vent,vent.wav,,0.45,1,,ventilation: always under everything on the P3
+drone,drone.wav,,0.55,1,[ A LOW DRONE ],the BLACKOUT bed
+drip,drip.wav,,0.4,0,,a water drop every few seconds on the P3
+motor,motor.wav,,0.5,0,[ A CAMERA TURNS TOWARD YOU ],a camera starts filming you (plan section 3)
+clack,clack.wav,,0.6,0,[ THE LIGHTS DIE ],the start of a BLACKOUT
+static,static.wav,,0.35,0,,before each radio line
+tear,tear.wav,,0.8,0,[ THE TAPE TEARS ],caught by the Unseen

@@ -17,6 +17,7 @@ Config.Signs = Content.Signs
 Config.Tapes = Content.Tapes
 Config.Radio = Content.Radio
 Config.Logbook = Content.Logbook
+Config.Sounds = Content.Sounds
 Config.CarColors = Content.CarColors
 Config.LobbyMap = Content.LobbyMap
 Config.Lifts = Content.Lifts

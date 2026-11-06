@@ -42,6 +42,8 @@ local function plate(parent: Instance, name: string, props: { [string]: any }): 
 end
 
 export type Parts = {
+	hush: Frame,
+	caption: TextLabel,
 	squad: TextLabel,
 	clock: TextLabel,
 	status: ImageLabel,
@@ -100,6 +102,41 @@ function Hud.build(gui: ScreenGui): Parts
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Size = UDim2.new(0.86, 0, 0.62, 0),
 		Max = 22,
+	})
+
+	-- the hush (plan section 4: the sound dies 1.5 s before he is in reach): until the sounds come, a darkening
+	-- of the screen's edges and the caption of what would be heard
+	local hush = Kit.new("Frame", { Name = "Hush", Size = UDim2.fromScale(1, 1), Visible = false, Parent = gui })
+	for k, rotation in { 0, 90, 180, 270 } do
+		local edge = Kit.new("Frame", {
+			Name = "Edge" .. k,
+			BackgroundColor3 = Color3.new(0, 0, 0),
+			BackgroundTransparency = 0,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = if rotation % 180 == 0 then UDim2.fromScale(1.2, 1.2) else UDim2.fromScale(1.2 * 0.5, 2.4),
+			Rotation = rotation,
+			Parent = hush,
+		})
+		Kit.new("UIGradient", {
+			Rotation = 0,
+			Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 0.15),
+				NumberSequenceKeypoint.new(0.22, 1),
+				NumberSequenceKeypoint.new(1, 1),
+			}),
+			Parent = edge,
+		})
+	end
+	local caption = Kit.text(gui, "[ THE HUM STOPS ]", {
+		Name = "Caption",
+		FontFace = FONT.paper,
+		TextColor3 = COLOR.ink,
+		AnchorPoint = Vector2.new(0.5, 1),
+		Position = UDim2.new(0.5, 0, 1, -86),
+		Size = UDim2.new(0.5, 0, 0, 22),
+		Max = 18,
+		Visible = false,
 	})
 
 	-- the night's title
@@ -170,6 +207,8 @@ function Hud.build(gui: ScreenGui): Parts
 		Max = 16,
 	})
 	return {
+		hush = hush,
+		caption = caption,
 		squad = squad,
 		clock = clock,
 		status = status,
@@ -240,6 +279,14 @@ function Hud.start()
 		if not onShift then
 			parts.report.Visible = false
 		end
+	end)
+	State.on("Hush", function(on: boolean)
+		parts.hush.Visible = on and State.shift
+		parts.caption.Visible = on and State.shift
+	end)
+	State.on("Respawn", function()
+		parts.hush.Visible = false
+		parts.caption.Visible = false
 	end)
 	State.on("NightEnd", function(summary: any)
 		Hud.fillReport(parts, summary)

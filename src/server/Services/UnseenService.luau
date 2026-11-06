@@ -45,6 +45,9 @@ local relief = 0
 local chase = 0
 local lastTarget: number? = nil
 local lastMode: Hunt.Mode? = nil
+-- the far sighting (plan section 4, his signs: "On le voit de loin"): who he stares at, and until when
+local stare: { player: Player, untilT: number }? = nil
+local nextSighting = 0
 local hushed: { [Player]: boolean } = {}
 local offTime: { [Player]: number } = {}
 local toFilmed: { [number]: number } = {}
@@ -152,6 +155,8 @@ end
 
 type Status = { player: Player, root: BasePart, filmed: boolean, cell: number? }
 
+local trySighting: (list: { any }) -> ()
+
 local function statuses(dt: number): { Status }
 	local out = {}
 	local filmed = WatchService.filmed()
@@ -176,6 +181,56 @@ local function statuses(dt: number): { Status }
 		end
 	end
 	return out
+end
+
+-- A shadow cell far ahead of a guard (within sighting_cone of where they face, sighting_near to sighting_far away), in
+-- plain sight of them: he stops existing where he is and stands there, staring (plan section 4: "il se montre au bout
+-- d'un couloir sombre, immobile, puis n'y est plus"). Any shadow cell will do, not only his island: a sighting is
+-- the one time he shows up somewhere; rule 1 still holds, the cell is in no field.
+function trySighting(list: { Status })
+	local occluders = WatchService.level.occluders
+	for _, s in rng.shuffle(list) do
+		local p = s.root.Position
+		local look = s.root.CFrame.LookVector
+		local flat = Vector3.new(look.X, 0, look.Z)
+		if flat.Magnitude < 0.1 then
+			continue
+		end
+		flat = flat.Unit
+		local found = {}
+		for i = 1, Grid.count(g) do
+			if free(i) then
+				local cx, cz = Grid.center(g, i)
+				local to = Vector3.new(cx - p.X, 0, cz - p.Z)
+				local d = to.Magnitude
+				if d >= C.sighting_near and d <= C.sighting_far then
+					local angle = math.deg(math.acos(math.clamp(to.Unit:Dot(flat), -1, 1)))
+					if
+						angle <= C.sighting_cone
+						and not Grid.segmentHits(
+							occluders,
+							p.X,
+							p.Y + 1.5,
+							p.Z,
+							cx,
+							C.floor_y + C.unseen_height * 0.7,
+							cz
+						)
+					then
+						table.insert(found, i)
+					end
+				end
+			end
+		end
+		if #found > 0 then
+			x, z = Grid.center(g, rng.pick(found))
+			present = true
+			path, goal = nil, nil
+			yaw = math.atan2(-(p.X - x), -(p.Z - z))
+			stare = { player = s.player, untilT = os.clock() + C.sighting_stare }
+			return
+		end
+	end
 end
 
 local function walk(dt: number, speed: number, stopAt: number)
@@ -223,6 +278,8 @@ local function tick(dt: number)
 			present = false
 			unhush()
 		end
+		stare = nil
+		nextSighting = os.clock() + C.sighting_first
 		return
 	end
 	if not present then
@@ -244,6 +301,26 @@ local function tick(dt: number)
 	relief = math.max(0, relief - dt)
 	local list = statuses(dt)
 	local mode = Hunt.mode(phase, relief)
+
+	-- he stands still and looks at the guard, then he isn't there any more
+	local st = stare
+	if st then
+		local root = WatchService.rootOf(st.player)
+		if os.clock() < st.untilT and phase == "LIVE" and root then
+			yaw = math.atan2(-(root.Position.X - x), -(root.Position.Z - z))
+			return
+		end
+		stare = nil
+		vanish()
+		return
+	end
+	if mode == "prowl" and relief <= 0 and os.clock() >= nextSighting then
+		nextSighting = os.clock() + rng.int(C.sighting_min, C.sighting_max)
+		trySighting(list)
+		if stare then
+			return
+		end
+	end
 	local candidates = {}
 	local byId: { [number]: Status } = {}
 	for _, s in list do
@@ -343,6 +420,15 @@ local function tick(dt: number)
 			break
 		end
 	end
+end
+
+-- Studio debug: the next far sighting now; and whom he stares at (nil when he isn't)
+function UnseenService.forceSighting()
+	nextSighting = 0
+end
+
+function UnseenService.staring(): Player?
+	return if stare then stare.player else nil
 end
 
 function UnseenService.position(): (boolean, number, number)
