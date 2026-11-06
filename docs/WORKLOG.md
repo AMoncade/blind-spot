@@ -25,3 +25,14 @@ Studio n'était pas connecté : tout est écrit et vérifié hors de Studio (Sty
 2. Les sons (Freesound CC0, une ligne par fichier dans `assets/SOURCES.csv`) : bourdonnement, ventilation, moteur de caméra, et le directeur du son (étouffé hors champ, silence de l'Invisible) avec l'API audio.
 3. La travée de stationnement en art final dans Blender, testée sur un vrai téléphone.
 4. Le trépied (solo) et les signes de l'Invisible en LIVE (objets déplacés, apparition au loin).
+
+## 2026-11-06 (après-midi) : la carte dans Studio, et le lobby
+
+- **Studio** : la place de travail est `Documents\Roblox\BlindSpot.rbxl` (copiée du build Rojo, puis enregistrée avec le P3, le lobby et `ServerStorage.LobbyModels`). L'éclairage est passé à LightingStyle Realistic et PrioritizeLightingQuality par le plugin (en Edit, ça marche).
+- **Premier playtest** de la nuit 3 : 8 puis 9 modules au démarrage, aucune erreur ; le poste est filmé par C01 et C02 ; l'Invisible se déplace ; en BLACKOUT les caméras actives passent de 12 à 6. Les champs se calculent en 51 ms (une pause tous les 1 500 cases au lieu de 300).
+- **Le lobby** (demande d'Adrien), dans l'esprit des lobbies d'horreur coop (les ascenseurs de DOORS et de Pressure, un groupe de 1 à 4) : le rez-de-chaussée du Halloway la nuit, au nord du P3 (z 108 à 161).
+  - Coque en dalles simples depuis `content/map_lobby.csv`. Objets Blender faits par code (`tools/blender/lobby_elevator.py`, `lobby_props.py`), rangés dans `ServerStorage.LobbyModels` et placés depuis `content/lobby_props.csv` et `content/lifts.csv` : 3 monte-charges (cabine, cadre bronze, portes qui coulissent), le comptoir Kestrel & Vane et son mur de 9 écrans, le babillard (avis MISSING, règles de la nuit), 2 bancs, 2 lampadaires dehors derrière la vitrine.
+  - `LobbyService` : un garde qui entre dans un ascenseur rejoint son groupe (4 au plus), 15 s de compte à rebours (START le ramène à 3 s, LEAVE fait sortir), les portes se ferment, fondu au noir, et le groupe se réveille au poste du P3. Pendant un quart, les ascenseurs affichent SHIFT IN PROGRESS. À 6 h, retour au lobby.
+  - Client : `Controllers/Lobby` (panneau d'ascenseur, boutons de 48 px), troisième personne au lobby et première personne pendant le quart ; montre, rondes et bouton REC seulement pendant le quart.
+  - Testé en playtest : apparition au lobby, portes ouvertes, panneau « LIFT B · P3 · 1/4 », départ, poste du P3 en première personne, SHIFT IN PROGRESS, fin de nuit et retour au lobby, sans erreur. **Pas vérifié** : les boutons START et LEAVE (l'outil de clic simulé n'a pas répondu de la session) ; à essayer à la main.
+  - À vérifier sur le jeu publié : avec `game_place_id` réglé, le groupe part dans un serveur réservé de la place de jeu (TeleportService), ce qui ne se prouve pas dans Studio. Il faut qu'Adrien crée la place de jeu dans l'univers.

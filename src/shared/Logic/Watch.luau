@@ -108,7 +108,7 @@ function Watch.coverage(level: Level, view: Look.View, heights: { number }, inse
 					out[i] = true
 				end
 				done += 1
-				if pause and done % 300 == 0 then
+				if pause and done % 1500 == 0 then
 					pause()
 				end
 			end

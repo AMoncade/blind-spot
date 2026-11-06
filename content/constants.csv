@@ -93,3 +93,32 @@ grey_pillar,#a3a5a8,grey box: pillars
 grey_car,#55595e,grey box: cars
 grey_desk,#6b5a48,grey box: booth desk
 unseen_color,#0b0b0d,grey box: the Unseen silhouette
+lift_capacity,4,guards per service lift (plan section 1: coop of 1 to 4)
+lift_countdown,15,seconds from the first guard in a lift to the doors closing
+lift_start_now,3,seconds left once a guard presses START
+lift_zone_width,7,studs across the inside of a lift cabin (x)
+lift_zone_depth,7.5,studs deep inside a lift cabin (z)
+lift_zone_height,8,studs high inside a lift cabin
+lift_door_seconds,1.2,doors closing or opening
+lift_ride_seconds,2.5,from closed doors to the P3 (the screen fades)
+lift_door_travel,2.9,studs each lift door slides
+lobby_return_delay,8,seconds of the 6 AM screen before the guards are back in the lobby
+lobby_scan,0.25,seconds between two checks of who stands in a lift
+game_place_id,0,the game place in a published universe; 0 = play the night in this place (Studio and phase 0)
+lobby_color_floor,#2e2b28,lobby terrazzo
+lobby_color_wall,#6f6a62,lobby walls
+lobby_color_trim,#1c1d1f,lobby trims and mullions
+lobby_lamp_color,#ffd8a8,warm lobby ceiling lamps
+lobby_lamp_brightness,2.6,
+lobby_lamp_range,26,
+street_color,#101214,asphalt outside the glass
+street_glow_color,#7f9cc4,cold street light coming through the glass
+lift_model_dz,0.55,the lift model bounds centre sits this far toward the hall from the cabin centre
+lobby_zoom_min,6,lobby camera: closest third person zoom
+lobby_zoom_max,16,lobby camera: farthest third person zoom
+lift_display_y,10.2,height of the LIFT A/B/C display above the lift frame
+street_lamp_color,#ffc985,sodium street lamp
+street_lamp_brightness,2.2,
+street_lamp_range,24,
+lobby_glass_color,#5f7480,the glass front
+lobby_glass_transparency,0.8,

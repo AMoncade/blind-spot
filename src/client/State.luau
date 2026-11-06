@@ -17,6 +17,7 @@ State.battery = Config.C.camcorder_battery
 State.batteryMax = Config.C.camcorder_battery
 State.hushed = false
 State.dead = false
+State.shift = false -- on a shift in the P3 (false: in the lobby)
 State.rounds = { done = 0, total = #Config.Rounds, ids = {} :: { string } }
 State.unseen = { present = false, x = 0, z = 0, yaw = 0, at = 0 }
 
@@ -64,6 +65,8 @@ function State.start()
 		elseif name == "Respawn" then
 			State.dead = false
 			State.hushed = false
+		elseif name == "Shift" then
+			State.shift = ...
 		elseif name == "Rounds" then
 			local n, total, ids = ...
 			State.rounds = { done = n, total = total, ids = ids }

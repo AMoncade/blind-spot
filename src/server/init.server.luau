@@ -13,6 +13,7 @@ local ORDER = {
 	{ Services, "PowerDirector" },
 	{ Services, "UnseenService" },
 	{ Services, "NightService" },
+	{ Services, "LobbyService" },
 	{ Services, "DebugService" },
 }
 

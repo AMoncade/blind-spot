@@ -1,0 +1,188 @@
+--!strict
+-- The lobby on the client: the lift panel while the guard stands in a service lift (who is in, when the doors close,
+-- START to go now, LEAVE to step out), and the fade to black while the lift goes down. The server decides who is in a
+-- lift and when it leaves (server Services/LobbyService); this only shows it and sends the two intentions.
+-- Style: the game's dark horror look (near-black panels, a thin brass outline, Gotham), 48 px touch targets.
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Net = require(Shared:WaitForChild("Net"))
+local State = require(script.Parent.Parent:WaitForChild("State"))
+
+local player = Players.LocalPlayer
+
+local Lobby = {}
+
+local THEME = {
+	panel = Color3.fromRGB(16, 17, 18),
+	outline = Color3.fromRGB(201, 164, 106),
+	text = Color3.fromRGB(232, 226, 214),
+	dim = Color3.fromRGB(150, 144, 134),
+	start = Color3.fromRGB(176, 52, 40),
+	leave = Color3.fromRGB(46, 48, 52),
+	font = Enum.Font.GothamBold,
+}
+
+local function text(parent: Instance, name: string, value: string, size: UDim2, pos: UDim2, color: Color3): TextLabel
+	local l = Instance.new("TextLabel")
+	l.Name = name
+	l.BackgroundTransparency = 1
+	l.BorderSizePixel = 0
+	l.Font = THEME.font
+	l.Text = value
+	l.TextColor3 = color
+	l.TextScaled = true
+	l.TextXAlignment = Enum.TextXAlignment.Left
+	l.Size = size
+	l.Position = pos
+	local limit = Instance.new("UITextSizeConstraint")
+	limit.MinTextSize = 10
+	limit.MaxTextSize = 30
+	limit.Parent = l
+	l.Parent = parent
+	return l
+end
+
+local function button(parent: Instance, name: string, label: string, fill: Color3, pos: UDim2): TextButton
+	local b = Instance.new("TextButton")
+	b.Name = name
+	b.AutoButtonColor = true
+	b.BackgroundColor3 = fill
+	b.BackgroundTransparency = 0
+	b.BorderSizePixel = 0
+	b.Font = THEME.font
+	b.Text = label
+	b.TextColor3 = THEME.text
+	b.TextScaled = true
+	b.AnchorPoint = Vector2.new(0, 1)
+	b.Position = pos
+	b.Size = UDim2.new(0.5, -21, 0, 48) -- 48 px tall (CLAUDE.md: 44 px minimum)
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 6)
+	corner.Parent = b
+	local stroke = Instance.new("UIStroke")
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.Color = THEME.outline
+	stroke.Transparency = 0.4
+	stroke.Thickness = 1
+	stroke.Parent = b
+	local pad = Instance.new("UIPadding")
+	pad.PaddingLeft = UDim.new(0.08, 0)
+	pad.PaddingRight = UDim.new(0.08, 0)
+	pad.PaddingTop = UDim.new(0, 10)
+	pad.PaddingBottom = UDim.new(0, 10)
+	pad.Parent = b
+	local limit = Instance.new("UITextSizeConstraint")
+	limit.MinTextSize = 12
+	limit.MaxTextSize = 24
+	limit.Parent = b
+	b.Parent = parent
+	return b
+end
+
+function Lobby.start()
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "Lobby"
+	gui.ResetOnSpawn = false
+	gui.DisplayOrder = 8
+	gui.IgnoreGuiInset = false
+	gui.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
+
+	local panel = Instance.new("Frame")
+	panel.Name = "LiftPanel"
+	panel.AnchorPoint = Vector2.new(0.5, 1)
+	panel.Position = UDim2.new(0.5, 0, 1, -20)
+	panel.Size = UDim2.new(0, 340, 0, 136)
+	panel.BackgroundColor3 = THEME.panel
+	panel.BackgroundTransparency = 0.12
+	panel.BorderSizePixel = 0
+	panel.Visible = false
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 8)
+	corner.Parent = panel
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = THEME.outline
+	stroke.Thickness = 1.5
+	stroke.Parent = panel
+	panel.Parent = gui
+
+	local title =
+		text(panel, "Title", "LIFT A  ·  P3", UDim2.new(0.6, 0, 0, 22), UDim2.new(0, 14, 0, 10), THEME.outline)
+	local count = text(panel, "Count", "1/4 GUARDS", UDim2.new(0.38, -14, 0, 22), UDim2.new(0.62, 0, 0, 10), THEME.text)
+	count.TextXAlignment = Enum.TextXAlignment.Right
+	local timer =
+		text(panel, "Timer", "DOORS CLOSE IN 15", UDim2.new(1, -28, 0, 26), UDim2.new(0, 14, 0, 38), THEME.text)
+	local startButton = button(panel, "Start", "START", THEME.start, UDim2.new(0, 14, 1, -12))
+	local leaveButton = button(panel, "Leave", "LEAVE", THEME.leave, UDim2.new(0.5, 7, 1, -12))
+
+	local black = Instance.new("Frame")
+	black.Name = "Fade"
+	black.BackgroundColor3 = Color3.new(0, 0, 0)
+	black.BackgroundTransparency = 1
+	black.BorderSizePixel = 0
+	black.Size = UDim2.new(1, 0, 1, 0)
+	black.Visible = false
+	local fadeGui = Instance.new("ScreenGui")
+	fadeGui.Name = "LiftFade"
+	fadeGui.IgnoreGuiInset = true
+	fadeGui.ResetOnSpawn = false
+	fadeGui.DisplayOrder = 30
+	black.Parent = fadeGui
+
+	gui.Parent = player:WaitForChild("PlayerGui")
+	fadeGui.Parent = player:WaitForChild("PlayerGui")
+
+	local current: any = nil
+	startButton.Activated:Connect(function()
+		Net.send("Lift", "start")
+	end)
+	leaveButton.Activated:Connect(function()
+		Net.send("Lift", "leave")
+	end)
+
+	State.on("Lift", function(info: any)
+		current = info
+		panel.Visible = info ~= nil and not State.shift
+		if info then
+			title.Text = `{info.label}  ·  P3`
+			count.Text = `{info.count}/{info.capacity} GUARDS`
+			startButton.Visible = not info.leaving
+			leaveButton.Visible = not info.leaving
+		end
+	end)
+	State.on("LiftDown", function(seconds: number)
+		black.Visible = true
+		black.BackgroundTransparency = 1
+		TweenService:Create(black, TweenInfo.new(math.max(seconds - 0.4, 0.2)), { BackgroundTransparency = 0 }):Play()
+	end)
+	State.on("Shift", function(onShift: boolean)
+		panel.Visible = false
+		if black.Visible then
+			-- the lift arrived (or the shift ended): fade back in
+			local tween = TweenService:Create(black, TweenInfo.new(0.9), { BackgroundTransparency = 1 })
+			tween.Completed:Connect(function()
+				black.Visible = false
+			end)
+			tween:Play()
+		end
+		if not onShift then
+			black.Visible = false
+		end
+	end)
+
+	RunService.RenderStepped:Connect(function()
+		if current and panel.Visible then
+			if current.leaving then
+				timer.Text = "GOING DOWN..."
+			else
+				local left = math.max(0, math.ceil(current.closesAt - workspace:GetServerTimeNow()))
+				timer.Text = `DOORS CLOSE IN {left}`
+			end
+		end
+	end)
+end
+
+return Lobby

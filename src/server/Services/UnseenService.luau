@@ -28,7 +28,7 @@ local UnseenService = {}
 
 -- NightService sets these (it owns deaths and the night)
 UnseenService.onKill = nil :: ((player: Player) -> ())?
-UnseenService.isDead = nil :: ((player: Player) -> boolean)?
+UnseenService.isPlaying = nil :: ((player: Player) -> boolean)? -- on shift and not in a death
 
 local g = WatchService.grid
 local rng = Rng.new(os.time())
@@ -160,8 +160,8 @@ local function statuses(dt: number): { Status }
 	end
 	for _, player in Players:GetPlayers() do
 		local root = WatchService.rootOf(player)
-		local dead = UnseenService.isDead and UnseenService.isDead(player)
-		if root and not dead then
+		local onShift = UnseenService.isPlaying == nil or UnseenService.isPlaying(player)
+		if root and onShift then
 			local isFilmed = WatchService.isFilmed(player)
 			offTime[player] = if isFilmed then 0 else (offTime[player] or 0) + dt
 			table.insert(out, {

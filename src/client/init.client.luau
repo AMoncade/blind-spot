@@ -32,5 +32,6 @@ start("CameraHeads", true)
 start("UnseenView")
 start("Death")
 start("Hud")
+start("Lobby")
 State.start() -- last: the controllers are listening when the server answers Ready
 print("[boot] BLIND SPOT client")

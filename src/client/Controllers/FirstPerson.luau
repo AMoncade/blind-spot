@@ -28,15 +28,29 @@ local function showBody(character: Model)
 end
 
 function FirstPerson.start()
-	player.CameraMode = Enum.CameraMode.LockFirstPerson
-	player.CameraMinZoomDistance = 0.5
-	player.CameraMaxZoomDistance = 0.5
+	-- the lobby is third person, so guards see each other; the shift is first person, locked
+	local function apply(onShift: boolean)
+		if onShift then
+			player.CameraMode = Enum.CameraMode.LockFirstPerson
+			player.CameraMinZoomDistance = 0.5
+			player.CameraMaxZoomDistance = 0.5
+		else
+			player.CameraMode = Enum.CameraMode.Classic
+			player.CameraMaxZoomDistance = C.lobby_zoom_max
+			player.CameraMinZoomDistance = C.lobby_zoom_min
+		end
+	end
+	apply(State.shift)
+	State.on("Shift", apply)
 
 	RunService:BindToRenderStep("BlindSpotFirstPerson", Enum.RenderPriority.Camera.Value + 1, function(dt: number)
 		local camera = workspace.CurrentCamera
 		camera.FieldOfView = math.clamp(Settings.get("FieldOfView"), 1, C.fov_max)
 		local character = player.Character
 		if not character or FirstPerson.frozen or State.dead then
+			return
+		end
+		if not State.shift then
 			return
 		end
 		showBody(character)

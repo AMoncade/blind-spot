@@ -21,3 +21,11 @@ Le motif du FLICKER est tiré du temps du serveur et de la graine de la nuit, do
 ## Phase 0 : la nuit 3 en boucle, réveil au poste (6 novembre 2026)
 
 Pour la preuve de la peur, le serveur joue la nuit 3 (les premiers blackouts) dès qu'un joueur est là, puis recommence. Une mort fige le joueur 2,2 s et le réveille au poste ; la reprise à la dernière tâche, la paie et la sauvegarde viennent en phase 1.
+
+## Le lobby est dans la même place, avec des ascenseurs (6 novembre 2026)
+
+Demande d'Adrien : un lobby où les gens lancent la partie, inspiré des autres jeux d'horreur. On a pris la forme la plus connue du genre, des ascenseurs où un groupe de 1 à 4 se forme avant un compte à rebours, et on l'a habillée pour l'histoire : le hall de nuit du Halloway, d'où les monte-charges descendent au P3. Tant qu'il n'y a pas de place de jeu séparée (Adrien seul peut la créer), le quart se joue dans la même place, un à la fois. Avec `game_place_id`, `LobbyService` envoie le groupe dans un serveur réservé.
+
+## L'éclairage Realistic se règle par le plugin (6 novembre 2026)
+
+La recherche disait que LightingStyle et PrioritizeLightingQuality ne se règlent pas par script. Un script de jeu ne le peut pas, mais le plugin en Edit le peut : la place est en Realistic, priorité à la qualité, comme le demande le plan (section 7).

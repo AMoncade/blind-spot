@@ -12,7 +12,8 @@ local Net = {}
 
 Net.ACTIONS = {
 	Ready = 2, -- the client listens: send it the night
-	Camcorder = 14, -- (raised, yaw, pitch): 10 Hz while filming, plus raise and lower
+	Camcorder = 14,
+	Lift = 4, -- ("start" | "leave"): only for the guard standing in that lift -- (raised, yaw, pitch): 10 Hz while filming, plus raise and lower
 	Debug = 10, -- Studio only (Core/Actions refuses it in a live server)
 }
 

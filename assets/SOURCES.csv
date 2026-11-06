@@ -1,1 +1,6 @@
 asset,kind,source,licence,link,date,roblox_id,note
+Elevator,mesh+texture,own (tools/blender/lobby_elevator.py; textures drawn in code),own work,,2026-11-06,,service lift: cabin frame doors
+SecurityDesk,mesh+texture,own (tools/blender/lobby_props.py; textures drawn in code),own work,,2026-11-06,,counter chair monitor wall
+NoticeBoard,mesh+texture,own (tools/blender/lobby_props.py; textures drawn in code),own work,,2026-11-06,,cork board: MISSING notice (grey silhouette) and rules
+Bench,mesh+texture,own (tools/blender/lobby_props.py; textures drawn in code),own work,,2026-11-06,,
+StreetLamp,mesh+texture,own (tools/blender/lobby_props.py; textures drawn in code),own work,,2026-11-06,,

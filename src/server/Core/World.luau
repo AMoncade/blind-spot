@@ -15,9 +15,12 @@ local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Co
 
 local C = Config.C
 
+local ServerStorage = game:GetService("ServerStorage")
+
 local World = {}
 
 World.root = nil :: Model?
+World.lobby = nil :: Model?
 
 local function rgb(hex: string): Color3
 	return Color3.fromRGB(Config.rgb(hex))
@@ -110,16 +113,12 @@ local function buildBlock(root: Model, folders: { [string]: Folder }, b: typeof(
 		light.Shadows = false
 		light.Parent = p
 	elseif b.kind == "spawn" then
-		local s = Instance.new("SpawnLocation")
-		s.Name = "Spawn"
-		s.Anchored = true
-		s.CFrame = cf
-		s.Size = size
+		-- where a guard wakes up in the booth: a marker, not a SpawnLocation (everyone spawns in the lobby)
+		local s = part(root, "Spawn", cf, size, Color3.new(1, 1, 1), Enum.Material.SmoothPlastic)
 		s.Transparency = 1
 		s.CanCollide = false
-		s.Duration = 0
-		s.Neutral = true
-		s.Parent = root
+		s.CanQuery = false
+		s.CanTouch = false
 	else
 		warn(`[World] unknown map kind {b.kind} ({b.id})`)
 	end
@@ -195,6 +194,237 @@ local function buildRound(parent: Folder, round: typeof(Config.Rounds[1]))
 	prompt.Parent = p
 end
 
+-- The lobby (the Halloway's ground floor at night): its shell is plain slabs from Config.LobbyMap, its furniture and
+-- lifts are the Blender models kept in ServerStorage.LobbyModels (CLAUDE.md: a copy of every model stays in the place),
+-- placed from Config.LobbyProps and Config.Lifts. A model in LobbyModels faces +Z and rests on its bounds' bottom.
+local LOBBY_LOOK = {
+	lobbyfloor = { "lobby_color_floor", Enum.Material.Marble },
+	lobbyceiling = { "lobby_color_wall", Enum.Material.SmoothPlastic },
+	lobbywall = { "lobby_color_wall", Enum.Material.Plaster },
+	trim = { "lobby_color_trim", Enum.Material.Metal },
+	street = { "street_color", Enum.Material.Asphalt },
+}
+
+-- Places a model so the bottom centre of its bounds sits at `at`, turned yaw degrees.
+function World.placeModel(model: Model, at: Vector3, yaw: number)
+	local primary = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart", true)
+	if not primary then
+		return
+	end
+	if not model.PrimaryPart then
+		model.PrimaryPart = primary :: BasePart
+	end
+	local box, size = model:GetBoundingBox()
+	local bottom = CFrame.new(box.Position - Vector3.new(0, size.Y / 2, 0))
+	local offset = bottom:ToObjectSpace((primary :: BasePart).CFrame)
+	model:SetPrimaryPartCFrame(CFrame.new(at) * CFrame.Angles(0, math.rad(yaw), 0) * offset)
+end
+
+local function lobbyModel(name: string): Model?
+	local source = ServerStorage:FindFirstChild("LobbyModels")
+	local model = source and source:FindFirstChild(name)
+	if model and model:IsA("Model") then
+		return model:Clone()
+	end
+	warn(`[World] ServerStorage.LobbyModels.{name} is missing: the lobby shows a stand-in`)
+	return nil
+end
+
+-- a dark sign face with lines of text: { text, height as a fraction, colour }
+local function signGui(p: BasePart, lines: { { string } })
+	local gui = Instance.new("SurfaceGui")
+	gui.Name = "Sign"
+	gui.Face = Enum.NormalId.Back -- +Z: toward the hall
+	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+	gui.PixelsPerStud = 40
+	gui.LightInfluence = 0
+	gui.Brightness = 1.4
+	local list = Instance.new("UIListLayout")
+	list.FillDirection = Enum.FillDirection.Vertical
+	list.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	list.VerticalAlignment = Enum.VerticalAlignment.Center
+	list.Parent = gui
+	for k, line in lines do
+		local l = Instance.new("TextLabel")
+		l.Name = "Line" .. k
+		l.BackgroundTransparency = 1
+		l.BorderSizePixel = 0
+		l.Size = UDim2.new(0.94, 0, tonumber(line[2]) or 0.5, 0)
+		l.Font = Enum.Font.GothamBold
+		l.Text = line[1]
+		l.TextColor3 = rgb(line[3] or "#e8e2d6")
+		l.TextScaled = true
+		l.LayoutOrder = k
+		l.Parent = gui
+	end
+	gui.Parent = p
+end
+
+local function buildLobbyBlock(root: Model, folders: { [string]: Folder }, b: typeof(Config.LobbyMap[1]))
+	local cf = CFrame.new(b.x, b.y, b.z)
+	local size = Vector3.new(b.sx, b.sy, b.sz)
+	local look = LOBBY_LOOK[b.kind]
+	if look then
+		part(folders.Shell, b.id, cf, size, rgb((C :: any)[look[1]]), look[2])
+	elseif b.kind == "glass" then
+		local p = part(folders.Shell, b.id, cf, size, rgb(C.lobby_glass_color), Enum.Material.Glass)
+		p.Transparency = C.lobby_glass_transparency
+		p.CastShadow = false
+	elseif b.kind == "streetglow" then
+		local p = part(folders.Lights, b.id, cf, size, Color3.new(1, 1, 1), Enum.Material.SmoothPlastic)
+		p.Transparency = 1
+		p.CanCollide = false
+		p.CanQuery = false
+		local light = Instance.new("SpotLight")
+		light.Face = Enum.NormalId.Front -- toward -Z: through the glass into the hall
+		light.Color = rgb(C.street_glow_color)
+		light.Brightness = 0.6
+		light.Range = 40
+		light.Angle = 70
+		light.Shadows = true
+		light.Parent = p
+	elseif b.kind == "lobbylamp" then
+		local p = part(folders.Lights, b.id, cf, size, rgb(C.lobby_lamp_color), Enum.Material.Neon)
+		p.CanCollide = false
+		p.CastShadow = false
+		local light = Instance.new("SurfaceLight")
+		light.Face = Enum.NormalId.Bottom
+		light.Color = rgb(C.lobby_lamp_color)
+		light.Brightness = C.lobby_lamp_brightness
+		light.Range = C.lobby_lamp_range
+		light.Angle = 170 -- wide: the panels also wash the walls
+		light.Shadows = false
+		light.Parent = p
+	elseif b.kind == "sign" then
+		local p = part(folders.Shell, b.id, cf, size, rgb(C.lobby_color_trim), Enum.Material.Metal)
+		signGui(p, { { "KESTREL & VANE", "0.62" }, { "NIGHT SECURITY  ·  THE HALLOWAY", "0.3", "#c9a46a" } })
+	elseif b.kind == "lobbyspawn" then
+		local s = Instance.new("SpawnLocation")
+		s.Name = "LobbySpawn"
+		s.Anchored = true
+		s.CFrame = cf
+		s.Size = size
+		s.Transparency = 1
+		s.CanCollide = false
+		s.CanQuery = false
+		s.Duration = 0
+		s.Neutral = true
+		s.Parent = root
+	else
+		warn(`[World] unknown lobby kind {b.kind} ({b.id})`)
+	end
+end
+
+-- A stand-in when the Blender lift is missing: two grey doors in the opening, so the lift still works.
+local function liftStandIn(lift: typeof(Config.Lifts[1])): Model
+	local m = Instance.new("Model")
+	m.Name = "Elevator"
+	local w = C.lift_door_travel
+	for k, side in { -1, 1 } do
+		part(
+			m,
+			if k == 1 then "DoorL" else "DoorR",
+			CFrame.new(lift.x + side * w / 2, 4, 117.5),
+			Vector3.new(w, 8, 0.3),
+			Color3.fromRGB(150, 152, 155),
+			Enum.Material.Metal
+		)
+	end
+	m.PrimaryPart = m:FindFirstChild("DoorL") :: BasePart
+	return m
+end
+
+local function buildLift(parent: Folder, lift: typeof(Config.Lifts[1]))
+	local m = Instance.new("Model")
+	m.Name = lift.id
+	m:SetAttribute("Label", lift.label)
+	local zone = part(
+		m,
+		"Zone",
+		CFrame.new(lift.x, lift.y + C.lift_zone_height / 2, lift.z),
+		Vector3.new(C.lift_zone_width, C.lift_zone_height, C.lift_zone_depth),
+		Color3.new(1, 1, 1),
+		Enum.Material.SmoothPlastic
+	)
+	zone.Transparency = 1
+	zone.CanCollide = false
+	zone.CanQuery = false
+	zone.CanTouch = false
+	local display = part(
+		m,
+		"Display",
+		CFrame.new(lift.x, C.lift_display_y, 118.12),
+		Vector3.new(3.4, 1.1, 0.12),
+		Color3.fromRGB(12, 12, 13),
+		Enum.Material.SmoothPlastic
+	)
+	display.CanCollide = false
+	signGui(display, { { lift.label, "0.45", "#c9a46a" }, { "P3  ·  0/" .. C.lift_capacity, "0.45", "#ff5a3c" } })
+	local elevator = lobbyModel("Elevator")
+	if elevator then
+		World.placeModel(elevator, Vector3.new(lift.x, lift.y, lift.z + C.lift_model_dz), 0)
+	else
+		elevator = liftStandIn(lift)
+	end
+	local e = elevator :: Model
+	e.Name = "Elevator"
+	e.Parent = m
+	m.PrimaryPart = zone
+	m.Parent = parent
+end
+
+function World.buildLobby()
+	local old = workspace:FindFirstChild("Lobby")
+	if old then
+		old:Destroy()
+	end
+	local root = Instance.new("Model")
+	root.Name = "Lobby"
+	root.ModelStreamingMode = Enum.ModelStreamingMode.Persistent
+	local folders = {
+		Shell = folder(root, "Shell"),
+		Lights = folder(root, "Lights"),
+		Props = folder(root, "Props"),
+		Lifts = folder(root, "Lifts"),
+	}
+	for _, b in Config.LobbyMap do
+		buildLobbyBlock(root, folders, b)
+	end
+	for _, prop in Config.LobbyProps do
+		local model = lobbyModel(prop.model)
+		if model then
+			model.Name = prop.id
+			World.placeModel(model, Vector3.new(prop.x, prop.y, prop.z), prop.yaw)
+			-- a street lamp's head lights the sidewalk below it
+			local glow = model:FindFirstChild("LampGlow", true)
+			if glow and glow:IsA("BasePart") then
+				glow.Material = Enum.Material.Neon
+				local light = Instance.new("SpotLight")
+				light.Face = Enum.NormalId.Bottom
+				light.Color = rgb(C.street_lamp_color)
+				light.Brightness = C.street_lamp_brightness
+				light.Range = C.street_lamp_range
+				light.Angle = 100
+				light.Shadows = true
+				light.Parent = glow
+			end
+			model.Parent = folders.Props
+		end
+	end
+	for _, lift in Config.Lifts do
+		buildLift(folders.Lifts, lift)
+	end
+	root:SetAttribute("Lifts", #Config.Lifts)
+	root.Parent = workspace
+	World.lobby = root
+end
+
+function World.lobbyCFrame(): CFrame
+	local root = World.lobby :: Model
+	local spawn = root:FindFirstChild("LobbySpawn") :: BasePart
+	return spawn.CFrame + Vector3.new(math.random(-3, 3), 3, math.random(-2, 2))
+end
+
 local function setLighting()
 	Lighting.Ambient = rgb(C.lighting_ambient)
 	Lighting.OutdoorAmbient = rgb(C.lighting_outdoor)
@@ -258,6 +488,7 @@ function World.init()
 	root:SetAttribute("Cameras", #cams:GetChildren())
 	root.Parent = workspace
 	World.root = root
+	World.buildLobby()
 	setLighting()
 end
 

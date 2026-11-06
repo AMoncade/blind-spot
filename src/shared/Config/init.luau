@@ -11,6 +11,9 @@ Config.Cameras = Content.Cameras
 Config.Map = Content.Map
 Config.Nights = Content.Nights
 Config.Rounds = Content.Rounds
+Config.LobbyMap = Content.LobbyMap
+Config.Lifts = Content.Lifts
+Config.LobbyProps = Content.LobbyProps
 
 Config.cameraById = {} :: { [string]: typeof(Content.Cameras[1]) }
 for _, cam in Content.Cameras do

@@ -9,8 +9,11 @@ if _G.BS_LOADING and os.clock() - _G.BS_LOADING < 60 then
 end
 _G.BS_LOADING = os.clock()
 
+-- the Studio MCP may switch HttpEnabled; the Ropilot plugin can't (and doesn't need to): try, never fail on it
 local wasEnabled = HttpService.HttpEnabled
-HttpService.HttpEnabled = true
+pcall(function()
+	HttpService.HttpEnabled = true
+end)
 local BASE = "http://127.0.0.1:34896/"
 local function get(path)
 	return HttpService:GetAsync(BASE .. path .. "?t=" .. os.clock(), true)
@@ -52,7 +55,9 @@ local ok, result = pcall(function()
 	return count .. " instances"
 end)
 
-HttpService.HttpEnabled = wasEnabled
+pcall(function()
+	HttpService.HttpEnabled = wasEnabled
+end)
 _G.BS_LOADING = nil
 if not ok then
 	error("studio-load: " .. tostring(result))

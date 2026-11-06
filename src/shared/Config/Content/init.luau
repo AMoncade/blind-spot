@@ -3,6 +3,9 @@
 return {
 	Cameras = require(if script then script:WaitForChild("Cameras") else "@self/Cameras"),
 	Constants = require(if script then script:WaitForChild("Constants") else "@self/Constants"),
+	Lifts = require(if script then script:WaitForChild("Lifts") else "@self/Lifts"),
+	LobbyMap = require(if script then script:WaitForChild("LobbyMap") else "@self/LobbyMap"),
+	LobbyProps = require(if script then script:WaitForChild("LobbyProps") else "@self/LobbyProps"),
 	Map = require(if script then script:WaitForChild("Map") else "@self/Map"),
 	Nights = require(if script then script:WaitForChild("Nights") else "@self/Nights"),
 	Rounds = require(if script then script:WaitForChild("Rounds") else "@self/Rounds"),

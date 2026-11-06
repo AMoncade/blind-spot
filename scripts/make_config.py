@@ -101,16 +101,29 @@ def build():
          "vfov": num(r["vfov"]), "range": num(r["range"]), "always": flag(r["always"])}
         for r in rows("cameras.csv")])
 
-    blocks = []
-    for r in rows("map_p3.csv"):
-        count = int(r["count"])
-        for i in range(count):
-            blocks.append({
-                "id": r["id"] if count == 1 else f"{r['id']}{i + 1}", "kind": r["kind"],
-                "x": num(r["x"]) + i * num(r["step_x"]), "y": num(r["y"]), "z": num(r["z"]),
-                "sx": num(r["sx"]), "sy": num(r["sy"]), "sz": num(r["sz"]),
-                "occludes": flag(r["occludes"]), "blocks": flag(r["blocks"])})
-    mods["Map"] = ("map_p3.csv", blocks)
+    def blocks(name):
+        out = []
+        for r in rows(name):
+            count = int(r["count"])
+            for i in range(count):
+                out.append({
+                    "id": r["id"] if count == 1 else f"{r['id']}{i + 1}", "kind": r["kind"],
+                    "x": num(r["x"]) + i * num(r["step_x"]), "y": num(r["y"]), "z": num(r["z"]),
+                    "sx": num(r["sx"]), "sy": num(r["sy"]), "sz": num(r["sz"]),
+                    "occludes": flag(r["occludes"]), "blocks": flag(r["blocks"])})
+        return out
+
+    mods["Map"] = ("map_p3.csv", blocks("map_p3.csv"))
+    mods["LobbyMap"] = ("map_lobby.csv", blocks("map_lobby.csv"))
+
+    mods["Lifts"] = ("lifts.csv", [
+        {"id": r["id"], "label": r["label"], "x": num(r["x"]), "y": num(r["y"]), "z": num(r["z"])}
+        for r in rows("lifts.csv")])
+
+    mods["LobbyProps"] = ("lobby_props.csv", [
+        {"id": r["id"], "model": r["model"], "x": num(r["x"]), "y": num(r["y"]), "z": num(r["z"]),
+         "yaw": num(r["yaw"])}
+        for r in rows("lobby_props.csv")])
 
     mods["Rounds"] = ("rounds.csv", [
         {"id": r["id"], "label": r["label"], "x": num(r["x"]), "y": num(r["y"]), "z": num(r["z"])}

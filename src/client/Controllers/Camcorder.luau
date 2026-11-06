@@ -174,6 +174,9 @@ local function setRaised(raised: boolean)
 end
 
 function Camcorder.toggle()
+	if not State.shift and not Camcorder.raised then
+		return -- the camcorder is handed out in the booth, not in the lobby
+	end
 	setRaised(not Camcorder.raised)
 end
 
@@ -202,6 +205,13 @@ local function touchButton()
 	round.Parent = button
 	button.Parent = screen
 	button.Activated:Connect(Camcorder.toggle)
+	screen.Enabled = State.shift
+	State.on("Shift", function(onShift: boolean)
+		screen.Enabled = onShift
+		if not onShift then
+			setRaised(false)
+		end
+	end)
 	screen.Parent = player:WaitForChild("PlayerGui")
 end
 

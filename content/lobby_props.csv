@@ -1,0 +1,7 @@
+id,model,x,y,z,yaw,note
+Desk,SecurityDesk,-31.5,0,140,90,the Kestrel & Vane check-in desk and its monitor wall (faces the hall: +x)
+Board,NoticeBoard,35.85,2.8,140,-90,missing guards and the night rules (faces -x)
+BenchN,Bench,26,0,149,-90,
+BenchS,Bench,26,0,131,-90,
+LampW,StreetLamp,-22,0,166,0,street lamp outside the glass (its arm over the street)
+LampE,StreetLamp,22,0,166,0,

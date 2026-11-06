@@ -70,7 +70,7 @@ function Hud.start()
 	end
 
 	State.on("Night", function(night: any)
-		if night then
+		if night and State.shift then
 			show("NIGHT " .. night.night, "Stay on camera.", 4)
 		end
 	end)
@@ -87,6 +87,7 @@ function Hud.start()
 			local h, m = Timeline.clock(State.night, t, C.night_clock_start, C.night_clock_end)
 			watch.Text = string.format("%d:%02d AM", if h == 0 then 12 else h, m)
 		end
+		watch.Visible, rounds.Visible = State.shift, State.shift
 		local showTitle = os.clock() < titleUntil
 		title.Visible, sub.Visible = showTitle, showTitle
 		dot.Visible = Settings.get("RecDot") == true and State.filmed and not State.dead
