@@ -1,0 +1,13 @@
+id,zone,x,y,z,tx,ty,tz,hfov,vfov,range,always,note
+C01,post,-58.5,9,31,-53,0,21,90,70,24,1,booth: the desk and the lockers
+C02,post,-48.6,9,16.4,-56,0,27,90,70,24,1,booth: the door side
+C03,west,-59.2,9,-8,-30,0,2,62,42,50,0,west wall down the aisle
+C04,east,59.2,9,8,30,0,-2,62,42,50,0,east wall down the aisle
+C05,west,-24,9,-11.6,-29,0,22,70,48,42,0,pillar: north stalls west
+C06,east,24,9,-11.6,30,0,22,70,48,42,0,pillar: north stalls east
+C07,west,0,9,11.6,-14,0,-26,70,48,44,0,pillar: south stalls centre
+C08,east,48,9,11.6,28,0,-24,70,48,44,0,pillar: south stalls east
+C09,west,-48,9,-14.4,-42,0,-26,70,48,30,0,pillar: south stalls west
+C10,corridor,-57.5,9,-37.5,-8,1,-37.5,46,34,56,0,service corridor from the west
+C11,corridor,57.5,9,-37.5,8,1,-37.5,46,34,56,0,service corridor from the east
+C12,east,59.2,9,30.5,50,0,22,70,48,34,0,north east corner

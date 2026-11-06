@@ -42,6 +42,17 @@ Pièges de Break a Gem qui toucheront ce jeu aussi :
 - Python écrit en CRLF sur le PC Windows d'Adrien : écrire les fichiers avec `newline="\n"`.
 - Avec les réglages d'export FBX de Break a Gem, Blender (x, y, z) arrive dans Roblox en (−x, z, y) : vérifier les axes et l'échelle sur le premier modèle.
 
+## Code, porte et Studio
+
+- Lire d'abord [`docs/WORKLOG.md`](docs/WORKLOG.md) (ce qui a été fait, dans l'ordre) et [`docs/DECISIONS.md`](docs/DECISIONS.md) (les choix tranchés). Ajouter une entrée au WORKLOG quand une tâche est finie, puis commiter.
+- **Arbre :** `src/shared` (ReplicatedStorage.Shared : `Config`, `Logic`, `Net`), `src/server` (ServerScriptService.Server : `Core`, `Services`), `src/client` (StarterPlayerScripts.Client : `State`, `Settings`, `Controllers`). `--!strict` partout ; les modules partagés font `require(if script then ... else "./chemin")` pour que les specs Lune les chargent.
+- **Les chiffres :** `content/*.csv`, puis `py scripts/make_config.py` écrit `src/shared/Config/Content/` (jamais à la main).
+- **La logique** des champs, de l'ombre, de la nuit et du directeur est pure (`src/shared/Logic`) et testée par `tests/*.spec.luau`. `lune run tools/sim/fieldmap [C03 C10 ...]` dessine les champs du P3 en ASCII (`#` solide, `.` filmé, blanc = angle mort).
+- **La porte :** `./scripts/check.sh` (StyLua, Selene, config à jour, specs, build Rojo, manifeste) doit finir sur CHECK OK.
+- **Charger dans Studio sans Rojo :** `py scripts/manifest.py`, `py scripts/serve.py` en arrière-plan (port 34896 ; 34893-34894 sont à Break a Gem, 34895 à Roll an Anomaly), puis en Edit : `return loadstring(game:GetService("HttpService"):GetAsync("http://127.0.0.1:34896/scripts/studio-load.luau?t=" .. os.clock(), true))()`. Ou ouvrir `build/BlindSpot.rbxl` que la porte construit.
+- **En jeu, dans Studio :** F6 peint le sol (vert filmé, rouge angle mort), F7 passe à la phase suivante, F8 joue la nuit suivante. Le P3 gris se construit au démarrage du serveur depuis `content/map_p3.csv` (et supprime la Baseplate du gabarit).
+- **À régler à la main dans Studio** (aucun script ne peut le faire) : Lighting.LightingStyle Realistic et PrioritizeLightingQuality.
+
 ## Où on en est (6 novembre 2026)
 
-Le plan et la recherche sont faits. Roll an Anomaly passe d'abord (lancement le 24 novembre). Ensuite : la phase 0, la preuve de la peur (plan, section 12) : le calcul des champs de caméra, l'Invisible de base, le cycle du courant, le contrôleur en première personne et une salle réaliste testée sur un vrai téléphone. Les décisions ouvertes pour Adrien sont à la section 13 du plan.
+Le code de la phase 0 est écrit et passe la porte, mais n'a pas encore été joué dans Studio : grille et champs de caméra, l'Invisible et son directeur, le cycle du courant, la première personne, le caméscope, le P3 en blocs gris, la mort et l'outil qui peint le sol (`docs/WORKLOG.md`). Reste pour finir la phase 0 : le premier playtest, les sons, la travée en art final dans Blender et le test sur un vrai téléphone. Roll an Anomaly passe d'abord (lancement le 24 novembre). Les décisions ouvertes pour Adrien sont à la section 13 du plan.

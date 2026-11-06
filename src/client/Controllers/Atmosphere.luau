@@ -1,0 +1,151 @@
+--!strict
+-- The lights of the power cycle (plan sections 2, 3 and 11, AtmosphereController), drawn from the night's timeline and
+-- the server clock, so every player sees the same tube die at the same moment:
+--   LIVE: the tubes hum, every camera shows its REC LED;
+--   FLICKER: the tubes stutter (never more than 3 flashes a second; with Reduce flashes they dim instead) and only the
+--     cameras that will hold keep their LED;
+--   BLACKOUT: the tubes are dead; the exit signs, the booth and the holdouts' blinking LEDs are the only glows.
+-- Tubes also sputter when the Unseen passes under them (plan section 4, his signs).
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local Level = require(script.Parent.Parent:WaitForChild("Level"))
+local State = require(script.Parent.Parent:WaitForChild("State"))
+local Settings = require(script.Parent.Parent:WaitForChild("Settings"))
+
+local C = Config.C
+
+local Atmosphere = {}
+
+local OFF_COLOR = Color3.fromRGB(70, 74, 78)
+local SPUTTER_RADIUS = 9
+
+type Tube = { part: BasePart, light: SurfaceLight, zone: string, state: number, hash: number }
+type Cam = { id: string, led: BasePart, always: boolean, state: boolean? }
+
+local tubes: { Tube } = {}
+local cams: { Cam } = {}
+local onColor: Color3
+
+-- a fixed pseudo-random number in [0, 1) for (a, b, c): the same on every client
+local function noise(a: number, b: number, c: number): number
+	local v = math.sin(a * 12.9898 + b * 78.233 + c * 37.719) * 43758.5453
+	return v - math.floor(v)
+end
+
+local function stringHash(s: string): number
+	local h = 0
+	for k = 1, #s do
+		h = (h * 31 + string.byte(s, k)) % 1000003
+	end
+	return h
+end
+
+-- 1 = on, 0 = off, between = dimmed
+local function setTube(t: Tube, level: number)
+	if t.state == level then
+		return
+	end
+	t.state = level
+	t.light.Enabled = level > 0
+	t.light.Brightness = C.tube_brightness * level
+	t.part.Material = if level > 0 then Enum.Material.Neon else Enum.Material.SmoothPlastic
+	t.part.Color = if level > 0 then onColor:Lerp(OFF_COLOR, 1 - level) else OFF_COLOR
+end
+
+local function setLed(cam: Cam, on: boolean)
+	if cam.state == on then
+		return
+	end
+	cam.state = on
+	cam.led.Material = if on then Enum.Material.Neon else Enum.Material.SmoothPlastic
+	cam.led.Color = if on then Color3.fromRGB(Config.rgb(C.rec_color)) else Color3.fromRGB(30, 10, 10)
+end
+
+-- a stutter step: on or off for a slot of at least flicker_min_interval seconds (3 flashes a second at most)
+local function stutter(seed: number, key: number, t: number): boolean
+	local slot = math.floor(t / C.flicker_min_interval)
+	return noise(seed, key, slot) > 0.45
+end
+
+local function collect()
+	for _, p in Level.folder("Lights"):GetChildren() do
+		if p:IsA("BasePart") and p:GetAttribute("Kind") == "tube" then
+			local light = p:FindFirstChildOfClass("SurfaceLight")
+			if light then
+				table.insert(tubes, {
+					part = p,
+					light = light,
+					zone = p:GetAttribute("Zone") or "",
+					state = -1,
+					hash = stringHash(p.Name),
+				})
+			end
+		end
+	end
+	for _, model in Level.folder("Cameras"):GetChildren() do
+		local head = model:FindFirstChild("Head")
+		local led = model:FindFirstChild("Led")
+		if head and led and led:IsA("BasePart") then
+			table.insert(cams, { id = model.Name, led = led, always = model:GetAttribute("Always") == true })
+		end
+	end
+end
+
+local function update()
+	local t, seg = State.now()
+	local phase = if seg then seg.phase else "LIVE"
+	local holdouts: { [string]: boolean } = {}
+	if seg and seg.holdouts then
+		for _, id in seg.holdouts do
+			holdouts[id] = true
+		end
+	end
+	local seed = if State.night then State.night.seed % 100000 else 0
+	local reduce = Settings.get("ReduceFlashes") == true
+	local u = State.unseen
+	local blink = math.floor(os.clock() * C.rec_blink_hz * 2) % 2 == 0
+
+	for _, tube in tubes do
+		local level = 1
+		if phase == "BLACKOUT" then
+			level = 0
+		elseif phase == "FLICKER" then
+			if reduce then
+				level = C.flicker_reduced_dim
+			else
+				level = if stutter(seed, tube.hash % 7, t) then 1 else 0
+			end
+		end
+		if level > 0 and u.present then
+			local p = tube.part.Position
+			if (p.X - u.x) ^ 2 + (p.Z - u.z) ^ 2 < SPUTTER_RADIUS * SPUTTER_RADIUS then
+				if reduce then
+					level = math.min(level, C.flicker_reduced_dim)
+				elseif not stutter(seed + 17, tube.hash, os.clock()) then
+					level = 0
+				end
+			end
+		end
+		setTube(tube, level)
+	end
+
+	for _, cam in cams do
+		local on = true
+		if phase == "FLICKER" then
+			on = cam.always or holdouts[cam.id] == true
+		elseif phase == "BLACKOUT" then
+			on = (cam.always or holdouts[cam.id] == true) and (blink or reduce)
+		end
+		setLed(cam, on)
+	end
+end
+
+function Atmosphere.start()
+	onColor = Color3.fromRGB(Config.rgb(C.tube_color))
+	collect()
+	RunService.Heartbeat:Connect(update)
+end
+
+return Atmosphere

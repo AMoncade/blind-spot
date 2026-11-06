@@ -1,0 +1,31 @@
+id,kind,x,y,z,sx,sy,sz,count,step_x,occludes,blocks,note
+Floor,floor,0,-0.5,-5,122,1,76,1,0,0,0,P3 slab
+Ceiling,ceiling,0,10.5,-5,122,1,76,1,0,0,0,
+WallN,wall,0,5,32.5,122,10,1,1,0,1,1,north wall
+WallW,wall,-60.5,5,-5,1,10,76,1,0,1,1,west wall (the ramp to P2 comes later)
+WallE,wall,60.5,5,-5,1,10,76,1,0,1,1,east wall
+WallS1,wall,-52,5,-32.5,16,10,1,1,0,1,1,aisle side of the service corridor
+WallS2,wall,0,5,-32.5,80,10,1,1,0,1,1,
+WallS3,wall,52,5,-32.5,16,10,1,1,0,1,1,
+WallC,wall,0,5,-42.5,122,10,1,1,0,1,1,outer wall of the corridor
+BoothE,wall,-47.5,5,24,1,10,16,1,0,1,1,security booth
+BoothS,wall,-56,5,15.5,8,10,1,1,0,1,1,booth front: the door is x -52 to -48
+BoothDesk,desk,-56,1.5,29.5,6,3,3,1,0,1,1,monitors and log book
+PillarS,pillar,-48,5,-13,2.5,10,2.5,5,24,1,1,south pillar line
+PillarN,pillar,-24,5,13,2.5,10,2.5,4,24,1,1,north pillar line (the booth replaces the west one)
+CarN1,car,-36,2.5,24,6.5,5,15,1,0,1,1,
+CarN2,car,-6,2.5,24,6.5,5,15,1,0,1,1,
+CarN3,car,18,2.5,24,6.5,5,15,1,0,1,1,
+CarN4,car,42,2.5,24,6.5,5,15,1,0,1,1,
+CarS1,car,-30,2.5,-24,6.5,5,15,1,0,1,1,
+CarS2,car,6,2.5,-24,6.5,5,15,1,0,1,1,
+CarS3,car,36,2.5,-24,6.5,5,15,1,0,1,1,
+TubeAisle,tube,-48,9.7,0,4,0.3,0.6,9,12,0,0,fluorescent tubes over the aisle
+TubeN,tube,-24,9.7,24,4,0.3,0.6,4,24,0,0,
+TubeS,tube,-36,9.7,-24,4,0.3,0.6,4,24,0,0,
+TubeC,tube,-48,9.7,-37.5,4,0.3,0.6,5,24,0,0,service corridor
+BoothLamp,post,-53,9.4,24,1.5,0.4,1.5,1,0,0,0,amber booth light: never goes out
+ExitW,exit,-42,8.2,-32,2.2,0.8,0.25,1,0,0,0,corridor door west
+ExitE,exit,42,8.2,-32,2.2,0.8,0.25,1,0,0,0,corridor door east
+ExitStairs,exit,60,8.2,-20,0.25,0.8,2.2,1,0,0,0,stairs door
+Spawn,spawn,-53,0.5,22,6,1,6,1,0,0,0,the booth: always filmed

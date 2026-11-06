@@ -1,0 +1,23 @@
+# Décisions
+
+Les choix tranchés, avec leur raison. Les décisions ouvertes pour Adrien sont à la section 13 du plan.
+
+## Les champs se calculent sur les boîtes de la config, pas par des rayons Roblox (6 novembre 2026)
+
+Le serveur ne lance aucun `workspace:Raycast` pour savoir ce qui est filmé : chaque boîte de `content/map_p3.csv` qui a `occludes` arrête les rayons, dans un test segment-boîte en Luau pur (`Logic/Grid.segmentHits`). Ces boîtes sont aussi les collisions invisibles que l'art final gardera (CLAUDE.md : les Parts servent aux collisions). Ainsi les specs Lune, le futur simulateur de 1 000 nuits et le serveur calculent exactement les mêmes champs, et un modèle Blender plus détaillé ne change jamais une règle.
+
+## Une case est filmée dès qu'un seul de ses points est vu (6 novembre 2026)
+
+Chaque case est testée au centre et à quatre coins rentrés de 0,4 stud, à 0,5, 3 et 6,5 studs du sol (6,5 couvre la tête de l'Invisible de 8,5 studs). Un seul point vu suffit. Un joueur compte comme filmé si une case filmée touche son cercle de 1,5 stud plus 1 stud de marge de lag. Le doute profite au joueur, et l'Invisible ne peut se tenir nulle part où un bout de lui serait à l'image.
+
+## Le caméscope est placé par le serveur (6 novembre 2026)
+
+Le client n'envoie que « levé » et sa direction (lacet, tangage) dix fois par seconde. Le serveur place l'œil à la tête du personnage, limite la rotation à 540° par seconde et tient la batterie. Le caméscope teste seulement le centre des cases, à deux hauteurs, pour rester léger à quatre joueurs.
+
+## Les néons clignotent par créneaux de 0,34 s minimum (6 novembre 2026)
+
+Le motif du FLICKER est tiré du temps du serveur et de la graine de la nuit, donc identique chez tous les joueurs, et chaque état dure au moins 0,34 s : jamais plus de 3 flashs par seconde (WCAG 2.3.1). Avec « Réduire les flashs », les néons baissent au lieu de clignoter et les LED ne clignotent plus.
+
+## Phase 0 : la nuit 3 en boucle, réveil au poste (6 novembre 2026)
+
+Pour la preuve de la peur, le serveur joue la nuit 3 (les premiers blackouts) dès qu'un joueur est là, puis recommence. Une mort fige le joueur 2,2 s et le réveille au poste ; la reprise à la dernière tâche, la paie et la sauvegarde viennent en phase 1.

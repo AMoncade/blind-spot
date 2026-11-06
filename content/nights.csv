@@ -1,0 +1,6 @@
+night,length,flicker,blackout,live_start,live_end,flicker_start,flicker_end,blackout_start,blackout_end,false_alarm_every,holdouts_min,holdouts_max,note
+1,720,0,0,90,50,8,5,15,45,5,1,3,an ordinary night shift: no blackout
+2,780,1,0,90,50,8,5,15,45,1,1,3,the first FLICKERs: every one is a false alarm
+3,900,1,1,90,50,8,5,15,45,5,1,3,the first blackouts
+4,960,1,1,80,45,7,5,20,45,5,1,2,cut cables (later)
+5,1080,1,1,70,40,6,4,25,45,6,1,2,the finale

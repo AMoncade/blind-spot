@@ -1,0 +1,95 @@
+key,value,note
+grid_cell,2,side of a WatchService cell in studs (plan section 11)
+grid_origin_x,-60,west edge of the P3 grid
+grid_origin_z,-42,south edge of the P3 grid
+grid_width,60,cells along x
+grid_depth,38,cells along z
+floor_y,0,top of the P3 floor slab
+sample_heights,0.5;3;6.5,heights above the floor a camera tests in a cell: any one seen and the cell is filmed (the doubt goes to the player)
+sample_inset,0.4,how far inside the cell corners the corner samples sit
+block_pad,0.6,cells whose centre is this close to a solid box are walls for the Unseen
+player_radius,1.5,a player covers every cell within this radius of their feet
+edge_margin,1,extra radius for lag: a player at the edge of a field counts as filmed
+unwatched_grace,0.4,seconds a player must be off camera before the Unseen can touch them
+unseen_height,8.5,the grey silhouette height
+unseen_contact,3.2,the Unseen kills within this distance (studs)
+unseen_tick,0.1,seconds between Unseen steps on the server
+unseen_repath,0.3,seconds between path searches
+unseen_speed_prowl,6,studs per second in LIVE
+unseen_speed_approach,9,studs per second in FLICKER
+unseen_speed_hunt,12.5,studs per second in BLACKOUT
+unseen_speed_retreat,10,studs per second while the director gives the players a break
+unseen_keep_distance_live,16,in LIVE he stays at least this far from every player
+unseen_hold_distance_flicker,9,in FLICKER he stops this far from the most exposed player
+unseen_hush_lead,1.5,the sound dies this many seconds before he is in reach (plan section 4)
+unseen_return_min_distance,18,after vanishing he comes back at least this far from every player
+unseen_relief_seconds,25,break after a kill or a long chase (the director)
+unseen_chase_max,20,seconds of chase before the director calls a break
+hunt_distance_weight,0.35,BLACKOUT target score = seconds off camera + weight x cells from the nearest field
+unseen_broadcast,0.1,seconds between position updates to the clients
+camcorder_range,26,studs
+camcorder_hfov,55,degrees
+camcorder_vfov,40,degrees
+camcorder_battery,90,seconds of recording on a full battery (plan section 3)
+camcorder_rate,10,times per second the server computes a camcorder field
+camcorder_max_turn,540,degrees per second a camcorder may turn (anti cheat)
+camcorder_samples,1.5;5,heights a camcorder tests in a cell
+camcorder_eye_height,1.5,studs above the HumanoidRootPart the camcorder sits
+camcorder_max_offset,4,studs the client eye may sit from the server head before the server uses its own
+player_walk_speed,13,studs per second
+watch_broadcast,0.2,seconds between filmed-state checks sent to each client
+night_test,3,the night the server plays in phase 0
+night_start_delay,6,seconds from the first spawn to the night start
+night_clock_start,0,hour shown when the night starts (midnight)
+night_clock_end,6,hour shown when the night ends
+night_restart_delay,12,seconds between the end of a night and the next one (phase 0 loop)
+death_seconds,2.2,freeze and tape tear before the respawn (plan section 4)
+flicker_min_interval,0.34,never more than 3 flashes a second (WCAG 2.3.1)
+flicker_max_interval,0.9,longest gap between two flicker steps
+flicker_reduced_dim,0.35,with Reduce flashes the tubes dim to this instead of blinking
+rec_blink_hz,1,the REC LED and the REC dot blink once a second
+camera_turn_speed,35,degrees per second a camera turns toward a player it films
+camera_turn_max,40,degrees a camera may turn away from its rest aim
+fov_default,70,vertical field of view (degrees)
+fov_max,90,largest field of view in the settings
+headbob_default,0.6,head bob 0 to 1 (settings)
+headbob_amount,0.12,head bob height at 1 (studs)
+headbob_freq,0.55,head bob cycles per stud walked
+muffle_hz,1100,low-pass cutoff when the player is off camera
+muffle_seconds,0.6,how long the muffle sweep takes
+nv_brightness,0.3,camcorder night vision ColorCorrection Brightness
+nv_contrast,0.45,camcorder night vision ColorCorrection Contrast
+nv_tint,#9dffb0,camcorder night vision tint
+nv_exposure,1.6,camcorder night vision ExposureCompensation
+nv_light_range,40,camcorder IR SpotLight range
+nv_light_angle,60,camcorder IR SpotLight angle
+nv_light_brightness,1.4,camcorder IR SpotLight brightness
+lighting_ambient,#050607,Lighting.Ambient (underground: near black)
+lighting_outdoor,#0a0c0e,Lighting.OutdoorAmbient
+lighting_brightness,0,Lighting.Brightness (no sun underground)
+lighting_exposure,0,Lighting.ExposureCompensation
+lighting_specular,0.6,Lighting.EnvironmentSpecularScale (wet concrete)
+lighting_diffuse,0.1,Lighting.EnvironmentDiffuseScale
+grade_tint,#d8f0ec,cold green-blue grading of the parking (plan section 7)
+grade_saturation,-0.25,ColorCorrection Saturation
+grade_contrast,0.12,ColorCorrection Contrast
+grade_brightness,0,ColorCorrection Brightness
+bloom_intensity,0.4,Bloom Intensity
+bloom_size,24,Bloom Size
+bloom_threshold,1.6,Bloom Threshold
+tube_color,#dcefff,fluorescent tube light colour
+tube_brightness,1.6,SurfaceLight brightness of a tube
+tube_range,16,SurfaceLight range of a tube
+tube_angle,120,SurfaceLight angle of a tube
+post_color,#ffb36b,amber light of the security booth
+post_brightness,1.2,booth PointLight brightness
+post_range,14,booth PointLight range
+exit_color,#30ff6a,emergency exit signs
+exit_brightness,0.6,exit sign light brightness
+exit_range,8,exit sign light range
+rec_color,#ff2a2a,REC LED colour
+grey_concrete,#8a8c8e,grey box: floor and walls
+grey_pillar,#a3a5a8,grey box: pillars
+grey_car,#55595e,grey box: cars
+grey_desk,#6b5a48,grey box: booth desk
+unseen_color,#0b0b0d,grey box: the Unseen silhouette
