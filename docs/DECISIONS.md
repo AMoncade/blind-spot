@@ -29,3 +29,15 @@ Demande d'Adrien : un lobby où les gens lancent la partie, inspiré des autres 
 ## L'éclairage Realistic se règle par le plugin (6 novembre 2026)
 
 La recherche disait que LightingStyle et PrioritizeLightingQuality ne se règlent pas par script. Un script de jeu ne le peut pas, mais le plugin en Edit le peut : la place est en Realistic, priorité à la qualité, comme le demande le plan (section 7).
+
+## Les zones sûres se voient au sol (6 novembre 2026)
+
+Demande d'Adrien : afficher clairement où les caméras protègent. Le plan voulait tout dire sans interface (la caméra qui pivote, le silence) ; on garde ces signes et on ajoute une lueur au sol, calculée case par case avec les mêmes champs que le serveur, donc qui ne ment jamais, plus l'état ON CAMERA / BLIND SPOT en haut de l'écran. Les deux se coupent dans les réglages pour qui veut l'ancienne version. La lueur montre les cases du champ ; un garde compte comme filmé un peu au-delà (marge de lag), donc elle est du côté sûr.
+
+## Les tâches ont un effet sur la nuit (6 novembre 2026)
+
+Le générateur, le fusible de la caméra 07 : tant qu'ils ne sont pas faits, des caméras sont mortes et une zone est noire. Faire sa ronde rend donc le niveau plus sûr, et les objets à chercher sont mis dans des angles morts : le joueur doit sortir des champs pour gagner de la sécurité.
+
+## Les modèles Blender gardent les boîtes de la config (6 novembre 2026)
+
+Les piliers et les voitures sont des modèles Blender, mais les boîtes de `map_p3.csv` restent, invisibles, comme collisions et comme bloqueurs des rayons de caméra : les champs ne dépendent jamais du détail d'un modèle (voir « Les champs se calculent sur les boîtes de la config »).

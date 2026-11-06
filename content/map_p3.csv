@@ -29,3 +29,17 @@ ExitW,exit,-42,8.2,-32,2.2,0.8,0.25,1,0,0,0,corridor door west
 ExitE,exit,42,8.2,-32,2.2,0.8,0.25,1,0,0,0,corridor door east
 ExitStairs,exit,60,8.2,-20,0.25,0.8,2.2,1,0,0,0,stairs door
 Spawn,spawn,-53,0.5,22,6,1,6,1,0,0,0,the booth: always filmed
+GeneratorBlock,hidden,20,1.75,-40.75,5,3.5,2.4,1,0,1,1,collision under the generator model
+LockerBlock,hidden,-59.1,3.5,20,1.6,7,2.4,1,0,1,1,collision under the booth locker
+StallsN,stalls,-40.5,0.015,24,0.25,0.03,15,12,9,0,0,north row stall lines every 9 studs (2.5 m)
+StallsS,stalls,-58.5,0.015,-24,0.25,0.03,15,14,9,0,0,south row stall lines
+Dash,dash,-54,0.015,0,3,0.03,0.3,19,6,0,0,dashed yellow line down the aisle
+BandN,band,0,1.6,31.96,120,3.2,0.08,1,0,0,0,painted lower band on the north wall
+BandW,band,-59.96,1.6,-5,0.08,3.2,74,1,0,0,0,
+BandE,band,59.96,1.6,-5,0.08,3.2,74,1,0,0,0,
+BandS1,band,-52,1.6,-31.96,16,3.2,0.08,1,0,0,0,aisle side of the corridor wall
+BandS2,band,0,1.6,-31.96,80,3.2,0.08,1,0,0,0,
+BandS3,band,52,1.6,-31.96,16,3.2,0.08,1,0,0,0,
+BandC,band,0,1.6,-41.96,120,3.2,0.08,1,0,0,0,corridor outer wall
+PipesAisle,pipes,-48,8.5,-8,3.7,1.5,24,5,24,0,0,ceiling services over the aisle (PipeRun model)
+PipesCorridor,pipes,-48,8.5,-39.8,3.7,1.5,24,5,24,0,0,ceiling services in the corridor

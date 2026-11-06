@@ -78,47 +78,6 @@ end
 
 -- ---------------------------------------------------------------- SHOP
 
-local function viewfinderPreview(parent: Instance, item: any)
-	-- the camcorder's viewfinder in this item's colours: corner brackets, REC and the tape clock
-	local screen = Kit.new("Frame", {
-		Name = "Preview",
-		BackgroundColor3 = Color3.fromRGB(10, 14, 11),
-		BackgroundTransparency = 0,
-		Size = UDim2.new(1, -16, 0, 60),
-		Position = UDim2.new(0, 8, 0, 8),
-		Parent = parent,
-	})
-	local frame = Color3.fromRGB(Config.rgb(item.frame))
-	for _, a in { { 0, 0 }, { 1, 0 }, { 0, 1 }, { 1, 1 } } do
-		for _, horizontal in { true, false } do
-			Kit.new("Frame", {
-				BackgroundColor3 = frame,
-				BackgroundTransparency = 0,
-				AnchorPoint = Vector2.new(a[1], a[2]),
-				Position = UDim2.new(0.06 + a[1] * 0.88, 0, 0.1 + a[2] * 0.8, 0),
-				Size = if horizontal then UDim2.new(0.16, 0, 0, 2) else UDim2.new(0, 2, 0.24, 0),
-				Parent = screen,
-			})
-		end
-	end
-	Kit.text(screen, "● REC", {
-		FontFace = FONT.mono,
-		TextColor3 = Color3.fromRGB(Config.rgb(item.rec)),
-		TextXAlignment = Enum.TextXAlignment.Left,
-		Position = UDim2.new(0.12, 0, 0.18, 0),
-		Size = UDim2.new(0.5, 0, 0.26, 0),
-		Max = 14,
-	})
-	Kit.text(screen, "03:14", {
-		FontFace = FONT.mono,
-		TextColor3 = Color3.fromRGB(Config.rgb(item.text)),
-		TextXAlignment = Enum.TextXAlignment.Left,
-		Position = UDim2.new(0.12, 0, 0.58, 0),
-		Size = UDim2.new(0.4, 0, 0.24, 0),
-		Max = 14,
-	})
-end
-
 local function buildShop(gui: ScreenGui)
 	local root, body, close = Kit.window(gui, "Shop", "SUPPLY ROOM")
 	windows.Shop = root
@@ -153,24 +112,32 @@ local function buildShop(gui: ScreenGui)
 
 	for k, item in Config.Shop do
 		local card = Kit.plate(list, { Name = item.id, Size = UDim2.new(0, 156, 1, -10), LayoutOrder = k })
+		-- the item's illustration in a dark well; a viewfinder shows its two colours under it
+		local well = Kit.new("Frame", {
+			Name = "Well",
+			BackgroundColor3 = Color3.fromRGB(12, 11, 12),
+			BackgroundTransparency = 0,
+			Size = UDim2.new(1, -16, 0, 60),
+			Position = UDim2.new(0, 8, 0, 8),
+			Parent = card,
+		})
+		Kit.image(well, (ART :: any)[item.art] or ART.ShopIcon, {
+			Name = "Art",
+			Size = UDim2.new(1, 0, 1, 10),
+			Position = UDim2.new(0.5, 0, 0.5, -2),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+		})
 		if item.kind == "viewfinder" then
-			viewfinderPreview(card, item)
-		else
-			local badge = Kit.new("Frame", {
-				BackgroundColor3 = Color3.fromRGB(40, 30, 18),
-				BackgroundTransparency = 0,
-				Size = UDim2.new(1, -16, 0, 60),
-				Position = UDim2.new(0, 8, 0, 8),
-				Parent = card,
-			})
-			Kit.text(badge, if item.id == "vip" then "VIP" else "+25%", {
-				FontFace = FONT.title,
-				TextColor3 = COLOR.brass,
-				Size = UDim2.fromScale(0.8, 0.6),
-				Position = UDim2.fromScale(0.5, 0.5),
-				AnchorPoint = Vector2.new(0.5, 0.5),
-				Max = 34,
-			})
+			for n, hex in { item.frame, item.rec } do
+				Kit.new("Frame", {
+					BackgroundColor3 = Color3.fromRGB(Config.rgb(hex)),
+					BackgroundTransparency = 0,
+					AnchorPoint = Vector2.new(1, 1),
+					Position = UDim2.new(1, -4 - (n - 1) * 12, 1, -4),
+					Size = UDim2.fromOffset(9, 9),
+					Parent = well,
+				})
+			end
 		end
 		Kit.text(card, string.upper(item.name), {
 			FontFace = FONT.title,
@@ -414,9 +381,10 @@ local function buildSettings(gui: ScreenGui)
 	choices(1, "HEAD BOB", "HeadBob", C.settings_bob_steps, bobLabels)
 	choices(2, "FIELD OF VIEW", "FieldOfView", C.settings_fov_steps, fovLabels)
 	choices(3, "REDUCE FLASHES", "ReduceFlashes", { false, true }, { "OFF", "ON" })
-	choices(4, "REC DOT WHEN FILMED", "RecDot", { false, true }, { "OFF", "ON" })
+	choices(4, "CAMERA STATUS", "RecDot", { false, true }, { "OFF", "ON" })
+	choices(5, "SAFE ZONES ON FLOOR", "SafeZones", { false, true }, { "OFF", "ON" })
 
-	local codeRow = row(5, "CODE")
+	local codeRow = row(6, "CODE")
 	local box = Kit.new("TextBox", {
 		Name = "Code",
 		BackgroundColor3 = COLOR.paper,
@@ -641,6 +609,7 @@ function Menu.start()
 	player:GetAttributeChangedSignal("FieldOfView"):Connect(refresh)
 	player:GetAttributeChangedSignal("ReduceFlashes"):Connect(refresh)
 	player:GetAttributeChangedSignal("RecDot"):Connect(refresh)
+	player:GetAttributeChangedSignal("SafeZones"):Connect(refresh)
 	-- the daily countdown ticks
 	task.spawn(function()
 		while true do

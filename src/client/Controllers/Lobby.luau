@@ -68,17 +68,19 @@ function Lobby.start()
 	panel.AnchorPoint = Vector2.new(0.5, 1)
 	panel.Position = UDim2.new(0.5, 0, 1, -20)
 	panel.Size = UDim2.new(0, 340, 0, 136)
-	panel.BackgroundColor3 = THEME.panel
-	panel.BackgroundTransparency = 0.12
+	panel.BackgroundTransparency = 1
 	panel.BorderSizePixel = 0
 	panel.Visible = false
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 8)
-	corner.Parent = panel
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = THEME.outline
-	stroke.Thickness = 1.5
-	stroke.Parent = panel
+	Kit.new("ImageLabel", {
+		Name = "Plate",
+		Image = Kit.ART.DarkButton.Image,
+		ScaleType = Enum.ScaleType.Slice,
+		SliceCenter = Kit.ART.DarkButton.Slice,
+		SliceScale = 0.3,
+		Size = UDim2.fromScale(1, 1),
+		ZIndex = 0,
+		Parent = panel,
+	})
 	panel.Parent = gui
 
 	local title =

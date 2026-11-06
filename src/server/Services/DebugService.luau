@@ -13,6 +13,7 @@ local Actions = require(Server:WaitForChild("Core"):WaitForChild("Actions"))
 local WatchService = require(script.Parent:WaitForChild("WatchService"))
 local PowerDirector = require(script.Parent:WaitForChild("PowerDirector"))
 local NightService = require(script.Parent:WaitForChild("NightService"))
+local TaskService = require(script.Parent:WaitForChild("TaskService"))
 
 local DebugService = {}
 
@@ -68,8 +69,12 @@ local function toggleFloor()
 end
 
 function DebugService.init()
-	Actions.on("Debug", function(_player: Player, command: unknown)
+	Actions.on("Debug", function(player: Player, command: unknown, arg: unknown)
 		if not RunService:IsStudio() or type(command) ~= "string" then
+			return
+		end
+		if command == "task" and type(arg) == "string" then
+			TaskService.trigger(arg, player) -- as if the guard used that spot's prompt
 			return
 		end
 		if command == "floor" then

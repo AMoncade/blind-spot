@@ -125,13 +125,32 @@ def build():
          "yaw": num(r["yaw"])}
         for r in rows("lobby_props.csv")])
 
-    mods["Rounds"] = ("rounds.csv", [
-        {"id": r["id"], "label": r["label"], "x": num(r["x"]), "y": num(r["y"]), "z": num(r["z"])}
-        for r in rows("rounds.csv")])
+    mods["Spots"] = ("spots.csv", [
+        {"id": r["id"], "kind": r["kind"], "label": r["label"], "x": num(r["x"]), "y": num(r["y"]),
+         "z": num(r["z"]), "yaw": num(r["yaw"])}
+        for r in rows("spots.csv")])
+
+    def ids(s):
+        return [x for x in s.split(";") if x]
+
+    mods["Tasks"] = ("tasks.csv", [
+        {"id": r["id"], "kind": r["kind"], "label": r["label"], "item": r["item"], "pickup": ids(r["pickup"]),
+         "target": ids(r["target"]), "effect": ids(r["effect"]), "pay": num(r["pay"]), "hold": num(r["hold"])}
+        for r in rows("tasks.csv")])
+
+    mods["Signs"] = ("signs.csv", [
+        {"id": r["id"], "x": num(r["x"]), "y": num(r["y"]), "z": num(r["z"]), "yaw": num(r["yaw"]),
+         "flat": flag(r["flat"]), "w": num(r["w"]), "h": num(r["h"]), "text": r["text"], "color": r["color"],
+         "alpha": num(r["alpha"])}
+        for r in rows("signs.csv")])
+
+    mods["CarColors"] = ("car_colors.csv", [r["hex"] for r in rows("car_colors.csv")])
+
+    mods["Items"] = ("items.csv", [{"id": r["id"], "name": r["name"]} for r in rows("items.csv")])
 
     mods["Shop"] = ("shop.csv", [
         {"id": r["id"], "name": r["name"], "kind": r["kind"], "price": num(r["price"]),
-         "product": int(r["robux_product"]), "frame": r["frame"], "rec": r["rec"], "text": r["text"],
+         "product": int(r["robux_product"]), "art": r["art"], "frame": r["frame"], "rec": r["rec"], "text": r["text"],
          "blurb": r["blurb"]}
         for r in rows("shop.csv")])
 

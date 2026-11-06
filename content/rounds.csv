@@ -1,6 +1,0 @@
-id,label,x,y,z,note
-R1,Stall 14,-21,3.5,31.6,north wall between two cars
-R2,Stall 31,30,3.5,-31.6,south row behind the east car
-R3,Service corridor,0,3.5,-41.6,middle of the corridor
-R4,Stairs door,59.6,3.5,-14,east wall near the exit
-R5,Ramp gate,-59.6,3.5,-24,west wall south corner

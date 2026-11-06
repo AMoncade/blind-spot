@@ -15,7 +15,8 @@ local DEFAULTS: { [string]: any } = {
 	HeadBob = C.headbob_default,
 	FieldOfView = C.fov_default,
 	ReduceFlashes = false,
-	RecDot = false,
+	RecDot = true, -- the ON CAMERA / BLIND SPOT tag
+	SafeZones = true, -- the camera fields glow on the floor
 }
 
 function Settings.get(name: string): any

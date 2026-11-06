@@ -10,13 +10,27 @@ Config.C = Content.Constants
 Config.Cameras = Content.Cameras
 Config.Map = Content.Map
 Config.Nights = Content.Nights
-Config.Rounds = Content.Rounds
+Config.Spots = Content.Spots
+Config.Tasks = Content.Tasks
+Config.Items = Content.Items
+Config.Signs = Content.Signs
+Config.CarColors = Content.CarColors
 Config.LobbyMap = Content.LobbyMap
 Config.Lifts = Content.Lifts
 Config.LobbyProps = Content.LobbyProps
 Config.Shop = Content.Shop
 Config.Daily = Content.Daily
 Config.Codes = Content.Codes
+
+Config.spotById = {} :: { [string]: typeof(Content.Spots[1]) }
+for _, spot in Content.Spots do
+	Config.spotById[spot.id] = spot
+end
+
+Config.itemById = {} :: { [string]: typeof(Content.Items[1]) }
+for _, item in Content.Items do
+	Config.itemById[item.id] = item
+end
 
 Config.shopById = {} :: { [string]: typeof(Content.Shop[1]) }
 for _, item in Content.Shop do

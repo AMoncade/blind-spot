@@ -1,7 +1,7 @@
 --!strict
 -- The night (plan section 3). A shift starts when a lift leaves the lobby with its guards (LobbyService.launch): they
--- arrive in the P3's security booth, the power cycle runs to 6 h, the round checkpoints count, and at 6 AM everyone
--- goes back up to the lobby. Phase 0 plays Config.C.night_test; tasks, pay and saves come in phase 1.
+-- arrive in the P3's security booth, the power cycle runs to 6 h, the night's tasks (TaskService) are drawn, and at
+-- 6 AM everyone is paid and goes back up to the lobby. Phase 0 plays Config.C.night_test.
 -- A death (plan section 4, "La mort"): the guard freezes, the client plays the tape tear for death_seconds, then they
 -- wake up in the booth and the night goes on.
 local Players = game:GetService("Players")
@@ -18,6 +18,7 @@ local PowerDirector = require(script.Parent:WaitForChild("PowerDirector"))
 local UnseenService = require(script.Parent:WaitForChild("UnseenService"))
 local CamcorderService = require(script.Parent:WaitForChild("CamcorderService"))
 local Data = require(Server:WaitForChild("Core"):WaitForChild("Data"))
+local TaskService = require(script.Parent:WaitForChild("TaskService"))
 
 local C = Config.C
 
@@ -25,30 +26,11 @@ local NightService = {}
 
 local dead: { [Player]: boolean } = {}
 local playing: { [Player]: boolean } = {} -- the guards on this shift
-local done: { [string]: boolean } = {}
 local deaths = 0
 local diedThisShift: { [Player]: boolean } = {}
 local running = false
 local shift = 0 -- counts shifts, so a late return to the lobby never touches the next one
 local nightNumber = C.night_test
-
-local function roundsPayload(): (number, number, { string })
-	local ids = {}
-	for id in done do
-		table.insert(ids, id)
-	end
-	table.sort(ids)
-	return #ids, #Config.Rounds, ids
-end
-
-local function sendRounds(player: Player?)
-	local n, total, ids = roundsPayload()
-	if player then
-		Net.event():FireClient(player, "Rounds", n, total, ids)
-	else
-		Net.event():FireAllClients("Rounds", n, total, ids)
-	end
-end
 
 local function rootOf(player: Player): BasePart?
 	local character = player.Character
@@ -89,6 +71,7 @@ function NightService.kill(player: Player)
 	deaths += 1
 	diedThisShift[player] = true
 	CamcorderService.block(player, true)
+	TaskService.drop(player)
 	root.Anchored = true
 	Net.event():FireClient(player, "Death", C.death_seconds)
 	task.delay(C.death_seconds, function()
@@ -104,30 +87,21 @@ function NightService.kill(player: Player)
 	end)
 end
 
-local function resetRounds()
-	local root = World.root :: Model
-	for _, p in (root:WaitForChild("Rounds") :: Folder):GetChildren() do
-		local prompt = p:FindFirstChildOfClass("ProximityPrompt")
-		if prompt then
-			prompt.Enabled = true
-		end
-	end
-end
-
 local function endNight()
 	if not running then
 		return
 	end
 	running = false
 	PowerDirector.stop()
-	local n, total = roundsPayload()
+	local n, total, taskPay = TaskService.summary()
+	TaskService.clear()
 	local guards = {}
 	for player in playing do
 		table.insert(guards, player)
 	end
 	for _, player in guards do
-		-- the night's pay (plan section 3): the shift, the team's rounds, and a bonus for never being caught
-		local pay = C.pay_shift + C.pay_round * n + (if diedThisShift[player] then 0 else C.pay_no_death)
+		-- the night's pay (plan section 3): the shift, the team's tasks, and a bonus for never being caught
+		local pay = C.pay_shift + taskPay + (if diedThisShift[player] then 0 else C.pay_no_death)
 		Data.addPay(player, pay)
 		local profile = Data.get(player)
 		if profile then
@@ -140,10 +114,10 @@ local function endNight()
 			:FireClient(
 				player,
 				"NightEnd",
-				{ night = nightNumber, rounds = n, total = total, deaths = deaths, pay = pay }
+				{ night = nightNumber, tasks = n, total = total, deaths = deaths, pay = pay }
 			)
 	end
-	print(`[NightService] night {nightNumber} ended: {n}/{total} rounds, {deaths} deaths`)
+	print(`[NightService] night {nightNumber} ended: {n}/{total} tasks, {deaths} deaths`)
 	local ended = shift
 	task.delay(C.lobby_return_delay, function()
 		-- back up to the lobby
@@ -166,14 +140,14 @@ function NightService.launch(guards: { Player }, night: number?): boolean
 		return false
 	end
 	nightNumber = if night and Config.nightByNumber[night] then night else C.night_test
-	table.clear(done)
 	table.clear(playing)
 	table.clear(dead)
 	table.clear(diedThisShift)
 	deaths = 0
 	running = true
 	shift += 1
-	resetRounds()
+	local seed = os.time()
+	TaskService.reset(seed)
 	for k, player in guards do
 		playing[player] = true
 		-- side by side in the booth
@@ -181,8 +155,7 @@ function NightService.launch(guards: { Player }, night: number?): boolean
 		Net.event():FireClient(player, "Shift", true)
 	end
 	CamcorderService.reset()
-	PowerDirector.startNight(nightNumber, os.time())
-	sendRounds()
+	PowerDirector.startNight(nightNumber, seed)
 	print(`[NightService] night {nightNumber} started with {#guards} guard(s)`)
 	return true
 end
@@ -190,10 +163,11 @@ end
 function NightService.init()
 	UnseenService.onKill = NightService.kill
 	UnseenService.isPlaying = NightService.isPlaying
+	TaskService.isPlaying = NightService.isPlaying
 
 	Actions.on("Ready", function(player: Player)
 		PowerDirector.broadcast(player)
-		sendRounds(player)
+		TaskService.send(player)
 		Net.event():FireClient(player, "Shift", playing[player] == true)
 	end)
 
@@ -215,25 +189,7 @@ function NightService.init()
 	end)
 end
 
-local function wireRounds()
-	local root = World.root :: Model
-	for _, p in (root:WaitForChild("Rounds") :: Folder):GetChildren() do
-		local prompt = p:FindFirstChildOfClass("ProximityPrompt")
-		if prompt then
-			prompt.Triggered:Connect(function(player)
-				if not running or not playing[player] or dead[player] or done[p.Name] then
-					return
-				end
-				done[p.Name] = true
-				prompt.Enabled = false
-				sendRounds()
-			end)
-		end
-	end
-end
-
 function NightService.start()
-	wireRounds()
 	while true do
 		task.wait(0.5)
 		if running then

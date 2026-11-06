@@ -1,0 +1,14 @@
+id,kind,label,x,y,z,yaw,note
+R1,checkpoint,Stall 14,-21,3.2,31.85,180,wall reader on the north wall (faces south)
+R2,checkpoint,Stall 31,30,3.2,-31.85,0,south row behind the east car
+R3,checkpoint,Service corridor,0,3.2,-41.85,0,middle of the corridor
+R4,checkpoint,Stairs door,59.85,3.2,-14,-90,east wall near the exit
+R5,checkpoint,Ramp gate,-59.85,3.2,-24,90,west wall south corner
+FuelCan,fuelcan,Fuel can,56,0,-29,0,a blind spot in the south east corner
+Generator,generator,Generator,20,0,-40.75,0,against the corridor's outer wall
+Locker,locker,Booth locker,-59.1,0,20,90,in the booth: the fuses
+FuseBox07,fusebox,Fuse box C07,0,3.4,11.6,180,on the pillar under camera 07
+Tape1,tape,Lost tape,-8,0,-30.6,0,south stalls
+Tape2,tape,Lost tape,-44,0,28,0,north west stalls
+Tape3,tape,Lost tape,48,0,-40.8,0,corridor east
+VCR,vcr,Booth VCR,-56,3,29.5,180,on the booth desk

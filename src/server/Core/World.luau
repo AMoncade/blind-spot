@@ -1,13 +1,13 @@
 --!strict
 -- The P3 grey box (plan section 12, phase 0: "le P3 en blocs gris"), built from Config.Map at server start, plus the
--- security cameras from Config.Cameras, the round checkpoints from Config.Rounds and the lighting from Config.C.
+-- security cameras from Config.Cameras, the task spots from Config.Spots and the lighting from Config.C.
 -- Parts are allowed here only because this is the grey version (CLAUDE.md, "Blender d'abord"): the final art replaces
 -- each kind with Blender MeshParts and keeps these boxes as invisible collisions.
 --
 -- What the clients read:
 --   workspace.P3.Lights: tubes (Kind = "tube", Zone), the booth lamp (Kind = "post"), exit signs (Kind = "exit")
 --   workspace.P3.Cameras.<Id>: Model with Head (turns, has the LED) and attributes Id, Zone, Always
---   workspace.P3.Rounds.<Id>: the checkpoint parts with their ProximityPrompt (NightService answers them)
+--   workspace.P3.Spots.<Id>: the task spots with their ProximityPrompt (TaskService answers them)
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -55,19 +55,143 @@ local function folder(parent: Instance, name: string): Folder
 end
 
 local GEOMETRY_COLOR = {
-	floor = "grey_concrete",
-	ceiling = "grey_concrete",
-	wall = "grey_concrete",
+	floor = "p3_floor_color",
+	ceiling = "p3_ceiling_color",
+	wall = "p3_wall_color",
 	pillar = "grey_pillar",
 	car = "grey_car",
 	desk = "grey_desk",
 }
 
+-- kinds drawn by a Blender model from ServerStorage.LevelModels (a missing model falls back to the grey box)
+local MODEL_FOR: { [string]: string } = { pillar = "Pillar", car = "Sedan" }
+
+local function levelModel(name: string): Model?
+	local source = ServerStorage:FindFirstChild("LevelModels")
+	local model = source and source:FindFirstChild(name)
+	if model and model:IsA("Model") then
+		return model:Clone()
+	end
+	return nil
+end
+
+local function stringHash(s: string): number
+	local h = 0
+	for k = 1, #s do
+		h = (h * 31 + string.byte(s, k)) % 1000003
+	end
+	return h
+end
+
+local OSWALD = Font.new("rbxasset://fonts/families/Oswald.json", Enum.FontWeight.Bold)
+
+-- painted text on a surface: a transparent carrier part whose +Z face (Back) holds the text
+local function paint(
+	parent: Instance,
+	name: string,
+	cf: CFrame,
+	w: number,
+	h: number,
+	text: string,
+	color: Color3,
+	alpha: number
+)
+	local p = part(parent, name, cf, Vector3.new(w, h, 0.05), Color3.new(1, 1, 1), Enum.Material.SmoothPlastic)
+	p.Transparency = 1
+	p.CanCollide = false
+	p.CanQuery = false
+	p.CanTouch = false
+	p.CastShadow = false
+	local gui = Instance.new("SurfaceGui")
+	gui.Face = Enum.NormalId.Back
+	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+	gui.PixelsPerStud = 30
+	gui.LightInfluence = 1
+	local l = Instance.new("TextLabel")
+	l.BackgroundTransparency = 1
+	l.BorderSizePixel = 0
+	l.Size = UDim2.fromScale(1, 1)
+	l.FontFace = OSWALD
+	l.Text = text
+	l.TextColor3 = color
+	l.TextTransparency = alpha
+	l.TextScaled = true
+	l.Parent = gui
+	gui.Parent = p
+end
+
+-- the pillar's painted name (P3 · S1) on its four faces
+local function pillarLabel(parent: Instance, b: typeof(Config.Map[1]), cf: CFrame, size: Vector3)
+	local name = "P3 · " .. string.sub(b.id, 7, 7) .. (string.match(b.id, "%d+$") or "")
+	for k = 0, 3 do
+		local face = cf * CFrame.Angles(0, math.rad(90 * k), 0) * CFrame.new(0, 1.2, size.Z / 2 + 0.03)
+		paint(parent, b.id .. "Label" .. k, face, 2.2, 0.9, name, rgb("#1c1c1c"), 0.1)
+	end
+end
+
 local function buildBlock(root: Model, folders: { [string]: Folder }, b: typeof(Config.Map[1]))
 	local cf = CFrame.new(b.x, b.y, b.z)
 	local size = Vector3.new(b.sx, b.sy, b.sz)
 	local colorKey = GEOMETRY_COLOR[b.kind]
-	if colorKey then
+	local modelName = MODEL_FOR[b.kind]
+	local model = modelName and levelModel(modelName)
+	if model then
+		-- the Blender model stands where the box was; the box stays as its invisible collision and camera blocker
+		local p = part(folders.Geometry, b.id, cf, size, Color3.new(1, 1, 1), Enum.Material.SmoothPlastic)
+		p.Transparency = 1
+		p.CastShadow = false
+		p:SetAttribute("Kind", b.kind)
+		local index = tonumber(string.match(b.id, "%d+$")) or 0
+		local yaw = if b.kind == "car" and (index + #b.id) % 2 == 0 then 180 else 0
+		World.placeModel(model, Vector3.new(b.x, b.y - b.sy / 2, b.z), yaw)
+		if b.kind == "car" then
+			local color = rgb(Config.CarColors[(stringHash(b.id) % #Config.CarColors) + 1])
+			for _, d in model:GetDescendants() do
+				if d:IsA("BasePart") and (d.Name == "Body" or d.Name == "Roof") then
+					d.Color = color
+				end
+			end
+		elseif b.kind == "pillar" then
+			pillarLabel(folders.Dressing, b, cf, size)
+		end
+		model.Name = b.id
+		model.Parent = folders.Dressing
+	elseif b.kind == "pipes" then
+		local runs = levelModel("PipeRun")
+		if runs then
+			World.placeModel(runs, Vector3.new(b.x, b.y, b.z), 90)
+			runs.Name = b.id
+			runs.Parent = folders.Dressing
+		end
+	elseif b.kind == "stalls" or b.kind == "dash" then
+		local p = part(
+			folders.Dressing,
+			b.id,
+			cf,
+			size,
+			rgb(if b.kind == "stalls" then C.stall_line_color else C.dash_color),
+			Enum.Material.SmoothPlastic
+		)
+		p.CanCollide = false
+		p.CanQuery = false
+		p.CastShadow = false
+		p.Transparency = 0.15
+	elseif b.kind == "band" then
+		-- the painted lower band of a wall, with its yellow line on top
+		local p = part(folders.Dressing, b.id, cf, size, rgb(C.p3_band_color), Enum.Material.Concrete)
+		p.CanCollide = false
+		p.CanQuery = false
+		local line = part(
+			folders.Dressing,
+			b.id .. "Line",
+			cf * CFrame.new(0, b.sy / 2 + 0.12, 0),
+			Vector3.new(b.sx, 0.24, b.sz),
+			rgb(C.p3_band_line_color),
+			Enum.Material.SmoothPlastic
+		)
+		line.CanCollide = false
+		line.CanQuery = false
+	elseif colorKey then
 		local p = part(folders.Geometry, b.id, cf, size, rgb((C :: any)[colorKey]), Enum.Material.Concrete)
 		p:SetAttribute("Kind", b.kind)
 		if b.kind == "car" then
@@ -112,6 +236,11 @@ local function buildBlock(root: Model, folders: { [string]: Folder }, b: typeof(
 		light.Range = C.exit_range
 		light.Shadows = false
 		light.Parent = p
+	elseif b.kind == "hidden" then
+		-- an invisible collision under a Blender model (generator, locker): it also stops camera rays
+		local p = part(folders.Geometry, b.id, cf, size, Color3.new(1, 1, 1), Enum.Material.SmoothPlastic)
+		p.Transparency = 1
+		p.CastShadow = false
 	elseif b.kind == "spawn" then
 		-- where a guard wakes up in the booth: a marker, not a SpawnLocation (everyone spawns in the lobby)
 		local s = part(root, "Spawn", cf, size, Color3.new(1, 1, 1), Enum.Material.SmoothPlastic)
@@ -152,14 +281,22 @@ local function buildCamera(parent: Folder, cam: typeof(Config.Cameras[1]))
 	local led = part(
 		model,
 		"Led",
-		aim * CFrame.new(0.28, 0.32, -0.8),
-		Vector3.new(0.12, 0.12, 0.12),
+		aim * CFrame.new(0.28, 0.36, -0.8),
+		Vector3.one * C.rec_led_size,
 		rgb(C.rec_color),
 		Enum.Material.Neon
 	)
 	led.Shape = Enum.PartType.Ball
 	led.CanCollide = false
 	led.CastShadow = false
+	local glow = Instance.new("PointLight")
+	glow.Name = "Glow"
+	glow.Color = rgb(C.rec_color)
+	glow.Range = C.rec_glow_range
+	glow.Brightness = C.rec_glow_brightness
+	glow.Shadows = false
+	glow.Enabled = false -- the client lights it on the cameras that hold (Atmosphere)
+	glow.Parent = led
 	-- the lens and the LED hang on the head, so a client turning the head turns them too
 	for _, p in { lens, led } do
 		p.Anchored = false
@@ -174,24 +311,95 @@ local function buildCamera(parent: Folder, cam: typeof(Config.Cameras[1]))
 	model.Parent = parent
 end
 
-local function buildRound(parent: Folder, round: typeof(Config.Rounds[1]))
-	-- a wall checkpoint box with a scan prompt; NightService answers the prompt
-	local p = part(
-		parent,
-		round.id,
-		CFrame.new(round.x, round.y, round.z),
-		Vector3.new(1, 1.6, 1),
-		Color3.fromRGB(60, 70, 64),
-		Enum.Material.Metal
+-- The task spots (Config.Spots): the Blender model of their kind from ServerStorage.LevelModels when it is there
+-- (bottom centre on the spot, turned by yaw; a model faces +Z), else a stand-in box. Each spot has an invisible
+-- Anchor with the ProximityPrompt TaskService drives. Parts of a carried item have the attribute Item.
+local SPOT_LOOK: { [string]: { model: string, size: Vector3, color: Color3, item: boolean } } = {
+	checkpoint = {
+		model = "Checkpoint",
+		size = Vector3.new(1, 1.6, 0.35),
+		color = Color3.fromRGB(60, 70, 64),
+		item = false,
+	},
+	fuelcan = { model = "FuelCan", size = Vector3.new(1.2, 1.6, 0.8), color = Color3.fromRGB(170, 30, 24), item = true },
+	generator = {
+		model = "Generator",
+		size = Vector3.new(5, 3.5, 2.4),
+		color = Color3.fromRGB(70, 82, 60),
+		item = false,
+	},
+	locker = { model = "Locker", size = Vector3.new(2.4, 7, 1.6), color = Color3.fromRGB(80, 86, 92), item = false },
+	fusebox = {
+		model = "FuseBox",
+		size = Vector3.new(1.6, 2, 0.5),
+		color = Color3.fromRGB(150, 150, 140),
+		item = false,
+	},
+	tape = { model = "VHSTape", size = Vector3.new(0.9, 0.2, 0.55), color = Color3.fromRGB(20, 20, 22), item = true },
+	vcr = { model = "VCR", size = Vector3.new(2, 0.5, 1.5), color = Color3.fromRGB(30, 30, 32), item = false },
+}
+
+local function buildSpot(parent: Folder, spot: typeof(Config.Spots[1]))
+	local look = SPOT_LOOK[spot.kind]
+	if not look then
+		warn(`[World] unknown spot kind {spot.kind} ({spot.id})`)
+		return
+	end
+	local m = Instance.new("Model")
+	m.Name = spot.id
+	m:SetAttribute("Kind", spot.kind)
+	m:SetAttribute("Label", spot.label)
+	local base = CFrame.new(spot.x, spot.y, spot.z) * CFrame.Angles(0, math.rad(spot.yaw), 0)
+	local source = ServerStorage:FindFirstChild("LevelModels")
+	local model = source and source:FindFirstChild(look.model)
+	local height = look.size.Y
+	if model and model:IsA("Model") then
+		local clone = model:Clone()
+		World.placeModel(clone, Vector3.new(spot.x, spot.y, spot.z), spot.yaw)
+		height = clone:GetExtentsSize().Y
+		for _, d in clone:GetDescendants() do
+			if d:IsA("BasePart") then
+				d.Anchored = true
+				if look.item then
+					d:SetAttribute("Item", true)
+					d:SetAttribute("BaseTransparency", d.Transparency)
+					d.CanCollide = false
+				end
+			end
+		end
+		clone.Name = "Model"
+		clone.Parent = m
+	else
+		local p =
+			part(m, "StandIn", base * CFrame.new(0, look.size.Y / 2, 0), look.size, look.color, Enum.Material.Metal)
+		if look.item then
+			p:SetAttribute("Item", true)
+			p:SetAttribute("BaseTransparency", 0)
+			p.CanCollide = false
+		end
+	end
+	local anchor = part(
+		m,
+		"Anchor",
+		base * CFrame.new(0, math.min(height, 4) / 2 + 0.2, 0.6),
+		Vector3.new(0.4, 0.4, 0.4),
+		Color3.new(1, 1, 1),
+		Enum.Material.SmoothPlastic
 	)
-	p:SetAttribute("Label", round.label)
+	anchor.Transparency = 1
+	anchor.CanCollide = false
+	anchor.CanQuery = false
+	anchor.CanTouch = false
 	local prompt = Instance.new("ProximityPrompt")
-	prompt.ActionText = "Scan"
-	prompt.ObjectText = round.label
+	prompt.ObjectText = spot.label
+	prompt.ActionText = "Use"
 	prompt.HoldDuration = 1
 	prompt.MaxActivationDistance = 7
 	prompt.RequiresLineOfSight = false
-	prompt.Parent = p
+	prompt.Enabled = false
+	prompt.Parent = anchor
+	m.PrimaryPart = anchor
+	m.Parent = parent
 end
 
 -- The lobby (the Halloway's ground floor at night): its shell is plain slabs from Config.LobbyMap, its furniture and
@@ -471,17 +679,49 @@ function World.init()
 	local folders = {
 		Geometry = folder(root, "Geometry"),
 		Lights = folder(root, "Lights"),
+		Dressing = folder(root, "Dressing"),
 	}
 	for _, b in Config.Map do
 		buildBlock(root, folders, b)
+	end
+	for _, s in Config.Signs do
+		local cf = CFrame.new(s.x, s.y, s.z) * CFrame.Angles(0, math.rad(s.yaw), 0)
+		if s.flat then
+			cf *= CFrame.Angles(math.rad(-90), 0, 0) -- lying on the floor, text up
+		end
+		paint(folders.Dressing, s.id, cf, s.w, s.h, s.text, rgb(s.color), s.alpha)
+	end
+	-- the floor's stall numbers, at the aisle end of each stall
+	local stall = 0
+	for _, b in Config.Map do
+		if b.kind == "stalls" then
+			local nextX = b.x + C.stall_width
+			if nextX <= C.grid_origin_x + C.grid_width * C.grid_cell then
+				stall += 1
+				local side = if b.z > 0 then -1 else 1
+				local cf = CFrame.new(b.x + C.stall_width / 2, 0.03, b.z + side * (b.sz / 2 - 1.6))
+					* CFrame.Angles(0, if side < 0 then math.rad(180) else 0, 0) -- read from the aisle
+					* CFrame.Angles(math.rad(-90), 0, 0)
+				paint(
+					folders.Dressing,
+					"Stall" .. stall,
+					cf,
+					3,
+					1.6,
+					string.format("%02d", stall),
+					rgb(C.stall_line_color),
+					0.3
+				)
+			end
+		end
 	end
 	local cams = folder(root, "Cameras")
 	for _, cam in Config.Cameras do
 		buildCamera(cams, cam)
 	end
-	local rounds = folder(root, "Rounds")
-	for _, round in Config.Rounds do
-		buildRound(rounds, round)
+	local spots = folder(root, "Spots")
+	for _, spot in Config.Spots do
+		buildSpot(spots, spot)
 	end
 	-- the clients wait for every light and camera to stream in before they wire them (StreamingEnabled)
 	root:SetAttribute("Lights", #folders.Lights:GetChildren())

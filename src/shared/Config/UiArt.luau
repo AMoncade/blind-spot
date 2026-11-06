@@ -8,6 +8,16 @@ return {
 	InviteIcon = "rbxassetid://133724735124248", -- a walkie-talkie
 	SettingsIcon = "rbxassetid://126247523813152", -- a steel cog
 	PayIcon = "rbxassetid://72769391199119", -- a pay envelope
+	WatchIcon = "rbxassetid://99947872413250", -- a digital wristwatch (the night clock)
+	RoundsIcon = "rbxassetid://135897449096863", -- a clipboard checklist (the rounds)
+	-- shop items (content/shop.csv, column art), a second set in the same style
+	VfFactory = "rbxassetid://133342857866867",
+	VfSodium = "rbxassetid://135693604069269",
+	VfCold = "rbxassetid://126387297855702",
+	VfNightOps = "rbxassetid://90979840514536",
+	VfOldGuard = "rbxassetid://89113531459871",
+	VipBadge = "rbxassetid://124901545765408",
+	Overtime = "rbxassetid://113476037194681",
 	PlayButton = {
 		Image = "rbxassetid://134478442212601",
 		Pressed = "rbxassetid://115436200704149",

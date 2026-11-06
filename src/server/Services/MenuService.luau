@@ -33,6 +33,9 @@ local SETTINGS: { [string]: (any) -> boolean } = {
 	RecDot = function(v)
 		return type(v) == "boolean"
 	end,
+	SafeZones = function(v)
+		return type(v) == "boolean"
+	end,
 }
 
 local function notify(player: Player, text: string, good: boolean?)

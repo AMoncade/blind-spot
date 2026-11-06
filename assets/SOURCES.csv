@@ -4,3 +4,14 @@ SecurityDesk,mesh+texture,own (tools/blender/lobby_props.py; textures drawn in c
 NoticeBoard,mesh+texture,own (tools/blender/lobby_props.py; textures drawn in code),own work,,2026-11-06,,cork board: MISSING notice (grey silhouette) and rules
 Bench,mesh+texture,own (tools/blender/lobby_props.py; textures drawn in code),own work,,2026-11-06,,
 StreetLamp,mesh+texture,own (tools/blender/lobby_props.py; textures drawn in code),own work,,2026-11-06,,
+Pillar,mesh+texture,own (tools/blender/level_props.py; textures drawn in code),own work,,2026-11-06,,P3 column
+Sedan,mesh,own (tools/blender/level_props.py),own work,,2026-11-06,,generic car without any brand
+PipeRun,mesh+texture,own (tools/blender/level_props.py),own work,,2026-11-06,,
+Checkpoint,mesh+texture,own (tools/blender/level_props.py),own work,,2026-11-06,,
+Generator,mesh+texture,own (tools/blender/level_props.py),own work,,2026-11-06,,
+FuelCan,mesh+texture,own (tools/blender/level_props.py),own work,,2026-11-06,,
+Locker,mesh+texture,own (tools/blender/level_props.py),own work,,2026-11-06,,
+FuseBox,mesh+texture,own (tools/blender/level_props.py),own work,,2026-11-06,,
+VHSTape,mesh+texture,own (tools/blender/level_props.py),own work,,2026-11-06,,
+VCR,mesh+texture,own (tools/blender/level_props.py),own work,,2026-11-06,,
+UI art (2 sets),image,generated with Ropilot (style: 1990s night security office),generated for the game,,2026-11-06,see src/shared/Config/UiArt.luau,

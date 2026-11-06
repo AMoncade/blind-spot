@@ -52,16 +52,39 @@ function PowerDirector.phase(): string?
 	return seg and seg.phase
 end
 
-local function step()
+-- cameras out of order until a task fixes them (TaskService): never active, whatever the phase
+local broken: { [string]: boolean } = {}
+
+local function activeFor(seg: Timeline.Segment): { string }
+	local out = {}
+	for _, id in Timeline.active(seg, Config.Cameras) do
+		if not broken[id] then
+			table.insert(out, id)
+		end
+	end
+	return out
+end
+
+local function step(force: boolean?)
 	local t, seg, tl = PowerDirector.now()
 	if not seg or not tl then
 		return
 	end
 	local _, k = Timeline.at(tl, t)
-	if k ~= index then
+	if k ~= index or force then
+		local changedSegment = k ~= index
 		index = k
-		WatchService.setActive(Timeline.active(seg, Config.Cameras))
-		PowerDirector.changed:Fire(seg)
+		WatchService.setActive(activeFor(seg))
+		if changedSegment then
+			PowerDirector.changed:Fire(seg)
+		end
+	end
+end
+
+function PowerDirector.setBroken(ids: { [string]: boolean })
+	broken = table.clone(ids)
+	if timeline then
+		step(true)
 	end
 end
 
@@ -74,7 +97,9 @@ function PowerDirector.startNight(night: number, seed: number)
 	step()
 	PowerDirector.broadcast()
 	if not connection then
-		connection = RunService.Heartbeat:Connect(step)
+		connection = RunService.Heartbeat:Connect(function()
+			step()
+		end)
 	end
 end
 

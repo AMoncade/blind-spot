@@ -23,7 +23,7 @@ local OFF_COLOR = Color3.fromRGB(70, 74, 78)
 local SPUTTER_RADIUS = 9
 
 type Tube = { part: BasePart, light: SurfaceLight, zone: string, state: number, hash: number }
-type Cam = { id: string, led: BasePart, always: boolean, state: boolean? }
+type Cam = { id: string, led: BasePart, glow: PointLight?, always: boolean, state: string? }
 
 local tubes: { Tube } = {}
 local cams: { Cam } = {}
@@ -55,13 +55,18 @@ local function setTube(t: Tube, level: number)
 	t.part.Color = if level > 0 then onColor:Lerp(OFF_COLOR, 1 - level) else OFF_COLOR
 end
 
-local function setLed(cam: Cam, on: boolean)
-	if cam.state == on then
+-- glow: the holdouts' LEDs light the wall around them in FLICKER and BLACKOUT, so they can be found from afar
+local function setLed(cam: Cam, on: boolean, glow: boolean)
+	local key = (if on then "1" else "0") .. (if glow then "1" else "0")
+	if cam.state == key then
 		return
 	end
-	cam.state = on
+	cam.state = key
 	cam.led.Material = if on then Enum.Material.Neon else Enum.Material.SmoothPlastic
 	cam.led.Color = if on then Color3.fromRGB(Config.rgb(C.rec_color)) else Color3.fromRGB(30, 10, 10)
+	if cam.glow then
+		cam.glow.Enabled = on and glow
+	end
 end
 
 -- a stutter step: on or off for a slot of at least flicker_min_interval seconds (3 flashes a second at most)
@@ -89,7 +94,12 @@ local function collect()
 		local head = model:FindFirstChild("Head")
 		local led = model:FindFirstChild("Led")
 		if head and led and led:IsA("BasePart") then
-			table.insert(cams, { id = model.Name, led = led, always = model:GetAttribute("Always") == true })
+			table.insert(cams, {
+				id = model.Name,
+				led = led,
+				glow = led:FindFirstChildOfClass("PointLight"),
+				always = model:GetAttribute("Always") == true,
+			})
 		end
 	end
 end
@@ -152,9 +162,12 @@ local function update(dt: number)
 	local u = State.unseen
 	local blink = math.floor(os.clock() * C.rec_blink_hz * 2) % 2 == 0
 
+	local darkZones: { [string]: boolean } = (State.tasks and State.tasks.brokenLights) or {}
+	local deadCams: { [string]: boolean } = (State.tasks and State.tasks.brokenCams) or {}
 	for _, tube in tubes do
 		local level = 1
-		if phase == "BLACKOUT" then
+		-- BLACKOUT, or a zone whose generator isn't running yet: dark
+		if phase == "BLACKOUT" or (darkZones[tube.zone] and State.shift) then
 			level = 0
 		elseif phase == "FLICKER" then
 			if reduce then
@@ -178,12 +191,15 @@ local function update(dt: number)
 
 	for _, cam in cams do
 		local on = true
-		if phase == "FLICKER" then
-			on = cam.always or holdouts[cam.id] == true
+		local holds = cam.always or holdouts[cam.id] == true
+		if deadCams[cam.id] and State.shift then
+			on = false
+		elseif phase == "FLICKER" then
+			on = holds
 		elseif phase == "BLACKOUT" then
-			on = (cam.always or holdouts[cam.id] == true) and (blink or reduce)
+			on = holds and (blink or reduce)
 		end
-		setLed(cam, on)
+		setLed(cam, on, phase ~= "LIVE" and holds)
 	end
 end
 

@@ -4,6 +4,7 @@
 -- sends "raised, looking this way" 10 times a second; the server films, and runs the battery.
 -- The price: through the screen the Unseen is never visible (UnseenView hides him while Camcorder.raised).
 local ContextActionService = game:GetService("ContextActionService")
+local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -205,21 +206,49 @@ local function touchButton()
 	local screen = Instance.new("ScreenGui")
 	screen.Name = "CamcorderButton"
 	screen.ResetOnSpawn = false
-	local button = Instance.new("TextButton")
-	button.Name = "Raise"
-	button.AnchorPoint = Vector2.new(1, 1)
-	button.Position = UDim2.new(1, -24, 1, -150)
-	button.Size = UDim2.new(0, 64, 0, 64) -- 44 px minimum (CLAUDE.md, phone first)
-	button.BackgroundColor3 = Color3.fromRGB(20, 22, 24)
-	button.BackgroundTransparency = 0.3
-	button.Text = "REC"
-	button.FontFace = Kit.FONT.mono
-	button.TextColor3 = rgb(C.rec_color)
-	button.TextScaled = true
-	local round = Instance.new("UICorner")
-	round.CornerRadius = UDim.new(1, 0)
-	round.Parent = button
-	button.Parent = screen
+	screen.ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets
+	-- the camcorder you carry (the one equipped in the supply room), above the jump button: 84 px (44 minimum)
+	local button = Kit.new("ImageButton", {
+		Name = "Raise",
+		AnchorPoint = Vector2.new(1, 1),
+		Position = UDim2.new(1, -18, 1, -140),
+		Size = UDim2.fromOffset(84, 92),
+		Image = "",
+		AutoButtonColor = false,
+		Parent = screen,
+	}) :: ImageButton
+	local art = Kit.image(button, Kit.ART.VfFactory, {
+		Name = "Art",
+		Size = UDim2.fromOffset(78, 78),
+		Position = UDim2.new(0.5, 0, 0, 0),
+		AnchorPoint = Vector2.new(0.5, 0),
+	})
+	local plate = Kit.new("ImageLabel", {
+		Image = Kit.ART.DarkButton.Image,
+		ScaleType = Enum.ScaleType.Slice,
+		SliceCenter = Kit.ART.DarkButton.Slice,
+		SliceScale = 0.12,
+		AnchorPoint = Vector2.new(0.5, 1),
+		Position = UDim2.new(0.5, 0, 1, 0),
+		Size = UDim2.fromOffset(78, 22),
+		Parent = button,
+	})
+	local hint = Kit.text(plate, "● REC", {
+		FontFace = Kit.FONT.mono,
+		TextColor3 = rgb(C.rec_color),
+		Size = UDim2.new(0.86, 0, 0.74, 0),
+		Position = UDim2.fromScale(0.5, 0.5),
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Max = 14,
+	})
+	local function look()
+		local profile = State.profile
+		local item = Config.shopById[profile and profile.viewfinder or "vf_classic"] or Config.shopById.vf_classic
+		art.Image = (Kit.ART :: any)[item.art] or Kit.ART.VfFactory
+		hint.Text = if UserInputService.KeyboardEnabled then "● REC  F" else "● REC"
+	end
+	look()
+	State.on("Profile", look)
 	button.Activated:Connect(Camcorder.toggle)
 	screen.Enabled = State.shift
 	State.on("Shift", function(onShift: boolean)

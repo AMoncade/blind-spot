@@ -18,11 +18,11 @@ State.batteryMax = Config.C.camcorder_battery
 State.hushed = false
 State.dead = false
 State.shift = false -- on a shift in the P3 (false: in the lobby)
+State.tasks = nil :: any -- the night's tasks (event Tasks: tasks, held, brokenCams, brokenLights)
 State.profile = nil :: any -- the saved profile as the server sends it (event Profile)
 State.profileAt = nil :: number? -- os.time() when it arrived (the daily countdown runs from it)
 -- shows a short message; Ui/Menu replaces it with the real toast
 function State.notice(_text: string, _good: boolean) end
-State.rounds = { done = 0, total = #Config.Rounds, ids = {} :: { string } }
 State.unseen = { present = false, x = 0, z = 0, yaw = 0, at = 0 }
 
 local listeners: { [string]: { (...any) -> () } } = {}
@@ -69,14 +69,13 @@ function State.start()
 		elseif name == "Respawn" then
 			State.dead = false
 			State.hushed = false
+		elseif name == "Tasks" then
+			State.tasks = ...
 		elseif name == "Profile" then
 			State.profile = ...
 			State.profileAt = os.time()
 		elseif name == "Shift" then
 			State.shift = ...
-		elseif name == "Rounds" then
-			local n, total, ids = ...
-			State.rounds = { done = n, total = total, ids = ids }
 		end
 		emit(name, ...)
 	end)

@@ -1,0 +1,5 @@
+id,kind,label,item,pickup,target,effect,pay,hold,note
+scan,scan,Scan {label},,,R1;R2;R3;R4;R5,,30,1,scan_count of the checkpoints are drawn each night
+generator,fetch,Restart the generator,fuel,FuelCan,Generator,cam:C10;cam:C11;lights:corridor,90,3,until done the corridor is dark and its cameras dead
+fuse,fetch,Fix the fuse of cam 07,fuse,Locker,FuseBox07,cam:C07,60,2,until done camera 07 is dead
+tape,fetch,Return the lost tape,tape,Tape1;Tape2;Tape3,VCR,,60,1.5,the tape lies in one of three blind spots
