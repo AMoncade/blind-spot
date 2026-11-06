@@ -13,3 +13,10 @@ Tape2,tape,Lost tape,-44,0,28,0,north west stalls
 Tape3,tape,Lost tape,48,0,-40.8,0,corridor east
 VCR,vcr,Booth VCR,-56,3,29.5,180,on the booth desk
 SignIn,signin,Sign-in book,-58.4,3,29.5,180,on the booth desk: a teammate's badge brings them back here
+Hidden1,collect,Old tape,17,0,-29,30,a tape hiding place: a deep blind spot in the south stalls
+Hidden2,collect,Old tape,2,0,26,200,between two cars in the north row
+Hidden3,collect,Old tape,-57,0,-25,90,the south west corner
+Hidden4,collect,Old tape,57,0,-10,270,along the east wall
+Hidden5,collect,Old tape,-56,0,8,120,the west end of the aisle
+Hidden6,collect,Old tape,58,0,-39,250,the east end of the service corridor
+LogBook,logbook,Shift log,-54,3,29.5,180,on the booth desk: the last guard's notes

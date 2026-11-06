@@ -13,6 +13,7 @@ local Net = require(Shared:WaitForChild("Net"))
 local Client = script.Parent.Parent
 local State = require(Client:WaitForChild("State"))
 local Kit = require(script.Parent:WaitForChild("Kit"))
+local TapePlayer = require(script.Parent:WaitForChild("TapePlayer"))
 
 local C = Config.C
 local ART = Kit.ART
@@ -415,6 +416,66 @@ local function buildSettings(gui: ScreenGui)
 	end)
 end
 
+-- ---------------------------------------------------------------- TAPES
+
+local function buildTapes(gui: ScreenGui)
+	local root, body, close = Kit.window(gui, "Tapes", "THE TAPES")
+	windows.Tapes = root
+	close.Activated:Connect(function()
+		open(nil)
+	end)
+	local list = Kit.new("ScrollingFrame", {
+		Size = UDim2.fromScale(1, 1),
+		CanvasSize = UDim2.new(),
+		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		ScrollingDirection = Enum.ScrollingDirection.Y,
+		ScrollBarThickness = 4,
+		ScrollBarImageColor3 = COLOR.brass,
+		Parent = body,
+	})
+	Kit.new("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = list })
+	Kit.new("UIPadding", { PaddingRight = UDim.new(0, 8), Parent = list })
+	for k, tape in Config.Tapes do
+		local row = Kit.plate(list, { Size = UDim2.new(1, 0, 0, 52), LayoutOrder = k })
+		local title = Kit.text(row, "", {
+			FontFace = FONT.title,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Position = UDim2.new(0, 12, 0, 6),
+			Size = UDim2.new(0.62, 0, 0, 22),
+			Max = 20,
+		})
+		local stamp = Kit.text(row, "", {
+			FontFace = FONT.mono,
+			TextColor3 = COLOR.dim,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Position = UDim2.new(0, 12, 0, 30),
+			Size = UDim2.new(0.62, 0, 0, 16),
+			Max = 13,
+		})
+		local play, playLabel = Kit.button(row, ART.DarkButton, "PLAY", {
+			AnchorPoint = Vector2.new(1, 0.5),
+			Position = UDim2.new(1, -6, 0.5, 0),
+			Size = UDim2.fromOffset(120, 44),
+			TextSize = 20,
+		})
+		play.Activated:Connect(function()
+			local profile = State.profile
+			if profile and profile.tapes and profile.tapes[tape.id] then
+				open(nil)
+				TapePlayer.play(tape)
+			end
+		end)
+		table.insert(refreshers, function()
+			local profile = State.profile
+			local found = profile and profile.tapes and profile.tapes[tape.id]
+			title.Text = if found then `{k}. {tape.title}` else `{k}. ???`
+			stamp.Text = if found then tape.stamp else "LOST SOMEWHERE ON P3"
+			playLabel.Text = if found then "PLAY" else "LOCKED"
+			Kit.setEnabled(play, ART.DarkButton, found == true)
+		end)
+	end
+end
+
 -- ---------------------------------------------------------------- INVITE
 
 local function invite()
@@ -466,7 +527,7 @@ function Menu.build(gui: ScreenGui): (() -> (), GuiObject)
 	local rail = Kit.new("Frame", {
 		Name = "Rail",
 		Position = UDim2.fromOffset(10, 66),
-		Size = UDim2.fromOffset(4 * 72, 74),
+		Size = UDim2.fromOffset(5 * 72, 74),
 		Parent = gui,
 	})
 	-- a row under the pay: clear of the touch thumbstick (bottom left) and the jump button (bottom right)
@@ -485,6 +546,9 @@ function Menu.build(gui: ScreenGui): (() -> (), GuiObject)
 	railButton(rail, ART.InviteIcon, "INVITE", 3, invite)
 	railButton(rail, ART.SettingsIcon, "SETTINGS", 4, function()
 		open("Settings")
+	end)
+	railButton(rail, ART.TapesIcon, "TAPES", 5, function()
+		open("Tapes")
 	end)
 	-- a red dot on DAILY when a claim is waiting
 	local dot = Kit.new("Frame", {
@@ -566,6 +630,7 @@ function Menu.build(gui: ScreenGui): (() -> (), GuiObject)
 	buildShop(gui)
 	buildDaily(gui)
 	buildSettings(gui)
+	buildTapes(gui)
 
 	local function refresh()
 		local profile = State.profile :: any

@@ -25,6 +25,7 @@ export type Profile = {
 	nights: number,
 	deaths: number,
 	bestNight: number, -- the highest night cleared (its round done before 6 AM)
+	tapes: { [string]: boolean }, -- the hidden tapes found (content/tapes.csv)
 }
 
 local TEMPLATE: Profile = {
@@ -37,6 +38,7 @@ local TEMPLATE: Profile = {
 	nights = 0,
 	deaths = 0,
 	bestNight = 0,
+	tapes = {},
 }
 
 local Data = {}
@@ -90,6 +92,7 @@ local function snapshot(profile: Profile): { [string]: any }
 		settings = profile.settings,
 		nights = profile.nights,
 		bestNight = profile.bestNight,
+		tapes = profile.tapes,
 		daily = {
 			canClaim = Daily.canClaim(state, now, C.daily_day_seconds),
 			streak = streak,

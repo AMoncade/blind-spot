@@ -14,6 +14,9 @@ Config.Spots = Content.Spots
 Config.Tasks = Content.Tasks
 Config.Items = Content.Items
 Config.Signs = Content.Signs
+Config.Tapes = Content.Tapes
+Config.Radio = Content.Radio
+Config.Logbook = Content.Logbook
 Config.CarColors = Content.CarColors
 Config.LobbyMap = Content.LobbyMap
 Config.Lifts = Content.Lifts
@@ -25,6 +28,11 @@ Config.Codes = Content.Codes
 Config.spotById = {} :: { [string]: typeof(Content.Spots[1]) }
 for _, spot in Content.Spots do
 	Config.spotById[spot.id] = spot
+end
+
+Config.tapeById = {} :: { [string]: typeof(Content.Tapes[1]) }
+for _, tape in Content.Tapes do
+	Config.tapeById[tape.id] = tape
 end
 
 Config.itemById = {} :: { [string]: typeof(Content.Items[1]) }

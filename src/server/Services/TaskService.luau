@@ -23,6 +23,7 @@ local TaskService = {}
 
 -- NightService sets it: is this guard on shift and alive?
 TaskService.isPlaying = nil :: ((player: Player) -> boolean)?
+TaskService.onCut = nil :: (() -> ())? -- the radio's first_cut line (NightService wires it)
 
 local list: { Tasks.Task } = {}
 -- the cut lines (plan section 3, night 4: "les câbles de caméras arrachés"): when each is cut, and the spots added
@@ -266,6 +267,9 @@ local function cutLine()
 			notify(player, "CAM " .. string.sub(id, 2) .. " LINE CUT")
 		end
 	end
+	if TaskService.onCut then
+		TaskService.onCut()
+	end
 	changed()
 end
 
@@ -329,8 +333,9 @@ function TaskService.start()
 	local root = World.root :: Model
 	local spots = root:WaitForChild("Spots") :: Folder
 	for _, spot in spots:GetChildren() do
-		-- the sign-in book belongs to CoopService
-		if spot:GetAttribute("Kind") ~= "signin" then
+		-- the sign-in book belongs to CoopService, the hidden tapes and the log book to StoryService
+		local kind = spot:GetAttribute("Kind")
+		if kind ~= "signin" and kind ~= "collect" and kind ~= "logbook" then
 			register(spot.Name, spot)
 		end
 	end

@@ -1,0 +1,23 @@
+id,night,trigger,delay,text,note
+n1a,1,start,3,Dispatch to P3. Welcome to the night shift.,night 1 is the tutorial
+n1b,1,start,9,Rule one: stay where a camera can see you. The floor glows where they look.,
+n1c,1,start,17,Your round is on your clipboard. Do all of it before six.,
+n1d,1,start,25,The corridor generator is out. The fuel can is somewhere on the level. Mind the dark corners.,
+n1e,1,start,34,Raise your camcorder with F. Whatever it films is safe.,
+n2a,2,start,3,Dispatch. The lights on P3 have been stuttering.,
+n2b,2,start,10,When they flicker look for the cameras whose red light stays on. Those keep working.,
+n3a,3,start,3,Dispatch. We will lose power tonight.,
+n3b,3,start,10,When it goes get under a red light and stay there. Do not cross the dark.,
+n4a,4,start,3,Dispatch. Someone has been tampering with the camera lines.,
+n4b,4,start,10,If a camera dies the junction box is under it. Splice it.,
+n5a,5,start,3,Dispatch... this is the last round. Finish it before six.,
+n5b,5,start,12,Guard. Are you on camera right now? Stay there. Please stay there.,
+n6a,6,start,4,[static],no dispatcher on the hard night
+any1,0,first_flicker,0,Lights are going. Watch for the red lights.,
+any2,0,first_blackout,0,Power is down. Get under a red light. Now.,
+any3,0,first_cut,1,A camera line went dead. The box is under the camera.,
+any4,0,half,0,Three o'clock. Halfway.,
+any5,0,last_hour,0,Five o'clock. Finish your round.,
+any6,0,death,1,Guard? ... Guard respond.,
+any7,0,cleared,0,That's six. Good work. Go home.,
+n4c,4,half,6,That wasn't me on the radio a minute ago. I wasn't talking.,night 4: the radio speaks when it shouldn't (plan section 6)

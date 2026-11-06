@@ -14,6 +14,7 @@ local WatchService = require(script.Parent:WaitForChild("WatchService"))
 local PowerDirector = require(script.Parent:WaitForChild("PowerDirector"))
 local NightService = require(script.Parent:WaitForChild("NightService"))
 local TaskService = require(script.Parent:WaitForChild("TaskService"))
+local StoryService = require(script.Parent:WaitForChild("StoryService"))
 
 local DebugService = {}
 
@@ -81,6 +82,9 @@ function DebugService.init()
 			return
 		elseif command == "done" then
 			TaskService.completeAll()
+			return
+		elseif command == "tape" then
+			StoryService.debugTake(player) -- as if the guard found tonight's tape
 			return
 		end
 		if command == "floor" then

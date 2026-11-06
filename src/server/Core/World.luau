@@ -337,6 +337,13 @@ local SPOT_LOOK: { [string]: { model: string, size: Vector3, color: Color3, item
 	},
 	tape = { model = "VHSTape", size = Vector3.new(0.9, 0.2, 0.55), color = Color3.fromRGB(20, 20, 22), item = true },
 	vcr = { model = "VCR", size = Vector3.new(2, 0.5, 1.5), color = Color3.fromRGB(30, 30, 32), item = false },
+	collect = { model = "VHSTape", size = Vector3.new(0.9, 0.2, 0.55), color = Color3.fromRGB(20, 20, 22), item = true },
+	logbook = {
+		model = "LogBookModel",
+		size = Vector3.new(1.3, 0.25, 1),
+		color = Color3.fromRGB(30, 40, 70),
+		item = false,
+	},
 	junction = {
 		model = "FuseBox",
 		size = Vector3.new(1.6, 2, 0.5),

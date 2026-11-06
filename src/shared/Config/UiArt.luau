@@ -10,6 +10,7 @@ return {
 	PayIcon = "rbxassetid://72769391199119", -- a pay envelope
 	WatchIcon = "rbxassetid://99947872413250", -- a digital wristwatch (the night clock)
 	RoundsIcon = "rbxassetid://135897449096863", -- a clipboard checklist (the rounds)
+	TapesIcon = "rbxassetid://122036744672501", -- a stack of VHS tapes (the lobby's TAPES)
 	-- shop items (content/shop.csv, column art), a second set in the same style
 	VfFactory = "rbxassetid://133342857866867",
 	VfSodium = "rbxassetid://135693604069269",

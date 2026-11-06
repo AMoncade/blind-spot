@@ -147,6 +147,16 @@ def build():
 
     mods["CarColors"] = ("car_colors.csv", [r["hex"] for r in rows("car_colors.csv")])
 
+    mods["Tapes"] = ("tapes.csv", [
+        {"id": r["id"], "title": r["title"], "stamp": r["stamp"], "lines": [x.strip() for x in r["lines"].split("|")]}
+        for r in rows("tapes.csv")])
+
+    mods["Radio"] = ("radio.csv", [
+        {"id": r["id"], "night": int(r["night"]), "trigger": r["trigger"], "delay": num(r["delay"]), "text": r["text"]}
+        for r in rows("radio.csv")])
+
+    mods["Logbook"] = ("logbook.csv", [{"night": int(r["night"]), "line": r["line"]} for r in rows("logbook.csv")])
+
     mods["Items"] = ("items.csv", [{"id": r["id"], "name": r["name"]} for r in rows("items.csv")])
 
     mods["Shop"] = ("shop.csv", [

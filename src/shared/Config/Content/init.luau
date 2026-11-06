@@ -10,10 +10,13 @@ return {
 	Lifts = require(if script then script:WaitForChild("Lifts") else "@self/Lifts"),
 	LobbyMap = require(if script then script:WaitForChild("LobbyMap") else "@self/LobbyMap"),
 	LobbyProps = require(if script then script:WaitForChild("LobbyProps") else "@self/LobbyProps"),
+	Logbook = require(if script then script:WaitForChild("Logbook") else "@self/Logbook"),
 	Map = require(if script then script:WaitForChild("Map") else "@self/Map"),
 	Nights = require(if script then script:WaitForChild("Nights") else "@self/Nights"),
+	Radio = require(if script then script:WaitForChild("Radio") else "@self/Radio"),
 	Shop = require(if script then script:WaitForChild("Shop") else "@self/Shop"),
 	Signs = require(if script then script:WaitForChild("Signs") else "@self/Signs"),
 	Spots = require(if script then script:WaitForChild("Spots") else "@self/Spots"),
+	Tapes = require(if script then script:WaitForChild("Tapes") else "@self/Tapes"),
 	Tasks = require(if script then script:WaitForChild("Tasks") else "@self/Tasks"),
 }

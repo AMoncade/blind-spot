@@ -21,6 +21,7 @@ local CamcorderService = require(script.Parent:WaitForChild("CamcorderService"))
 local Data = require(Server:WaitForChild("Core"):WaitForChild("Data"))
 local TaskService = require(script.Parent:WaitForChild("TaskService"))
 local CoopService = require(script.Parent:WaitForChild("CoopService"))
+local StoryService = require(script.Parent:WaitForChild("StoryService"))
 
 local C = Config.C
 
@@ -113,6 +114,7 @@ function NightService.kill(player: Player)
 		lives -= 1
 	end
 	Net.event():FireClient(player, "Death", C.death_seconds)
+	StoryService.trigger("death")
 	sendSquad()
 	local thisShift = shift
 	task.delay(C.death_seconds, function()
@@ -157,6 +159,7 @@ function endNight(outcome: string)
 	local n, total, taskPay = TaskService.summary()
 	TaskService.clear()
 	CoopService.reset()
+	StoryService.finish(outcome)
 	-- every guard stands up again in the booth for the report
 	for player in playing do
 		local root = rootOf(player)
@@ -249,6 +252,7 @@ function NightService.launch(guards: { Player }, night: number?): boolean
 	end
 	CamcorderService.reset()
 	PowerDirector.startNight(nightNumber, seed)
+	StoryService.begin(nightNumber, seed)
 	sendSquad()
 	print(`[NightService] night {nightNumber} started with {#guards} guard(s)`)
 	return true
@@ -259,6 +263,19 @@ function NightService.init()
 	UnseenService.isPlaying = NightService.isPlaying
 	TaskService.isPlaying = NightService.isPlaying
 	CoopService.isPlaying = NightService.isPlaying
+	StoryService.guards = function(): { Player }
+		local out = {}
+		for player in playing do
+			table.insert(out, player)
+		end
+		table.sort(out, function(a, b)
+			return a.UserId < b.UserId
+		end)
+		return out
+	end
+	TaskService.onCut = function()
+		StoryService.trigger("first_cut")
+	end
 	CoopService.isDown = function(player: Player): boolean
 		return down[player] == true
 	end
