@@ -166,3 +166,8 @@ pay_clear,120,bonus when the whole round is done before 6 AM
 solo_lives,3,a guard alone can be caught this many times in a night
 badge_color,#c9a46a,a taken guard's badge on the floor
 camera_turn_step,10,degrees a watcher turns a camera per press
+cuttable_cameras,C03;C04;C05;C06;C08;C09;C12,the cameras whose line the Unseen may cut (wall or pillar mounted: their junction box sits under them)
+cable_cut_margin,0.15,no line is cut in the first or last 15% of the night
+junction_height,3.4,a junction box's bottom above the floor
+splice_hold,3,seconds to splice a cut line
+pay_splice,40,pay for a spliced line

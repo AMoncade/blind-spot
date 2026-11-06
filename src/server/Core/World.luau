@@ -337,6 +337,12 @@ local SPOT_LOOK: { [string]: { model: string, size: Vector3, color: Color3, item
 	},
 	tape = { model = "VHSTape", size = Vector3.new(0.9, 0.2, 0.55), color = Color3.fromRGB(20, 20, 22), item = true },
 	vcr = { model = "VCR", size = Vector3.new(2, 0.5, 1.5), color = Color3.fromRGB(30, 30, 32), item = false },
+	junction = {
+		model = "FuseBox",
+		size = Vector3.new(1.6, 2, 0.5),
+		color = Color3.fromRGB(150, 150, 140),
+		item = false,
+	},
 	signin = {
 		model = "SignInBook",
 		size = Vector3.new(1.2, 0.2, 0.9),
@@ -404,8 +410,34 @@ local function buildSpot(parent: Folder, spot: typeof(Config.Spots[1]))
 	prompt.RequiresLineOfSight = false
 	prompt.Enabled = false
 	prompt.Parent = anchor
+	-- the camera a fuse box or a junction box feeds, painted on its label frame
+	local camNumber = string.match(spot.label, "C(%d%d)")
+	if camNumber and (spot.kind == "fusebox" or spot.kind == "junction") then
+		paint(m, "CamLabel", base * CFrame.new(0, 0.59, 0.27), 1.0, 0.3, "CAM " .. camNumber, rgb("#1c1c1c"), 0)
+	end
 	m.PrimaryPart = anchor
 	m.Parent = parent
+end
+
+-- A spot added during the night (a cut line's junction box, TaskService). Same shape as a Config.Spots row.
+function World.addSpot(spot: any): Model
+	local root = World.root :: Model
+	local spots = root:FindFirstChild("Spots") :: Folder
+	local old = spots:FindFirstChild(spot.id)
+	if old then
+		old:Destroy()
+	end
+	buildSpot(spots, spot)
+	return spots:FindFirstChild(spot.id) :: Model
+end
+
+function World.removeSpot(id: string)
+	local root = World.root :: Model
+	local spots = root:FindFirstChild("Spots")
+	local old = spots and spots:FindFirstChild(id)
+	if old then
+		old:Destroy()
+	end
 end
 
 -- The lobby (the Halloway's ground floor at night): its shell is plain slabs from Config.LobbyMap, its furniture and

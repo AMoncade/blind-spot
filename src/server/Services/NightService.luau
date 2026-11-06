@@ -238,7 +238,7 @@ function NightService.launch(guards: { Player }, night: number?): boolean
 	running = true
 	shift += 1
 	local seed = os.time()
-	TaskService.reset(seed, def.extraScans + extraGuards * C.coop_scan_per_guard)
+	TaskService.reset(seed, def.extraScans + extraGuards * C.coop_scan_per_guard, def.cables, def.length)
 	solo = #guards <= 1
 	lives = C.solo_lives
 	for k, player in guards do

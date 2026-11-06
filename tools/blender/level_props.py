@@ -236,14 +236,16 @@ def locker():
 
 
 def fuse_box():
-    """A grey electrical fuse box with a hazard sticker. Bounds x -0.8..0.8, y -0.25..0.25, z 0..2."""
+    """A grey electrical box with a hazard sticker (the fuse box, the cut lines' junction boxes); World paints the
+    camera's name on its label frame. Bounds x -0.8..0.8, y -0.25..0.25, z 0..2."""
     coll = K.begin("FuseBox", OUT)
     box = K.box("Box", coll, -0.8, 0.8, -0.25, 0.25, 0, 2, bevel=0.04)
     img = Image.fromarray((K.brushed_steel(seed=121, base=(0.58, 0.58, 0.55), seams=1, grime=0.3) * 255).astype(np.uint8))
     d = ImageDraw.Draw(img)
     d.polygon([(256, 120), (356, 290), (156, 290)], fill=(230, 190, 30), outline=(20, 20, 20))
     d.text((256, 235), "!", fill=(20, 20, 20), font=K.font(90), anchor="mm")
-    d.text((256, 360), "CAM 07", fill=(30, 30, 30), font=K.font(44), anchor="mm")
+    # no camera name in the texture: World labels each box (CAM 07, a cut line's camera)
+    d.rectangle((150, 330, 362, 390), outline=(40, 40, 40), width=4)
     K.face_uv(box, "y", -0.8, 0.8, 0, 2)
     K.material(box, "fusebox_steel", K.to_float(img), roughness=0.6, metallic=0.5)
     return coll

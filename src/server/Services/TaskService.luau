@@ -11,6 +11,7 @@ local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Net = require(Shared:WaitForChild("Net"))
 local Tasks = require(Shared:WaitForChild("Logic"):WaitForChild("Tasks"))
+local Rng = require(Shared:WaitForChild("Logic"):WaitForChild("Rng"))
 
 local Server = script.Parent.Parent
 local World = require(Server:WaitForChild("Core"):WaitForChild("World"))
@@ -24,6 +25,10 @@ local TaskService = {}
 TaskService.isPlaying = nil :: ((player: Player) -> boolean)?
 
 local list: { Tasks.Task } = {}
+-- the cut lines (plan section 3, night 4: "les câbles de caméras arrachés"): when each is cut, and the spots added
+local cuts: { number } = {}
+local cutRng: any = nil
+local dynamic: { [string]: any } = {} -- spot id -> its row (x, y, z, ...), for the spots added during the night
 local carrying: { [Player]: string } = {} -- player -> task id of the item they hold
 local prompts: { [string]: ProximityPrompt } = {} -- spot id -> its prompt
 local dirty = true
@@ -111,6 +116,10 @@ local function applyEffects()
 	return cams, lights
 end
 
+local function spotRow(id: string): any
+	return Config.spotById[id] or dynamic[id]
+end
+
 local function payload(): any
 	local cams, lights = Tasks.broken(list)
 	local held = {}
@@ -122,8 +131,8 @@ local function payload(): any
 	end
 	local out = {}
 	for _, t in list do
-		local target = Config.spotById[t.target]
-		local pickup = t.pickup and Config.spotById[t.pickup]
+		local target = spotRow(t.target)
+		local pickup = t.pickup and spotRow(t.pickup)
 		local h = holder(t.id)
 		table.insert(out, {
 			id = t.id,
@@ -146,8 +155,26 @@ local function changed()
 end
 
 -- a new night: a new list, every item back on its spot
-function TaskService.reset(seed: number, extraScans: number)
+local function clearDynamic()
+	for id in dynamic do
+		World.removeSpot(id)
+		prompts[id] = nil
+	end
+	table.clear(dynamic)
+	table.clear(cuts)
+end
+
+function TaskService.reset(seed: number, extraScans: number, cables: number?, length: number?)
 	table.clear(carrying)
+	clearDynamic()
+	-- the night's cut lines, spread over it
+	cutRng = Rng.new(seed + 77)
+	local n = cables or 0
+	for k = 1, n do
+		local f = C.cable_cut_margin + (1 - 2 * C.cable_cut_margin) * k / (n + 1)
+		table.insert(cuts, (length or 0) * f + cutRng.int(-20, 20))
+	end
+	table.sort(cuts)
 	list = Tasks.build(Config.Tasks, function(id)
 		return Config.spotById[id].label
 	end, C.scan_count + extraScans, seed)
@@ -157,6 +184,7 @@ end
 -- the shift is over: no list, every dead camera and dark zone back to normal
 function TaskService.clear()
 	table.clear(carrying)
+	clearDynamic()
 	list = {}
 	changed()
 end
@@ -187,6 +215,60 @@ function TaskService.drop(player: Player)
 	end
 end
 
+local function register(spotId: string, model: Instance)
+	local prompt = model:FindFirstChildWhichIsA("ProximityPrompt", true)
+	if prompt then
+		prompts[spotId] = prompt
+		prompt.Enabled = false
+		prompt.Triggered:Connect(function(player)
+			TaskService.trigger(spotId, player)
+		end)
+	end
+end
+
+-- The Unseen cuts a camera's line: the camera dies, a junction box under it waits to be spliced (a task).
+local function cutLine()
+	local cams, _ = Tasks.broken(list)
+	local candidates = {}
+	for id in string.gmatch(C.cuttable_cameras, "[^;]+") do
+		if not cams[id] and not dynamic["Line_" .. id] then
+			table.insert(candidates, id)
+		end
+	end
+	if #candidates == 0 then
+		return
+	end
+	local id = cutRng.pick(candidates)
+	local cam = Config.cameraById[id]
+	local spot = {
+		id = "Line_" .. id,
+		kind = "junction",
+		label = "Line " .. id,
+		x = cam.x,
+		y = C.junction_height,
+		z = cam.z,
+		yaw = math.deg(math.atan2(cam.tx - cam.x, cam.tz - cam.z)),
+	}
+	dynamic[spot.id] = spot
+	register(spot.id, World.addSpot(spot))
+	table.insert(list, {
+		id = "splice:" .. id,
+		kind = "scan",
+		label = "Splice the line of cam " .. string.sub(id, 2),
+		target = spot.id,
+		effect = { "cam:" .. id },
+		pay = C.pay_splice,
+		hold = C.splice_hold,
+		done = false,
+	})
+	for _, player in Players:GetPlayers() do
+		if playing(player) then
+			notify(player, "CAM " .. string.sub(id, 2) .. " LINE CUT")
+		end
+	end
+	changed()
+end
+
 local function onTriggered(spotId: string, player: Player)
 	if not playing(player) then
 		return
@@ -197,7 +279,7 @@ local function onTriggered(spotId: string, player: Player)
 		end
 		if t.kind == "scan" and t.target == spotId then
 			t.done = true
-			notify(player, "CHECKPOINT LOGGED", true)
+			notify(player, if string.sub(t.id, 1, 7) == "splice:" then "LINE SPLICED" else "CHECKPOINT LOGGED", true)
 			changed()
 			return
 		elseif t.kind == "fetch" and t.pickup == spotId and not holder(t.id) then
@@ -247,19 +329,19 @@ function TaskService.start()
 	local root = World.root :: Model
 	local spots = root:WaitForChild("Spots") :: Folder
 	for _, spot in spots:GetChildren() do
-		local prompt = spot:FindFirstChildWhichIsA("ProximityPrompt", true)
 		-- the sign-in book belongs to CoopService
-		if prompt and spot:GetAttribute("Kind") ~= "signin" then
-			prompts[spot.Name] = prompt
-			prompt.Enabled = false
-			prompt.Triggered:Connect(function(player)
-				onTriggered(spot.Name, player)
-			end)
+		if spot:GetAttribute("Kind") ~= "signin" then
+			register(spot.Name, spot)
 		end
 	end
 	refreshPrompts()
 	while true do
 		task.wait(C.task_broadcast)
+		local t, _, tl = PowerDirector.now()
+		if tl and #cuts > 0 and t >= cuts[1] then
+			table.remove(cuts, 1)
+			cutLine()
+		end
 		if dirty then
 			dirty = false
 			local data = payload()

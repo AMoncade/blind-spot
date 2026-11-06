@@ -53,7 +53,12 @@ function CameraHeads.start()
 				then CFrame.new(h.rest.Position) * CFrame.Angles(0, offset :: number, 0) * h.rest.Rotation
 				else h.rest
 			local wanted = rest
-			if seen[h.id] and target and target:IsA("BasePart") and not State.dead then
+			local broken = State.tasks and State.tasks.brokenCams
+			if broken and broken[h.id] and State.shift then
+				-- a dead camera hangs from its torn line
+				wanted = rest * CFrame.Angles(math.rad(-35), 0, math.rad(18))
+			end
+			if seen[h.id] and target and target:IsA("BasePart") and not State.dead and wanted == rest then
 				wanted = capped(rest, CFrame.lookAt(rest.Position, target.Position), maxAngle)
 			end
 			local delta = h.current:ToObjectSpace(wanted)

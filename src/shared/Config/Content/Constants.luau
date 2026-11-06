@@ -168,4 +168,9 @@ return {
 	solo_lives = 3,
 	badge_color = "#c9a46a",
 	camera_turn_step = 10,
+	cuttable_cameras = "C03;C04;C05;C06;C08;C09;C12",
+	cable_cut_margin = 0.15,
+	junction_height = 3.4,
+	splice_hold = 3,
+	pay_splice = 40,
 }

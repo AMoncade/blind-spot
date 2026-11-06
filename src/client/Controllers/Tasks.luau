@@ -20,7 +20,7 @@ local player = Players.LocalPlayer
 local Tasks = {}
 
 local STUD_METRES = 0.28 -- plan section 7: 1 stud is about 0.28 m
-local LINES = 6
+local LINES = 10
 
 export type Parts = { root: Frame, count: TextLabel, holding: TextLabel, lines: { TextLabel }, sheet: Frame }
 
@@ -30,7 +30,7 @@ function Tasks.build(gui: ScreenGui): Parts
 		Name = "Clipboard",
 		AnchorPoint = Vector2.new(1, 0),
 		Position = UDim2.new(1, -12, 0, 8),
-		Size = UDim2.fromOffset(250, 40 + LINES * 22 + 30),
+		Size = UDim2.fromOffset(250, 40 + LINES * 18 + 30),
 		Parent = gui,
 	}) :: Frame
 	local header = Kit.new("ImageButton", {
@@ -98,14 +98,14 @@ function Tasks.build(gui: ScreenGui): Parts
 			TextColor3 = COLOR.paperInk,
 			TextStrokeTransparency = 1,
 			TextXAlignment = Enum.TextXAlignment.Left,
-			Position = UDim2.new(0, 0, 0, 24 + (k - 1) * 22),
-			Size = UDim2.new(1, 0, 0, 20),
+			Position = UDim2.new(0, 0, 0, 24 + (k - 1) * 18),
+			Size = UDim2.new(1, 0, 0, 17),
 			Max = 15,
 			Min = 8,
 		})
 		-- one size for every line (a scaled text would grow on the short ones), cut with ... when too long
 		l.TextScaled = false
-		l.TextSize = 14
+		l.TextSize = 13
 		l.TextTruncate = Enum.TextTruncate.AtEnd
 		lines[k] = l
 	end
