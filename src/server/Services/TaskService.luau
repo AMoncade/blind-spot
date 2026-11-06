@@ -146,11 +146,11 @@ local function changed()
 end
 
 -- a new night: a new list, every item back on its spot
-function TaskService.reset(seed: number)
+function TaskService.reset(seed: number, extraScans: number)
 	table.clear(carrying)
 	list = Tasks.build(Config.Tasks, function(id)
 		return Config.spotById[id].label
-	end, C.scan_count, seed)
+	end, C.scan_count + extraScans, seed)
 	changed()
 end
 
@@ -159,6 +159,15 @@ function TaskService.clear()
 	table.clear(carrying)
 	list = {}
 	changed()
+end
+
+function TaskService.allDone(): boolean
+	for _, t in list do
+		if not t.done then
+			return false
+		end
+	end
+	return #list > 0
 end
 
 function TaskService.summary(): (number, number, number)

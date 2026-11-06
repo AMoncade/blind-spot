@@ -162,4 +162,8 @@ return {
 	stall_line_color = "#d7d3c6",
 	dash_color = "#d4ac2b",
 	stall_width = 9,
+	coop_scan_per_guard = 1,
+	coop_speed_per_guard = 0.05,
+	pay_clear = 120,
+	solo_lives = 3,
 }

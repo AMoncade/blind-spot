@@ -38,7 +38,7 @@ camcorder_eye_height,1.5,studs above the HumanoidRootPart the camcorder sits
 camcorder_max_offset,4,studs the client eye may sit from the server head before the server uses its own
 player_walk_speed,13,studs per second
 watch_broadcast,0.2,seconds between filmed-state checks sent to each client
-night_test,3,the night the server plays in phase 0
+night_test,3,the night a teleported group plays when no night was chosen
 night_start_delay,6,seconds from the first spawn to the night start
 night_clock_start,0,hour shown when the night starts (midnight)
 night_clock_end,6,hour shown when the night ends
@@ -160,3 +160,7 @@ p3_band_line_color,#d4ac2b,P3 yellow line over the band
 stall_line_color,#d7d3c6,P3 stall lines
 dash_color,#d4ac2b,P3 aisle centre line
 stall_width,9,P3 stall width (studs): the stall lines' step
+coop_scan_per_guard,1,one more checkpoint to scan per guard after the first (plan section 3: more guards more tasks)
+coop_speed_per_guard,0.05,the Unseen is 5% faster per guard after the first
+pay_clear,120,bonus when the whole round is done before 6 AM
+solo_lives,3,a guard alone can be caught this many times in a night

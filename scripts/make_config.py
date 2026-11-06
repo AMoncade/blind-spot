@@ -92,7 +92,8 @@ def build():
          "flickerStart": num(r["flicker_start"]), "flickerEnd": num(r["flicker_end"]),
          "blackoutStart": num(r["blackout_start"]), "blackoutEnd": num(r["blackout_end"]),
          "falseAlarmEvery": num(r["false_alarm_every"]), "holdoutsMin": int(r["holdouts_min"]),
-         "holdoutsMax": int(r["holdouts_max"])}
+         "holdoutsMax": int(r["holdouts_max"]), "name": r["name"], "unseenSpeed": num(r["unseen_speed"]),
+         "extraScans": int(r["extra_scans"]), "cables": int(r["cables"]), "intro": r["intro"]}
         for r in rows("nights.csv")])
 
     mods["Cameras"] = ("cameras.csv", [

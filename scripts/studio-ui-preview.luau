@@ -35,7 +35,7 @@ if _G.BS_PREVIEW == "Shift" or _G.BS_PREVIEW == "Report" then
 		held = { ["1"] = "fuel" },
 	}, 1)
 	if _G.BS_PREVIEW == "Report" then
-		Hud.fillReport(parts, { tasks = 4, total = 5, deaths = 1, pay = 370 })
+		Hud.fillReport(parts, { night = 3, outcome = "cleared", unlocked = 4, tasks = 5, total = 5, deaths = 1, pay = 490 })
 		parts.report.Visible = true
 	end
 	gui.Parent = StarterGui

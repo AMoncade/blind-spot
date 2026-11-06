@@ -24,6 +24,7 @@ export type Profile = {
 	settings: { [string]: any },
 	nights: number,
 	deaths: number,
+	bestNight: number, -- the highest night cleared (its round done before 6 AM)
 }
 
 local TEMPLATE: Profile = {
@@ -35,6 +36,7 @@ local TEMPLATE: Profile = {
 	settings = {},
 	nights = 0,
 	deaths = 0,
+	bestNight = 0,
 }
 
 local Data = {}
@@ -61,6 +63,13 @@ function Data.onLoaded(fn: (Player, Profile) -> ())
 	table.insert(loadedListeners, fn)
 end
 
+-- the highest night this guard may start: the one after their best, up to the last night
+function Data.unlockedNight(player: Player): number
+	local profile = Data.get(player)
+	local best = if profile then profile.bestNight else 0
+	return math.clamp(best + 1, 1, #Config.Nights)
+end
+
 function Data.addPay(player: Player, amount: number)
 	local profile = Data.get(player)
 	if profile and amount > 0 then
@@ -80,6 +89,7 @@ local function snapshot(profile: Profile): { [string]: any }
 		viewfinder = profile.viewfinder,
 		settings = profile.settings,
 		nights = profile.nights,
+		bestNight = profile.bestNight,
 		daily = {
 			canClaim = Daily.canClaim(state, now, C.daily_day_seconds),
 			streak = streak,

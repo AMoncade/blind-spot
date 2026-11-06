@@ -171,11 +171,25 @@ function Hud.build(gui: ScreenGui): Parts
 	}
 end
 
+local OUTCOME = {
+	cleared = "NIGHT CLEARED",
+	unfinished = "ROUND UNFINISHED",
+	lost = "ALL GUARDS LOST",
+}
+
 function Hud.fillReport(parts: Parts, summary: any)
+	local title = parts.report:FindFirstChild("Title")
+	if title and title:IsA("TextLabel") then
+		title.Text = `{OUTCOME[summary.outcome] or "SHIFT REPORT"}  ·  NIGHT {summary.night or "?"}`
+		title.TextColor3 = if summary.outcome == "cleared" then COLOR.green else COLOR.brass
+	end
 	parts.reportRows[1].Text = `TASKS DONE  {summary.tasks or 0}/{summary.total or 0}`
 	parts.reportRows[2].Text = `GUARDS LOST  {summary.deaths or 0}`
 	parts.reportPay.Text = "+" .. Kit.money(summary.pay or 0)
-	parts.reportFoot.Text = `BACK TO THE LOBBY IN {C.lobby_return_delay} SECONDS.`
+	local unlockedNext = summary.outcome == "cleared" and summary.unlocked and summary.unlocked > (summary.night or 0)
+	parts.reportFoot.Text = if unlockedNext
+		then `NIGHT {summary.unlocked} UNLOCKED.  BACK TO THE LOBBY IN {C.lobby_return_delay} S.`
+		else `BACK TO THE LOBBY IN {C.lobby_return_delay} SECONDS.`
 end
 
 function Hud.start()
@@ -195,14 +209,20 @@ function Hud.start()
 		titleUntil = os.clock() + seconds
 	end
 
+	local function nightTitle(n: number)
+		local def = Config.nightByNumber[n]
+		if def then
+			show(`NIGHT {n}  ·  {def.name}`, string.upper(def.intro), 5)
+		end
+	end
 	State.on("Night", function(night: any)
 		if night and State.shift then
-			show("NIGHT " .. night.night, "STAY ON CAMERA.", 4)
+			nightTitle(night.night)
 		end
 	end)
 	State.on("Shift", function(onShift: boolean)
 		if onShift and State.night then
-			show("NIGHT " .. State.night.night, "STAY ON CAMERA.", 4)
+			nightTitle(State.night.night)
 		end
 		if not onShift then
 			parts.report.Visible = false

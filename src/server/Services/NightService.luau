@@ -1,7 +1,8 @@
 --!strict
 -- The night (plan section 3). A shift starts when a lift leaves the lobby with its guards (LobbyService.launch): they
 -- arrive in the P3's security booth, the power cycle runs to 6 h, the night's tasks (TaskService) are drawn, and at
--- 6 AM everyone is paid and goes back up to the lobby. Phase 0 plays Config.C.night_test.
+-- 6 AM everyone is paid and goes back up to the lobby. The night is cleared when the round is done by 6 AM:
+-- that unlocks the next one (Data.unlockedNight).
 -- A death (plan section 4, "La mort"): the guard freezes, the client plays the tape tear for death_seconds, then they
 -- wake up in the booth and the night goes on.
 local Players = game:GetService("Players")
@@ -87,7 +88,8 @@ function NightService.kill(player: Player)
 	end)
 end
 
-local function endNight()
+-- outcome: "cleared" (the round was done by 6 AM), "unfinished" (6 AM, tasks left), "lost" (every guard is out)
+local function endNight(outcome: string)
 	if not running then
 		return
 	end
@@ -95,29 +97,43 @@ local function endNight()
 	PowerDirector.stop()
 	local n, total, taskPay = TaskService.summary()
 	TaskService.clear()
+	local night = Config.nightByNumber[nightNumber]
 	local guards = {}
 	for player in playing do
 		table.insert(guards, player)
 	end
 	for _, player in guards do
 		-- the night's pay (plan section 3): the shift, the team's tasks, and a bonus for never being caught
-		local pay = C.pay_shift + taskPay + (if diedThisShift[player] then 0 else C.pay_no_death)
+		local pay = taskPay
+		if outcome ~= "lost" then
+			pay += C.pay_shift + (if diedThisShift[player] then 0 else C.pay_no_death)
+		end
+		if outcome == "cleared" then
+			pay += C.pay_clear
+		end
 		Data.addPay(player, pay)
 		local profile = Data.get(player)
 		if profile then
 			profile.nights += 1
+			if outcome == "cleared" then
+				profile.bestNight = math.max(profile.bestNight, nightNumber)
+			end
 			if diedThisShift[player] then
 				profile.deaths += 1
 			end
 		end
-		Net.event()
-			:FireClient(
-				player,
-				"NightEnd",
-				{ night = nightNumber, tasks = n, total = total, deaths = deaths, pay = pay }
-			)
+		Net.event():FireClient(player, "NightEnd", {
+			night = nightNumber,
+			name = night.name,
+			outcome = outcome,
+			tasks = n,
+			total = total,
+			deaths = deaths,
+			pay = pay,
+			unlocked = Data.unlockedNight(player),
+		})
 	end
-	print(`[NightService] night {nightNumber} ended: {n}/{total} tasks, {deaths} deaths`)
+	print(`[NightService] night {nightNumber} ended ({outcome}): {n}/{total} tasks, {deaths} deaths`)
 	local ended = shift
 	task.delay(C.lobby_return_delay, function()
 		-- back up to the lobby
@@ -140,6 +156,10 @@ function NightService.launch(guards: { Player }, night: number?): boolean
 		return false
 	end
 	nightNumber = if night and Config.nightByNumber[night] then night else C.night_test
+	local def = Config.nightByNumber[nightNumber]
+	-- more guards: more checkpoints and a faster Unseen (plan section 3, "Coop de 1 à 4")
+	local extraGuards = math.max(#guards - 1, 0)
+	UnseenService.speedScale = def.unseenSpeed * (1 + extraGuards * C.coop_speed_per_guard)
 	table.clear(playing)
 	table.clear(dead)
 	table.clear(diedThisShift)
@@ -147,7 +167,7 @@ function NightService.launch(guards: { Player }, night: number?): boolean
 	running = true
 	shift += 1
 	local seed = os.time()
-	TaskService.reset(seed)
+	TaskService.reset(seed, def.extraScans + extraGuards * C.coop_scan_per_guard)
 	for k, player in guards do
 		playing[player] = true
 		-- side by side in the booth
@@ -194,8 +214,10 @@ function NightService.start()
 		task.wait(0.5)
 		if running then
 			local t, _, tl = PowerDirector.now()
-			if not next(playing) or (tl and t >= tl.length) then
-				endNight()
+			if not next(playing) then
+				endNight("lost")
+			elseif tl and t >= tl.length then
+				endNight(if TaskService.allDone() then "cleared" else "unfinished")
 			end
 		end
 	end

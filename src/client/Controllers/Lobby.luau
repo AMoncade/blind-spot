@@ -67,7 +67,7 @@ function Lobby.start()
 	panel.Name = "LiftPanel"
 	panel.AnchorPoint = Vector2.new(0.5, 1)
 	panel.Position = UDim2.new(0.5, 0, 1, -20)
-	panel.Size = UDim2.new(0, 340, 0, 136)
+	panel.Size = UDim2.new(0, 340, 0, 184)
 	panel.BackgroundTransparency = 1
 	panel.BorderSizePixel = 0
 	panel.Visible = false
@@ -87,8 +87,31 @@ function Lobby.start()
 		text(panel, "Title", "LIFT A  ·  P3", UDim2.new(0.6, 0, 0, 22), UDim2.new(0, 14, 0, 10), THEME.outline)
 	local count = text(panel, "Count", "1/4 GUARDS", UDim2.new(0.38, -14, 0, 22), UDim2.new(0.62, 0, 0, 10), THEME.text)
 	count.TextXAlignment = Enum.TextXAlignment.Right
+	-- the night: the lift's first guard picks it, up to their unlocked night
+	local down = Kit.button(panel, Kit.ART.DarkButton, "<", {
+		Name = "NightDown",
+		Position = UDim2.new(0, 14, 0, 38),
+		Size = UDim2.fromOffset(48, 44),
+		TextSize = 24,
+	})
+	local up = Kit.button(panel, Kit.ART.DarkButton, ">", {
+		Name = "NightUp",
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(1, -14, 0, 38),
+		Size = UDim2.fromOffset(48, 44),
+		TextSize = 24,
+	})
+	local nightLabel =
+		text(panel, "Night", "NIGHT 1  ·  ORIENTATION", UDim2.new(1, -140, 0, 26), UDim2.new(0, 70, 0, 47), THEME.text)
+	nightLabel.TextXAlignment = Enum.TextXAlignment.Center
+	down.Activated:Connect(function()
+		Net.send("Lift", "nightDown")
+	end)
+	up.Activated:Connect(function()
+		Net.send("Lift", "nightUp")
+	end)
 	local timer =
-		text(panel, "Timer", "DOORS CLOSE IN 15", UDim2.new(1, -28, 0, 26), UDim2.new(0, 14, 0, 38), THEME.text)
+		text(panel, "Timer", "DOORS CLOSE IN 15", UDim2.new(1, -28, 0, 26), UDim2.new(0, 14, 0, 90), THEME.dim)
 	local startButton = button(panel, "Start", "START", true, UDim2.new(0, 14, 1, -12))
 	local leaveButton = button(panel, "Leave", "LEAVE", false, UDim2.new(0.5, 7, 1, -12))
 
@@ -125,6 +148,12 @@ function Lobby.start()
 			count.Text = `{info.count}/{info.capacity} GUARDS`
 			startButton.Visible = not info.leaving
 			leaveButton.Visible = not info.leaving
+			nightLabel.Text = `NIGHT {info.night}  ·  {info.nightName}`
+			-- only the first guard turns the night; the arrows grey out at the ends
+			Kit.setEnabled(down, Kit.ART.DarkButton, info.owner and info.night > 1)
+			Kit.setEnabled(up, Kit.ART.DarkButton, info.owner and info.night < info.maxNight)
+			down.Visible = info.owner
+			up.Visible = info.owner
 		end
 	end)
 	State.on("LiftDown", function(seconds: number)

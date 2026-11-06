@@ -19,6 +19,7 @@ local Server = script.Parent.Parent
 local World = require(Server:WaitForChild("Core"):WaitForChild("World"))
 local Actions = require(Server:WaitForChild("Core"):WaitForChild("Actions"))
 local NightService = require(script.Parent:WaitForChild("NightService"))
+local Data = require(Server:WaitForChild("Core"):WaitForChild("Data"))
 
 local C = Config.C
 
@@ -35,6 +36,7 @@ type Lift = {
 	doors: { Door },
 	guards: { Player }, -- in the order they stepped in
 	solo: Player?, -- SOLO: this lift is one guard's, it leaves at once
+	night: number, -- the night this lift goes down to: its first guard picks it (up to their unlocked night)
 	deadline: number?, -- os.clock() when the doors close
 	state: "open" | "leaving" | "closed",
 }
@@ -92,9 +94,15 @@ end
 local function sendLift(player: Player, lift: Lift?)
 	if lift then
 		local left = if lift.deadline then math.max(0, lift.deadline - os.clock()) else C.lift_countdown
+		local night = Config.nightByNumber[lift.night]
+		local owner = lift.guards[1]
 		Net.event():FireClient(player, "Lift", {
 			id = lift.id,
 			label = lift.label,
+			night = lift.night,
+			nightName = night.name,
+			owner = owner == player,
+			maxNight = if owner then Data.unlockedNight(owner) else 1,
 			count = #lift.guards,
 			capacity = C.lift_capacity,
 			closesAt = workspace:GetServerTimeNow() + left,
@@ -163,7 +171,7 @@ local function launch(lift: Lift)
 			-- to check on the published game: a reserved server of the game place for this group
 			local options = Instance.new("TeleportOptions")
 			options.ShouldReserveServer = true
-			options:SetTeleportData({ night = C.night_test })
+			options:SetTeleportData({ night = lift.night })
 			local ok, err = pcall(function()
 				TeleportService:TeleportAsync(C.game_place_id, stillHere, options)
 			end)
@@ -171,7 +179,7 @@ local function launch(lift: Lift)
 				warn("[LobbyService] teleport failed: " .. tostring(err))
 			end
 		else
-			NightService.launch(stillHere, C.night_test)
+			NightService.launch(stillHere, lift.night)
 		end
 	end
 	for _, player in stillHere do
@@ -224,6 +232,9 @@ local function scan()
 					stepOut(lift, player) -- full, or one guard's SOLO lift
 				else
 					table.insert(lift.guards, player)
+					if #lift.guards == 1 then
+						lift.night = Data.unlockedNight(player) -- the first guard's furthest night
+					end
 					if not lift.deadline then
 						lift.deadline = os.clock() + C.lift_countdown
 					end
@@ -236,7 +247,7 @@ local function scan()
 
 		if lift.deadline then
 			local left = math.max(0, math.ceil(lift.deadline - os.clock()))
-			display(lift, `P3  ·  {#lift.guards}/{C.lift_capacity}  ·  {left}`)
+			display(lift, `NIGHT {lift.night}  ·  {#lift.guards}/{C.lift_capacity}  ·  {left}`)
 			if os.clock() >= lift.deadline then
 				task.spawn(launch, lift)
 			end
@@ -277,6 +288,9 @@ local function play(player: Player, mode: string)
 	root.CFrame = CFrame.new(lift.zone.Position.X, root.Position.Y, lift.zone.Position.Z - 1)
 
 	table.insert(lift.guards, player)
+	if #lift.guards == 1 then
+		lift.night = Data.unlockedNight(player)
+	end
 	local closeAt = os.clock() + (if mode == "solo" then C.lift_start_now else C.lift_countdown)
 	lift.deadline = if lift.deadline then math.min(lift.deadline, closeAt) else closeAt
 	for _, p in lift.guards do
@@ -302,6 +316,13 @@ function LobbyService.init()
 				for _, p in lift.guards do
 					sendLift(p, lift)
 				end
+			end
+		elseif (command == "nightUp" or command == "nightDown") and lift.guards[1] == player then
+			-- only the lift's first guard picks the night, between 1 and their unlocked one
+			local step = if command == "nightUp" then 1 else -1
+			lift.night = math.clamp(lift.night + step, 1, Data.unlockedNight(player))
+			for _, p in lift.guards do
+				sendLift(p, lift)
 			end
 		elseif command == "leave" then
 			remove(lift, player)
@@ -338,6 +359,7 @@ function LobbyService.start()
 				doors = if elevator then collectDoors(elevator) else {},
 				guards = {},
 				solo = nil,
+				night = 1,
 				deadline = nil,
 				state = "closed", -- the first scan opens them
 			}

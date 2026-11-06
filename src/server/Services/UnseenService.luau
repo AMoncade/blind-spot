@@ -28,6 +28,7 @@ local UnseenService = {}
 
 -- NightService sets these (it owns deaths and the night)
 UnseenService.onKill = nil :: ((player: Player) -> ())?
+UnseenService.speedScale = 1 -- the night's difficulty and the number of guards (NightService)
 UnseenService.isPlaying = nil :: ((player: Player) -> boolean)? -- on shift and not in a death
 
 local g = WatchService.grid
@@ -315,7 +316,7 @@ local function tick(dt: number)
 		pathAt = 2
 	end
 
-	local speed = Hunt.speed(mode, C)
+	local speed = Hunt.speed(mode, C) * UnseenService.speedScale
 	if mode == "prowl" and minPlayerDistance(x, z) < C.unseen_keep_distance_live and goal == nil then
 		speed = 0
 	end
