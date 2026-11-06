@@ -166,4 +166,6 @@ return {
 	coop_speed_per_guard = 0.05,
 	pay_clear = 120,
 	solo_lives = 3,
+	badge_color = "#c9a46a",
+	camera_turn_step = 10,
 }

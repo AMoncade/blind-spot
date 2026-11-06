@@ -20,6 +20,7 @@ local UnseenService = require(script.Parent:WaitForChild("UnseenService"))
 local CamcorderService = require(script.Parent:WaitForChild("CamcorderService"))
 local Data = require(Server:WaitForChild("Core"):WaitForChild("Data"))
 local TaskService = require(script.Parent:WaitForChild("TaskService"))
+local CoopService = require(script.Parent:WaitForChild("CoopService"))
 
 local C = Config.C
 
@@ -29,6 +30,9 @@ local dead: { [Player]: boolean } = {}
 local playing: { [Player]: boolean } = {} -- the guards on this shift
 local deaths = 0
 local diedThisShift: { [Player]: boolean } = {}
+local down: { [Player]: boolean } = {} -- co-op: taken, watching from the booth until a teammate brings their badge back
+local solo = true -- one guard on this shift
+local lives = 0 -- solo: catches left tonight
 local running = false
 local shift = 0 -- counts shifts, so a late return to the lobby never touches the next one
 local nightNumber = C.night_test
@@ -53,12 +57,41 @@ end
 
 -- on this shift and not frozen in a death (the Unseen only sees these guards)
 function NightService.isPlaying(player: Player): boolean
-	return running and playing[player] == true and not dead[player]
+	return running and playing[player] == true and not dead[player] and not down[player]
+end
+
+-- the shift's squad on every guard's HUD: solo lives, or how many guards are still up
+local function sendSquad()
+	local up, total, names = 0, 0, {}
+	for player in playing do
+		total += 1
+		if not down[player] and not dead[player] then
+			up += 1
+		else
+			table.insert(names, string.upper(player.DisplayName))
+		end
+	end
+	for player in playing do
+		Net.event():FireClient(player, "Squad", { solo = solo, lives = lives, up = up, total = total, down = names })
+	end
+end
+
+local function upCount(): number
+	local n = 0
+	for player in playing do
+		if not down[player] then
+			n += 1
+		end
+	end
+	return n
 end
 
 function NightService.running(): boolean
 	return running
 end
+
+-- defined below; kill and the departures need it first
+local endNight: (outcome: string) -> ()
 
 function NightService.kill(player: Player)
 	if dead[player] or not running or not playing[player] then
@@ -73,23 +106,49 @@ function NightService.kill(player: Player)
 	diedThisShift[player] = true
 	CamcorderService.block(player, true)
 	TaskService.drop(player)
+	local at = root.Position
+	CoopService.drop(player, at)
 	root.Anchored = true
+	if solo then
+		lives -= 1
+	end
 	Net.event():FireClient(player, "Death", C.death_seconds)
+	sendSquad()
+	local thisShift = shift
 	task.delay(C.death_seconds, function()
-		if player.Parent and root.Parent then
-			root.CFrame = World.spawnCFrame()
-			root.Anchored = false
+		if shift ~= thisShift or not running then
+			return
 		end
 		dead[player] = nil
-		CamcorderService.block(player, false)
-		if player.Parent then
-			Net.event():FireClient(player, "Respawn")
+		if solo and lives <= 0 then
+			endNight("lost")
+			return
 		end
+		if player.Parent and root.Parent then
+			root.CFrame = World.spawnCFrame()
+		end
+		if solo then
+			-- solo: back in the booth, one life less (plan section 3: the night goes on)
+			if root.Parent then
+				root.Anchored = false
+			end
+			CamcorderService.block(player, false)
+			Net.event():FireClient(player, "Respawn")
+		else
+			-- co-op: a watcher in the booth until someone brings the badge back
+			down[player] = true
+			CoopService.down(player, at)
+			if upCount() == 0 then
+				endNight("lost")
+				return
+			end
+		end
+		sendSquad()
 	end)
 end
 
 -- outcome: "cleared" (the round was done by 6 AM), "unfinished" (6 AM, tasks left), "lost" (every guard is out)
-local function endNight(outcome: string)
+function endNight(outcome: string)
 	if not running then
 		return
 	end
@@ -97,6 +156,16 @@ local function endNight(outcome: string)
 	PowerDirector.stop()
 	local n, total, taskPay = TaskService.summary()
 	TaskService.clear()
+	CoopService.reset()
+	-- every guard stands up again in the booth for the report
+	for player in playing do
+		local root = rootOf(player)
+		if root then
+			root.Anchored = false
+		end
+		CamcorderService.block(player, false)
+	end
+	table.clear(down)
 	local night = Config.nightByNumber[nightNumber]
 	local guards = {}
 	for player in playing do
@@ -162,12 +231,16 @@ function NightService.launch(guards: { Player }, night: number?): boolean
 	UnseenService.speedScale = def.unseenSpeed * (1 + extraGuards * C.coop_speed_per_guard)
 	table.clear(playing)
 	table.clear(dead)
+	table.clear(down)
 	table.clear(diedThisShift)
+	CoopService.reset()
 	deaths = 0
 	running = true
 	shift += 1
 	local seed = os.time()
 	TaskService.reset(seed, def.extraScans + extraGuards * C.coop_scan_per_guard)
+	solo = #guards <= 1
+	lives = C.solo_lives
 	for k, player in guards do
 		playing[player] = true
 		-- side by side in the booth
@@ -176,6 +249,7 @@ function NightService.launch(guards: { Player }, night: number?): boolean
 	end
 	CamcorderService.reset()
 	PowerDirector.startNight(nightNumber, seed)
+	sendSquad()
 	print(`[NightService] night {nightNumber} started with {#guards} guard(s)`)
 	return true
 end
@@ -184,6 +258,22 @@ function NightService.init()
 	UnseenService.onKill = NightService.kill
 	UnseenService.isPlaying = NightService.isPlaying
 	TaskService.isPlaying = NightService.isPlaying
+	CoopService.isPlaying = NightService.isPlaying
+	CoopService.isDown = function(player: Player): boolean
+		return down[player] == true
+	end
+	CoopService.onRevive = function(player: Player)
+		-- brought back by their badge: on their feet in the booth
+		down[player] = nil
+		local root = rootOf(player)
+		if root then
+			root.CFrame = World.spawnCFrame()
+			root.Anchored = false
+		end
+		CamcorderService.block(player, false)
+		Net.event():FireClient(player, "Respawn")
+		sendSquad()
+	end
 
 	Actions.on("Ready", function(player: Player)
 		PowerDirector.broadcast(player)
@@ -205,7 +295,14 @@ function NightService.init()
 	end)
 	Players.PlayerRemoving:Connect(function(player)
 		dead[player] = nil
+		down[player] = nil
 		playing[player] = nil
+		if running then
+			sendSquad()
+			if next(playing) and upCount() == 0 then
+				endNight("lost")
+			end
+		end
 	end)
 end
 

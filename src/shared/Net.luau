@@ -13,6 +13,7 @@ local Net = {}
 Net.ACTIONS = {
 	Ready = 2, -- the client listens: send it the night
 	Camcorder = 14,
+	TurnCamera = 6, -- (camera id, -1 | 0 | 1): a watcher turns the camera they look through
 	Lift = 4, -- ("start" | "leave"): only for the guard standing in that lift -- (raised, yaw, pitch): 10 Hz while filming, plus raise and lower
 	Play = 2, -- ("group" | "solo"): into the best open lift, or an empty one that leaves at once
 	Profile = 2, -- send me my profile again

@@ -42,6 +42,7 @@ local function plate(parent: Instance, name: string, props: { [string]: any }): 
 end
 
 export type Parts = {
+	squad: TextLabel,
 	clock: TextLabel,
 	status: ImageLabel,
 	statusText: TextLabel,
@@ -72,6 +73,17 @@ function Hud.build(gui: ScreenGui): Parts
 		AnchorPoint = Vector2.new(0, 0.5),
 		Size = UDim2.new(1, -64, 0.56, 0),
 		Max = 24,
+	})
+
+	-- the squad: solo lives, or how many guards are still up
+	local squad = Kit.text(gui, "", {
+		Name = "Squad",
+		FontFace = FONT.title,
+		TextColor3 = COLOR.ink,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Position = UDim2.fromOffset(16, 64),
+		Size = UDim2.fromOffset(200, 20),
+		Max = 16,
 	})
 
 	-- the camera status
@@ -158,6 +170,7 @@ function Hud.build(gui: ScreenGui): Parts
 		Max = 16,
 	})
 	return {
+		squad = squad,
 		clock = clock,
 		status = status,
 		statusText = statusText,
@@ -184,7 +197,7 @@ function Hud.fillReport(parts: Parts, summary: any)
 		title.TextColor3 = if summary.outcome == "cleared" then COLOR.green else COLOR.brass
 	end
 	parts.reportRows[1].Text = `TASKS DONE  {summary.tasks or 0}/{summary.total or 0}`
-	parts.reportRows[2].Text = `GUARDS LOST  {summary.deaths or 0}`
+	parts.reportRows[2].Text = `TIMES CAUGHT  {summary.deaths or 0}`
 	parts.reportPay.Text = "+" .. Kit.money(summary.pay or 0)
 	local unlockedNext = summary.outcome == "cleared" and summary.unlocked and summary.unlocked > (summary.night or 0)
 	parts.reportFoot.Text = if unlockedNext
@@ -243,7 +256,7 @@ function Hud.start()
 		end
 		local watch = parts.clock.Parent :: GuiObject
 		watch.Visible = onShift
-		parts.status.Visible = onShift and not State.dead and Settings.get("RecDot") ~= false
+		parts.status.Visible = onShift and not State.dead and not State.down and Settings.get("RecDot") ~= false
 		if State.filmed ~= lastFilmed then
 			lastFilmed = State.filmed
 			parts.statusText.Text = if State.filmed then "● ON CAMERA" else "BLIND SPOT"
@@ -258,6 +271,19 @@ function Hud.start()
 						Position = base + UDim2.fromOffset(4, 0),
 					})
 					:Play()
+			end
+		end
+		local s = State.squad
+		parts.squad.Visible = onShift and s ~= nil
+		if s then
+			if s.solo then
+				parts.squad.Text = "LIVES  "
+					.. string.rep("■ ", math.max(s.lives, 0))
+					.. string.rep("□ ", math.max(C.solo_lives - s.lives, 0))
+				parts.squad.TextColor3 = if s.lives <= 1 then COLOR.red else COLOR.ink
+			else
+				parts.squad.Text = `GUARDS UP  {s.up}/{s.total}`
+				parts.squad.TextColor3 = if s.up < s.total then COLOR.red else COLOR.ink
 			end
 		end
 		local showTitle = os.clock() < titleUntil and onShift

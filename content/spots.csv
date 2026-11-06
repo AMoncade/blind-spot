@@ -12,3 +12,4 @@ Tape1,tape,Lost tape,-8,0,-30.6,0,south stalls
 Tape2,tape,Lost tape,-44,0,28,0,north west stalls
 Tape3,tape,Lost tape,48,0,-40.8,0,corridor east
 VCR,vcr,Booth VCR,-56,3,29.5,180,on the booth desk
+SignIn,signin,Sign-in book,-58.4,3,29.5,180,on the booth desk: a teammate's badge brings them back here

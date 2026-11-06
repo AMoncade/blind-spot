@@ -18,6 +18,9 @@ State.batteryMax = Config.C.camcorder_battery
 State.hushed = false
 State.dead = false
 State.shift = false -- on a shift in the P3 (false: in the lobby)
+State.down = false -- co-op: taken, watching through the cameras from the booth
+State.squad = nil :: any -- { solo, lives, up, total, down = names } (event Squad)
+State.badges = {} :: { any } -- taken guards' badges: { id, name, pos, carriedBy } (event Badges)
 State.tasks = nil :: any -- the night's tasks (event Tasks: tasks, held, brokenCams, brokenLights)
 State.profile = nil :: any -- the saved profile as the server sends it (event Profile)
 State.profileAt = nil :: number? -- os.time() when it arrived (the daily countdown runs from it)
@@ -68,7 +71,15 @@ function State.start()
 			State.dead = true
 		elseif name == "Respawn" then
 			State.dead = false
+			State.down = false
 			State.hushed = false
+		elseif name == "Down" then
+			State.dead = false
+			State.down = true
+		elseif name == "Squad" then
+			State.squad = ...
+		elseif name == "Badges" then
+			State.badges = ...
 		elseif name == "Tasks" then
 			State.tasks = ...
 		elseif name == "Profile" then
@@ -76,6 +87,9 @@ function State.start()
 			State.profileAt = os.time()
 		elseif name == "Shift" then
 			State.shift = ...
+			if not State.shift then
+				State.down = false
+			end
 		end
 		emit(name, ...)
 	end)

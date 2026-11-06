@@ -6,6 +6,8 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local Client = script.Parent.Parent
 local State = require(Client:WaitForChild("State"))
 local Kit = require(Client:WaitForChild("Ui"):WaitForChild("Kit"))
@@ -133,6 +135,18 @@ function Tasks.fill(parts: Parts, data: any, myId: number)
 			l.Visible = false
 		end
 	end
+	-- a taken guard's badge is one more line (plan section 3: bring it back to the booth)
+	local free = #list + 1
+	for _, b in State.badges or {} do
+		if free <= LINES then
+			local l = parts.lines[free]
+			local mine = b.carriedBy == myId
+			l.Text = (if mine then "[>] " else "[ ] ") .. "Bring " .. b.name .. "'s badge to the booth"
+			l.TextColor3 = if mine then COLOR.red else COLOR.paperInk
+			l.Visible = true
+			free += 1
+		end
+	end
 	parts.count.Text = `{done}/{#list}`
 	local held = data and data.held and data.held[tostring(myId)]
 	parts.holding.Text = if held then "HOLDING: " .. string.upper(held) else "HANDS FREE"
@@ -207,8 +221,35 @@ local function spotAnchor(position: { number }): BasePart?
 	return nil
 end
 
+local function badgeAnchor(userId: number): BasePart?
+	local root = workspace:FindFirstChild("P3")
+	local folder = root and root:FindFirstChild("Badges")
+	local part = folder and folder:FindFirstChild("Badge_" .. userId)
+	return if part and part:IsA("BasePart") then part else nil
+end
+
 local function refreshMarkers(data: any, myId: number)
 	local wanted: { [string]: boolean } = {}
+	if State.shift and not State.down then
+		for _, b in State.badges or {} do
+			local key, text, pos
+			if b.carriedBy == myId then
+				key, text = "badge:" .. b.id .. ":use", "SIGN IN " .. b.name
+				local book = Config.spotById.SignIn
+				pos = { book.x, book.y, book.z }
+			elseif b.carriedBy == nil then
+				key, text, pos = "badge:" .. b.id, b.name .. "'S BADGE", b.pos
+			end
+			if key and pos then
+				local anchor = if b.carriedBy == myId then spotAnchor(pos) else badgeAnchor(b.id)
+				if anchor then
+					local m = marker(key, text)
+					m.Adornee = anchor
+					wanted[key] = true
+				end
+			end
+		end
+	end
 	if State.shift and data and data.tasks then
 		for _, t in data.tasks do
 			if t.done then
@@ -259,13 +300,16 @@ function Tasks.start()
 		gui.Enabled = State.shift
 	end
 	State.on("Tasks", refresh)
+	State.on("Badges", refresh)
+	State.on("Down", refresh)
+	State.on("Respawn", refresh)
 	State.on("Shift", refresh)
 
 	RunService.RenderStepped:Connect(function()
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart")
 		for _, b in markers do
-			b.Enabled = State.shift and not State.dead
+			b.Enabled = State.shift and not State.dead and not State.down
 			local adornee = b.Adornee
 			local distance = b:FindFirstChild("Distance")
 			if root and root:IsA("BasePart") and adornee and adornee:IsA("BasePart") and distance then

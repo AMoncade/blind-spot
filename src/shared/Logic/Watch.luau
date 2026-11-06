@@ -58,10 +58,11 @@ function Watch.level(map: { MapBlock }, C: any): Level
 	return { grid = grid, occluders = occluders }
 end
 
--- a fixed camera's view from its config row (it aims at its target)
-function Watch.cameraView(cam: CameraDef): Look.View
+-- a fixed camera's view from its config row (it aims at its target), turned by yawOffset radians when a watcher
+-- turns it (plan section 3, the dead guard at the security booth)
+function Watch.cameraView(cam: CameraDef, yawOffset: number?): Look.View
 	local yaw, pitch = Look.toward(cam.x, cam.y, cam.z, cam.tx, cam.ty, cam.tz)
-	return Look.view(cam.x, cam.y, cam.z, yaw, pitch, cam.hfov, cam.vfov, cam.range)
+	return Look.view(cam.x, cam.y, cam.z, yaw + (yawOffset or 0), pitch, cam.hfov, cam.vfov, cam.range)
 end
 
 local function sees(level: Level, view: Look.View, px: number, py: number, pz: number): boolean

@@ -118,4 +118,13 @@ return {
 		z = 29.5,
 		yaw = 180,
 	},
+	{
+		id = "SignIn",
+		kind = "signin",
+		label = "Sign-in book",
+		x = -58.4,
+		y = 3,
+		z = 29.5,
+		yaw = 180,
+	},
 }

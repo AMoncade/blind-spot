@@ -64,7 +64,8 @@ function UnseenView.start()
 	model = build()
 	RunService.RenderStepped:Connect(function(dt)
 		local u = State.unseen
-		local visible = u.present and State.night ~= nil and not Camcorder.raised and not State.dead
+		-- rule 3: never on a screen, the camcorder's or a security camera's (the watcher)
+		local visible = u.present and State.night ~= nil and not Camcorder.raised and not State.dead and not State.down
 		if visible and not shown then
 			-- he appears where he is, never sliding in from his last place
 			x, z, yaw = u.x, u.z, u.yaw

@@ -47,9 +47,14 @@ function CameraHeads.start()
 		end
 		local step = math.rad(C.camera_turn_speed) * dt
 		for _, h in heads do
-			local wanted = h.rest
+			local model = h.head.Parent
+			local offset = model and model:GetAttribute("AimOffset") or 0
+			local rest = if offset ~= 0
+				then CFrame.new(h.rest.Position) * CFrame.Angles(0, offset :: number, 0) * h.rest.Rotation
+				else h.rest
+			local wanted = rest
 			if seen[h.id] and target and target:IsA("BasePart") and not State.dead then
-				wanted = capped(h.rest, CFrame.lookAt(h.rest.Position, target.Position), maxAngle)
+				wanted = capped(rest, CFrame.lookAt(rest.Position, target.Position), maxAngle)
 			end
 			local delta = h.current:ToObjectSpace(wanted)
 			local axis, angle = delta:ToAxisAngle()

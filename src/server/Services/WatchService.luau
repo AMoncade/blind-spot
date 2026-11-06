@@ -44,6 +44,36 @@ local function rebuild()
 	WatchService.changed:Fire()
 end
 
+-- A watcher turns a camera (CoopService): its field is computed again at the new aim, and the camera model carries
+-- the offset (attribute AimOffset) so the clients turn its head and redraw its safe zone.
+local aims: { [string]: number } = {}
+
+function WatchService.aimOffset(id: string): number
+	return aims[id] or 0
+end
+
+function WatchService.setAimOffset(id: string, offset: number)
+	local cam = Config.cameraById[id]
+	if not cam or (aims[id] or 0) == offset then
+		return
+	end
+	aims[id] = if offset ~= 0 then offset else nil
+	WatchService.fields[id] =
+		Watch.coverage(WatchService.level, Watch.cameraView(cam, offset), C.sample_heights, C.sample_inset)
+	local root = workspace:FindFirstChild("P3")
+	local model = root and root:FindFirstChild("Cameras") and (root :: any).Cameras:FindFirstChild(id)
+	if model then
+		model:SetAttribute("AimOffset", offset)
+	end
+	rebuild()
+end
+
+function WatchService.resetAims()
+	for id in table.clone(aims) do
+		WatchService.setAimOffset(id, 0)
+	end
+end
+
 -- the cameras that run now (PowerDirector, at every phase change)
 function WatchService.setActive(ids: { string })
 	active = table.clone(ids)

@@ -161,6 +161,10 @@ function TaskService.clear()
 	changed()
 end
 
+function TaskService.isCarrying(player: Player): boolean
+	return carrying[player] ~= nil
+end
+
 function TaskService.allDone(): boolean
 	for _, t in list do
 		if not t.done then
@@ -219,6 +223,15 @@ local function onTriggered(spotId: string, player: Player)
 	end
 end
 
+-- Studio debug: the whole round done at once
+function TaskService.completeAll()
+	for _, t in list do
+		t.done = true
+	end
+	table.clear(carrying)
+	changed()
+end
+
 -- Studio debug (DebugService): as if this guard used the spot's prompt
 function TaskService.trigger(spotId: string, player: Player)
 	onTriggered(spotId, player)
@@ -235,7 +248,8 @@ function TaskService.start()
 	local spots = root:WaitForChild("Spots") :: Folder
 	for _, spot in spots:GetChildren() do
 		local prompt = spot:FindFirstChildWhichIsA("ProximityPrompt", true)
-		if prompt then
+		-- the sign-in book belongs to CoopService
+		if prompt and spot:GetAttribute("Kind") ~= "signin" then
 			prompts[spot.Name] = prompt
 			prompt.Enabled = false
 			prompt.Triggered:Connect(function(player)

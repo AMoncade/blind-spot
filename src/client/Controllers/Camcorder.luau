@@ -279,6 +279,19 @@ function Camcorder.start()
 	State.on("Death", function()
 		setRaised(false)
 	end)
+	State.on("Down", function()
+		setRaised(false)
+		local b = player.PlayerGui:FindFirstChild("CamcorderButton")
+		if b and b:IsA("ScreenGui") then
+			b.Enabled = false
+		end
+	end)
+	State.on("Respawn", function()
+		local b = player.PlayerGui:FindFirstChild("CamcorderButton")
+		if b and b:IsA("ScreenGui") then
+			b.Enabled = State.shift
+		end
+	end)
 	State.on("Vanish", function(x: number, z: number)
 		if not Camcorder.raised then
 			return

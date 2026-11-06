@@ -44,6 +44,9 @@ function FirstPerson.start()
 	State.on("Shift", apply)
 
 	RunService:BindToRenderStep("BlindSpotFirstPerson", Enum.RenderPriority.Camera.Value + 1, function(dt: number)
+		if State.down then
+			return -- the watcher looks through a security camera (Watcher.luau)
+		end
 		local camera = workspace.CurrentCamera
 		camera.FieldOfView = math.clamp(Settings.get("FieldOfView"), 1, C.fov_max)
 		local character = player.Character

@@ -337,6 +337,12 @@ local SPOT_LOOK: { [string]: { model: string, size: Vector3, color: Color3, item
 	},
 	tape = { model = "VHSTape", size = Vector3.new(0.9, 0.2, 0.55), color = Color3.fromRGB(20, 20, 22), item = true },
 	vcr = { model = "VCR", size = Vector3.new(2, 0.5, 1.5), color = Color3.fromRGB(30, 30, 32), item = false },
+	signin = {
+		model = "SignInBook",
+		size = Vector3.new(1.2, 0.2, 0.9),
+		color = Color3.fromRGB(90, 22, 18),
+		item = false,
+	},
 }
 
 local function buildSpot(parent: Folder, spot: typeof(Config.Spots[1]))

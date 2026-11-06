@@ -76,6 +76,12 @@ function DebugService.init()
 		if command == "task" and type(arg) == "string" then
 			TaskService.trigger(arg, player) -- as if the guard used that spot's prompt
 			return
+		elseif command == "kill" then
+			NightService.kill(player) -- as if the Unseen touched this guard
+			return
+		elseif command == "done" then
+			TaskService.completeAll()
+			return
 		end
 		if command == "floor" then
 			toggleFloor()

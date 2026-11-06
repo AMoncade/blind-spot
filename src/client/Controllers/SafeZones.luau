@@ -125,6 +125,19 @@ function SafeZones.start()
 		fields[cam.id] = Watch.coverage(level, Watch.cameraView(cam), C.sample_heights, C.sample_inset)
 		task.wait()
 	end
+	-- a watcher turned a camera: its field moves
+	local root = workspace:WaitForChild("P3"):WaitForChild("Cameras")
+	for _, cam in Config.Cameras do
+		local model = root:WaitForChild(cam.id, 10)
+		if model then
+			model:GetAttributeChangedSignal("AimOffset"):Connect(function()
+				local offset = model:GetAttribute("AimOffset") or 0
+				fields[cam.id] =
+					Watch.coverage(level, Watch.cameraView(cam, offset :: number), C.sample_heights, C.sample_inset)
+				lastKey = ""
+			end)
+		end
+	end
 	RunService.Heartbeat:Connect(function()
 		local _, seg = State.now()
 		local phase = if seg then seg.phase else "LIVE"
