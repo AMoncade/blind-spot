@@ -27,3 +27,6 @@ PlasterWall,mesh+texture,own (tools/blender/floor_props.py; textures drawn in co
 FireDoor,mesh+texture,own (tools/blender/floor_props.py; textures drawn in code),own work,,2026-11-07,ServerStorage.LevelModels.FireDoor,service corridor fire door
 Workbench,mesh+texture,own (tools/blender/floor_props.py; textures drawn in code),own work,,2026-11-07,ServerStorage.LevelModels.Workbench,P4 workbench
 Couch,mesh+texture,own (tools/blender/floor_props.py; textures drawn in code),own work,,2026-11-07,ServerStorage.LevelModels.Couch,P1 post couch
+GuardVest,mesh,own (tools/blender/floor_props.py),own work,,2026-11-07,ServerStorage.LevelModels.GuardVest,the uniform jacket (painted by UniformService)
+Unseen,mesh+texture,Adrien's model (Tripo conversion; posed and darkened by tools/blender/unseen.py),licence to confirm by Adrien (Tripo plan),,2026-11-07,ReplicatedStorage.ClientModels.Unseen,the Unseen
+UI art (3rd set),image,generated with Ropilot (same style as the UI art),generated for the game,,2026-11-07,see src/shared/Config/UiArt.luau,5 uniforms and 4 camcorder lamps

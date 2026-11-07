@@ -1,12 +1,14 @@
 # À faire par Adrien, hors du jeu
 
-Ce que Claude ne peut pas faire (droits, comptes, appareils, ou réglages réservés à Adrien par CLAUDE.md). À cocher au fur et à mesure. Mis à jour le 7 novembre 2026.
+Ce que Claude ne peut pas faire (droits, comptes, appareils, ou réglages réservés à Adrien par CLAUDE.md). À cocher au fur et à mesure. Mis à jour le 7 novembre 2026 (soir).
 
 ## Tout de suite
 
 - [ ] **Enregistrer la place dans Studio (Ctrl+S)** : `Documents\Roblox\BlindSpot.rbxl`. Les modèles Blender du lobby et du P3 (`ServerStorage.LobbyModels`, `ServerStorage.LevelModels`) n'existent que dans la place, pas dans GitHub.
 - [ ] **Importer les sons** : les 8 fichiers de `assets/sounds/` (hum, vent, drone, drip, motor, clack, static, tear) dans Studio, Asset Manager, Import. Donner les ids à Claude (ou les mettre dans la colonne `asset` de `content/sounds.csv`). Sans eux le jeu est muet.
 - [ ] **Vérifier son compte pour l'audio** : sans vérification d'identité, Roblox limite les imports audio à 100 par 30 jours (2 000 avec).
+- [ ] **La licence du modèle de l'Invisible** : ton fichier Tripo (`tripo_convert_…fbx`). Avec un plan Tripo payant, le modèle est à toi ; avec le plan gratuit, il est public sous CC BY 4.0 et il faut créditer Tripo (dans la description du jeu par exemple). Dis-moi lequel, je l'écris dans `assets/SOURCES.csv`.
+- [ ] **Le groupe Kestrel & Vane Security** (id 689591627) : ses membres reçoivent l'uniforme Kestrel & Vane dans la boutique (testé en Studio avec ton compte). Le jeu appartient encore à ton compte : le transférer au groupe est ton choix (revenus et accès d'équipe au groupe ; à faire avant de téléverser plus d'assets, sinon il faut les republier sous le groupe).
 - [ ] **Fusionner `phase-0` dans `main`** sur GitHub (la pull request), ou demander à Claude de le faire.
 
 ## Tester ce que Studio ne prouve pas
@@ -24,6 +26,7 @@ Ce que Claude ne peut pas faire (droits, comptes, appareils, ou réglages réser
 - [ ] **Créer les produits Robux** : VIP (499 R$ dans le plan) et Overtime, +25 % de paie (299 R$). Donner leurs ids à Claude (`content/shop.csv`, colonne `robux_product`).
 - [ ] **Le questionnaire de maturité** : viser **Mild** (pas de sang, pas de jurons, l'Invisible reste une silhouette).
 - [ ] **Les serveurs privés** : les activer (prix Roblox) pour jouer entre amis.
+- [ ] **L'analytique** (après publication) : Creator Dashboard, Analytics. Événements `NightStarted`, `NightEnded`, `GuardCaught` (nuit, étage, phase), `QuitDuringShift`, l'entonnoir d'accueil (Joined, FirstShift, FirstNightEnded, Night1Cleared) et l'économie de la paie. Les taux de prise réels par nuit serviront à régler la difficulté mieux que les robots du simulateur.
 
 ## Comptes et calendrier
 
@@ -37,7 +40,7 @@ Ce que Claude ne peut pas faire (droits, comptes, appareils, ou réglages réser
 - [ ] **Le nom** : BLIND SPOT [Stay on Camera], ou autre (la recherche Roblox confond « Blind Spot » et « Blind Shot »).
 - [ ] **La date** : lancement le vendredi 12 février 2027 ?
 - [ ] **Les avatars** : un modèle de garde réaliste commun à tous (recommandé), ou les avatars Roblox de chacun (c'est le cas en ce moment).
-- [ ] **La forme de l'Invisible** : la silhouette trop grande et trop mince (en place, version grise), ou une autre idée.
+- [x] **La forme de l'Invisible** : ton modèle, posé (dos voûté, tête penchée, bras ballants), 8,5 studs, peau gris froid.
 - [ ] **La seconde chance payante** : oui (environ 25 R$, une par nuit) ou rien au lancement.
 - [ ] **Les noms de l'histoire** : le Halloway, Kestrel & Vane, Halloran (l'agent disparu des cassettes) : garder ou changer.
 - [ ] **Un budget pour des assets payants**, ou seulement nos modèles et du CC0.

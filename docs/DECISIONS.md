@@ -65,3 +65,19 @@ Les quatre niveaux du chapitre 1 sont posés côte à côte le long de x (P1 à 
 ## Les portes coupe-feu et le plâtre changent la grille (7 novembre 2026)
 
 Un bloc de la carte peut changer d'état pendant une nuit (`Watch.DYNAMIC` : `firedoor` ouvert par défaut, `plaster` plein par défaut). Le serveur recalcule la grille sur place et seulement les champs des caméras proches ; les clients font pareil à partir de l'attribut `Solid` de la boîte. Une porte fermée protège d'un côté mais aveugle les caméras de l'autre : c'est un choix pour le joueur, pas une cachette sûre.
+
+## La ronde arrive au fil de la nuit (7 novembre 2026)
+
+Le simulateur a montré qu'un garde efficace finissait toute la ronde en une ou deux minutes, avant le premier vacillement, puis attendait au poste toujours filmé : le cycle du courant ne comptait plus. Le plan dit l'inverse (« le cycle du courant tourne pendant toute la ronde »). Chaque tâche a donc une heure d'arrivée (`tasks.csv`, colonne `hours`) ; elle apparaît sur la planchette avec un avis et la radio, et son effet commence avec elle. La nuit reste gagnée si tout est fait à 6 h.
+
+## En LIVE, l'Invisible ne tue pas (7 novembre 2026)
+
+Les morts de la nuit 1 venaient toutes d'un garde qui entrait dans un angle mort en cul-de-sac où l'Invisible rôdait sans pouvoir s'écarter. En LIVE (rôder) et pendant la pause du directeur, il ne touche personne ; un garde qui arrive à moins de 7 studs le voit disparaître (« il se montre, puis n'y est plus »). Le danger du LIVE, c'est la barre SIGNAL : un garde marqué est chassé dans toutes les phases.
+
+## La difficulté au simulateur, et sa limite (7 novembre 2026)
+
+Cibles du plan : moins de 5 % de gardes pris à la nuit 1, environ 30 % à la nuit 3, environ 50 % à la nuit 5. Avec les robots (moitié prudents, moitié distraits) et les réglages retenus (une seule caméra qui tient par zone dès la nuit 3, vacillements de 5 à 3,5 s à la nuit 5, Invisible de 0,85 à 1,35 fois sa vitesse selon la nuit), on obtient environ 0 % à la nuit 1, 14 % à la nuit 3, 20 % à la nuit 4, 44 % à la nuit 5, 50 % à la nuit 6 (100 nuits par mesure aux nuits 3 et 5 : ±4 à 5 points). Les prudents sont pris 3 fois moins que les distraits. Les robots savent toujours où est la caméra qui tiendra et y courent au plus court ; un vrai joueur cherche, hésite, se perd. On n'a donc pas poussé les réglages jusqu'aux cibles chez les robots : ce serait trop dur pour des humains. Le vrai réglage se fera avec l'analytique du jeu publié (`GuardCaught` par nuit, étage et phase), puis le simulateur servira à vérifier qu'un changement va dans le bon sens.
+
+## La coop sans chat (7 novembre 2026)
+
+Pas de chat écrit pendant un quart : six signaux courts dans une roue (`content/signals.csv`), un repère dans le monde et une ligne dans le fil. Ça marche au téléphone, sans traduction, sans modération de texte, et ça garde le silence de la nuit.
