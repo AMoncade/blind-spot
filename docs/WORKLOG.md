@@ -81,3 +81,9 @@ Studio : `Debug` accepte maintenant `kill`, `done`, `tape`, `sight` et `task <sp
 ## 2026-11-07 : la barre de signal et les bords qui noircissent
 
 Demande d'Adrien. En bas au centre, la barre SIGNAL : pleine sous une caméra, elle se vide hors champ (25 s en LIVE, 18 en FLICKER, 12 en BLACKOUT) et se remplit en 5 s sous une caméra. Vide, le garde est marqué : HE KNOWS WHERE YOU ARE, l'Invisible le chasse quelle que soit la phase jusqu'à ce que la barre repasse 40 % (`Hunt.exposure`, specs). Hors champ, les bords de l'écran noircissent, de plus en plus à mesure que la barre se vide. La radio est remontée pour lui laisser la place.
+
+## 2026-11-07 : la première personne corrigée, sans curseur
+
+Retour d'Adrien après son premier playtest : la vue était « un peu derrière la tête » et on voyait mal ; le curseur restait à l'écran. Cause : le contrôleur rendait visibles toutes les pièces du personnage sauf la tête, donc aussi les accessoires de l'avatar (cheveux, chapeau, lunettes), juste devant la caméra. Maintenant la tête et tous les accessoires restent cachés, seuls les bras, le torse et les jambes se voient ; les yeux sont 0,6 stud en avant du centre de la tête (`fp_camera_forward`, `Humanoid.CameraOffset`) ; le curseur est caché pendant un quart et revient au lobby et pour un surveillant. Vérifié en playtest (caméra 0,18 stud du centre de la tête, en avant ; accessoires à 1, membres à 0).
+
+Note : en Studio, ProfileStore affiche une erreur `StudioAccessToApisNotAllowed` quand l'accès aux API n'est pas activé dans les réglages du jeu (il passe alors en mode simulé). C'est attendu ; activer l'accès est un réglage du jeu, donc à Adrien.

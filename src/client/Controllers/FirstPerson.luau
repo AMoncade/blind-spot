@@ -1,7 +1,11 @@
 --!strict
 -- First person, locked (plan section 11, FirstPersonController): the body stays visible, the head bob follows the
 -- walk and the setting (0 to 1), the field of view is a setting (70 to 90). Touch works with Roblox's own controls.
+-- Only the body shows: the head and every accessory (hair, hats) stay hidden, or they would sit in front of the eyes
+-- (Adrien, Nov 7: "un peu derrière la tête, tu vois mal"); the eyes sit a little forward (fp_camera_forward) so a look
+-- down shows the legs, not the inside of the chest. No mouse cursor during a shift (the view is the aim).
 local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
@@ -21,15 +25,23 @@ local bob = 0
 
 local function showBody(character: Model)
 	for _, d in character:GetDescendants() do
-		if d:IsA("BasePart") and d.Name ~= "Head" then
-			d.LocalTransparencyModifier = 0
+		if d:IsA("BasePart") then
+			local hidden = d.Name == "Head" or d:FindFirstAncestorWhichIsA("Accessory") ~= nil
+			d.LocalTransparencyModifier = if hidden then 1 else 0
 		end
 	end
 end
 
 function FirstPerson.start()
 	-- the lobby is third person, so guards see each other; the shift is first person, locked
-	local function apply(onShift: boolean)
+	-- (a watcher, down in the booth, looks through the cameras: third person rules, a free mouse for the buttons)
+	local function apply()
+		local onShift = State.shift and not State.down
+		local character = player.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.CameraOffset = if onShift then Vector3.new(0, 0, -C.fp_camera_forward) else Vector3.zero
+		end
 		if onShift then
 			player.CameraMode = Enum.CameraMode.LockFirstPerson
 			player.CameraMinZoomDistance = 0.5
@@ -40,10 +52,21 @@ function FirstPerson.start()
 			player.CameraMinZoomDistance = C.lobby_zoom_min
 		end
 	end
-	apply(State.shift)
+	apply()
 	State.on("Shift", apply)
+	State.on("Down", apply)
+	State.on("Respawn", apply)
+	player.CharacterAdded:Connect(function(character)
+		character:WaitForChild("Humanoid", 5)
+		apply()
+	end)
 
 	RunService:BindToRenderStep("BlindSpotFirstPerson", Enum.RenderPriority.Camera.Value + 1, function(dt: number)
+		-- the cursor: hidden while the view is the aim (a shift, first person), back in the lobby and for a watcher
+		local cursor = not State.shift or State.down
+		if UserInputService.MouseIconEnabled ~= cursor then
+			UserInputService.MouseIconEnabled = cursor
+		end
 		if State.down then
 			return -- the watcher looks through a security camera (Watcher.luau)
 		end

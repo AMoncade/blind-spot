@@ -191,4 +191,5 @@ return {
 	exposure_safe = 0.4,
 	vignette_max = 0.12,
 	vignette_off = 0.7,
+	fp_camera_forward = 0.6,
 }

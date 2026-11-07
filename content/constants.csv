@@ -189,3 +189,4 @@ exposure_refill,5,seconds on camera to fill it from empty
 exposure_safe,0.4,a marked guard is safe again once the bar is back over this
 vignette_max,0.12,edge darkness when the signal bar is empty (0 black 1 clear)
 vignette_off,0.7,edge darkness as soon as the guard leaves every field
+fp_camera_forward,0.6,first person: the eyes sit this far ahead of the head's centre (a look down shows the legs)
