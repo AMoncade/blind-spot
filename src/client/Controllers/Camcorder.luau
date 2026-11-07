@@ -245,10 +245,13 @@ local function touchButton()
 		local profile = State.profile
 		local item = Config.shopById[profile and profile.viewfinder or "vf_classic"] or Config.shopById.vf_classic
 		art.Image = (Kit.ART :: any)[item.art] or Kit.ART.VfFactory
-		hint.Text = if UserInputService.KeyboardEnabled then "● REC  F" else "● REC"
+		-- what is left of the battery (it charges back under the fixed cameras)
+		local left = math.ceil(math.max(State.battery, 0))
+		hint.Text = if UserInputService.KeyboardEnabled then `CLICK  ·  {left}s` else `● REC  {left}s`
 	end
 	look()
 	State.on("Profile", look)
+	State.on("Battery", look)
 	button.Activated:Connect(Camcorder.toggle)
 	screen.Enabled = State.shift
 	State.on("Shift", function(onShift: boolean)
@@ -269,6 +272,12 @@ function Camcorder.start()
 		end
 		return Enum.ContextActionResult.Sink
 	end, false, Enum.KeyCode.F, Enum.KeyCode.ButtonR2)
+	-- a click puts you behind the viewfinder, another one lowers it (Adrien, 7 Nov); not a click on a button
+	UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
+		if not processed and input.UserInputType == Enum.UserInputType.MouseButton1 and State.shift then
+			Camcorder.toggle()
+		end
+	end)
 
 	State.on("Battery", function(battery: number, _max: number, serverRaised: boolean)
 		if Camcorder.raised and not serverRaised and battery <= 0 then

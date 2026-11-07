@@ -118,6 +118,30 @@ function spec.everySpotIsOnTheMapAndReachable()
 	end
 end
 
+function spec.theCheckpointsAreInBlindSpots()
+	-- Adrien, 7 Nov: the round sends you into the dark. Where a guard stands to scan, no camera films them, with every
+	-- camera on; scanning takes a while
+	local level = Watch.level(Config.Map, C)
+	local sets = {}
+	for _, cam in Config.Cameras do
+		table.insert(sets, Watch.coverage(level, Watch.cameraView(cam), C.sample_heights, C.sample_inset))
+	end
+	local filmed = Watch.union(sets)
+	local scan
+	for _, def in Config.Tasks do
+		if def.id == "scan" then
+			scan = def
+		end
+	end
+	ok(scan.hold >= 3, "a checkpoint takes a few seconds")
+	for _, id in scan.target do
+		local spot = Config.spotById[id]
+		local x = spot.x + math.sin(math.rad(spot.yaw)) * 2.5
+		local z = spot.z + math.cos(math.rad(spot.yaw)) * 2.5
+		ok(not Watch.circleFilmed(level.grid, filmed, x, z, 0.5), id .. " is in a blind spot")
+	end
+end
+
 function spec.payAddsUp()
 	local list = Tasks.build(Config.Tasks, label, C.scan_count, 9, 3)
 	list[1].done = true

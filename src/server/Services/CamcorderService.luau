@@ -123,6 +123,12 @@ function CamcorderService.start()
 		local dt = task.wait(step)
 		for player, s in states do
 			if not s.raised then
+				-- lowered under a fixed camera, the battery charges back (Adrien, 7 Nov: "ça s'allonge avec les
+				-- autres cams"): the security cameras' feed powers the camcorder's dock
+				if s.battery < C.camcorder_battery and #WatchService.seenBy(player) > 0 then
+					s.battery = math.min(C.camcorder_battery, s.battery + dt * C.camcorder_recharge)
+					sendBattery(player, s)
+				end
 				continue
 			end
 			local root = WatchService.rootOf(player)

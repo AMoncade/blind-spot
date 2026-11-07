@@ -1,9 +1,9 @@
 id,kind,label,x,y,z,yaw,note
-R1,checkpoint,Stall 14,-21,3.2,31.85,180,wall reader on the north wall (faces south)
-R2,checkpoint,Stall 31,30,3.2,-31.85,0,south row behind the east car
-R3,checkpoint,Service corridor,0,3.2,-41.85,0,middle of the corridor
-R4,checkpoint,Stairs door,59.85,3.2,-14,-90,east wall near the exit
-R5,checkpoint,Ramp gate,-59.85,3.2,-24,90,west wall south corner
+R1,checkpoint,Pillar N2,1.4,3.2,13,90,blind spot: the hidden face of pillar N2 (tools/sim/checkpoints.luau)
+R2,checkpoint,Pillar S1,-49.4,3.2,-13,-90,blind spot: behind pillar S1
+R3,checkpoint,Corridor west end,-56,3.2,-41.85,0,blind spot: the far end of the service corridor
+R4,checkpoint,East bay,59.85,3.2,9,-90,blind spot: the east wall between the cameras
+R5,checkpoint,North bay,8,3.2,31.85,180,blind spot: the north wall behind the cars
 FuelCan,fuelcan,Fuel can,56,0,-29,0,a blind spot in the south east corner
 Generator,generator,Generator,20,0,-40.75,0,against the corridor's outer wall
 FuseBox07,fusebox,Fuse box C07,0,3.4,11.6,180,on the pillar under camera 07
