@@ -27,6 +27,9 @@ return {
 	LampSodium = "rbxassetid://81147796105072",
 	LampLed = "rbxassetid://98831295491288",
 	LampDarkroom = "rbxassetid://118612328756857",
+	-- the shift setup's cards: crops of Adrien's own thumbnail (2026-11-07)
+	ChapterOne = "rbxassetid://108008295756747",
+	MapHalloway = "rbxassetid://115414797157274",
 	VipBadge = "rbxassetid://124901545765408",
 	Overtime = "rbxassetid://113476037194681",
 	PlayButton = {

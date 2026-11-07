@@ -28,6 +28,7 @@ Config.Codes = Content.Codes
 Config.Floors = Content.Floors
 Config.Stairs = Content.Stairs
 Config.Signals = Content.Signals
+Config.Chapters = Content.Chapters
 
 Config.spotById = {} :: { [string]: typeof(Content.Spots[1]) }
 for _, spot in Content.Spots do

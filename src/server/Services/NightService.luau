@@ -37,7 +37,9 @@ local deaths = 0
 local diedThisShift: { [Player]: boolean } = {}
 local down: { [Player]: boolean } = {} -- co-op: taken, watching from the booth until a teammate brings their badge back
 local solo = true -- one guard on this shift
-local lives = 0 -- solo: catches left tonight
+local lives = 0 -- the team's catches left tonight (the shift setup: 1 to 3)
+local maxLives = 0
+local payMultiplier = 1 -- the shift setup's reward (Logic/Difficulty)
 local running = false
 local shift = 0 -- counts shifts, so a late return to the lobby never touches the next one
 local nightNumber = C.night_test
@@ -83,7 +85,11 @@ local function sendSquad()
 		end
 	end
 	for player in playing do
-		Net.event():FireClient(player, "Squad", { solo = solo, lives = lives, up = up, total = total, down = names })
+		Net.event():FireClient(
+			player,
+			"Squad",
+			{ solo = solo, lives = lives, maxLives = maxLives, up = up, total = total, down = names }
+		)
 	end
 end
 
@@ -128,9 +134,8 @@ function NightService.kill(player: Player)
 	local at = root.Position
 	CoopService.drop(player, at)
 	root.Anchored = true
-	if solo then
-		lives -= 1
-	end
+	-- one of the team's lives (the shift setup); the last one ends a solo night, or downs a co-op guard
+	lives = math.max(0, lives - 1)
 	-- where he is: the catch turns the guard's view to him (Controllers/Death)
 	local _, ux, uz = UnseenService.position()
 	Net.event():FireClient(player, "Death", C.death_seconds, ux, uz)
@@ -149,8 +154,8 @@ function NightService.kill(player: Player)
 		if player.Parent and root.Parent then
 			root.CFrame = World.spawnCFrame()
 		end
-		if solo then
-			-- solo: back in the booth, one life less (plan section 3: the night goes on)
+		if lives > 0 then
+			-- a life left: back at the post, one life less (plan section 3: the night goes on)
 			if root.Parent then
 				root.Anchored = false
 			end
@@ -204,6 +209,7 @@ function endNight(outcome: string)
 		if outcome == "cleared" then
 			pay += C.pay_clear
 		end
+		pay = math.floor(pay * payMultiplier + 0.5)
 		Data.addPay(player, pay)
 		local profile = Data.get(player)
 		Analytics.event(player, "NightEnded", math.floor(os.clock() - startedAt), { "N" .. nightNumber, outcome })
@@ -237,6 +243,7 @@ function endNight(outcome: string)
 			total = total,
 			deaths = deaths,
 			pay = pay,
+			multiplier = payMultiplier,
 			unlocked = Data.unlockedNight(player),
 		})
 	end
@@ -258,7 +265,8 @@ function endNight(outcome: string)
 end
 
 -- A lift arrived at the P3 with these guards: the shift starts. Returns false when one is already running.
-function NightService.launch(guards: { Player }, night: number?): boolean
+-- setup: the lives and the reward the lift's guards chose in the lobby (Logic/Difficulty); nil: the defaults
+function NightService.launch(guards: { Player }, night: number?, setup: { lives: number, multiplier: number }?): boolean
 	if running then
 		return false
 	end
@@ -279,7 +287,9 @@ function NightService.launch(guards: { Player }, night: number?): boolean
 	DoorService.reset()
 	TaskService.reset(seed, def.extraScans + extraGuards * C.coop_scan_per_guard, def.cables, def.length, nightNumber)
 	solo = #guards <= 1
-	lives = C.solo_lives
+	lives = if setup then setup.lives else C.shift_lives
+	maxLives = lives
+	payMultiplier = if setup then setup.multiplier else 1
 	startedAt = os.clock()
 	for k, player in guards do
 		playing[player] = true

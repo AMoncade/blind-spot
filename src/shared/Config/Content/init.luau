@@ -3,6 +3,7 @@
 return {
 	Cameras = require(if script then script:WaitForChild("Cameras") else "@self/Cameras"),
 	CarColors = require(if script then script:WaitForChild("CarColors") else "@self/CarColors"),
+	Chapters = require(if script then script:WaitForChild("Chapters") else "@self/Chapters"),
 	Codes = require(if script then script:WaitForChild("Codes") else "@self/Codes"),
 	Constants = require(if script then script:WaitForChild("Constants") else "@self/Constants"),
 	Daily = require(if script then script:WaitForChild("Daily") else "@self/Daily"),

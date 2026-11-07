@@ -81,3 +81,11 @@ Cibles du plan : moins de 5 % de gardes pris à la nuit 1, environ 30 % à la nu
 ## La coop sans chat (7 novembre 2026)
 
 Pas de chat écrit pendant un quart : six signaux courts dans une roue (`content/signals.csv`), un repère dans le monde et une ligne dans le fil. Ça marche au téléphone, sans traduction, sans modération de texte, et ça garde le silence de la nuit.
+
+## L'Invisible ne marche plus : il saute, au rythme de ta barre (7 novembre 2026)
+
+Demande d'Adrien. Avant, il marchait par l'ombre et chassait pendant les blackouts. Maintenant il ne bouge jamais à vue : il apparaît dans un angle mort, te regarde, et réapparaît ailleurs d'autant plus près que ta barre SIGNAL est basse ; barre vide hors caméra, c'est la prise. La barre devient la vie de la nuit, lisible d'un coup d'œil, et la peur vient de le voir plus proche à chaque fois. Les règles du plan tiennent : jamais dans un champ (une caméra sur sa case l'envoie ailleurs), jamais à l'écran, tes yeux ne comptent pas. Les phases jouent sur la vitesse de la barre et la fréquence des sauts. Les cibles de difficulté du plan sont à mesurer de nouveau sur de vraies parties.
+
+## La préparation de partie et ses récompenses (7 novembre 2026)
+
+Avant chaque nuit : chapitre, carte, nuit, gardes, vies. La paie est multipliée par la difficulté (nuit, moins de vies, moins de gardes), calculée par le même module à l'écran et au serveur. Les vies sont partagées par l'équipe.

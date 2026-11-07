@@ -9,6 +9,7 @@ local SocialService = game:GetService("SocialService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
+local Difficulty = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Logic"):WaitForChild("Difficulty"))
 local Net = require(Shared:WaitForChild("Net"))
 local Client = script.Parent.Parent
 local State = require(Client:WaitForChild("State"))
@@ -75,6 +76,264 @@ local function railButton(parent: Instance, icon: string, label: string, order: 
 	end)
 	b.Activated:Connect(onClick)
 	return b
+end
+
+-- ---------------------------------------------------------------- NEW SHIFT (the shift setup)
+
+-- Adrien, 7 Nov: before a night, choose the chapter, the map, the night, how many guards and how many lives; the
+-- screen shows how hard it is and what it pays (Logic/Difficulty, the same numbers the server uses at 6 AM).
+local setup = { night = 1, guards = 1, lives = 3, chapter = 1 }
+
+local function buildShift(gui: ScreenGui)
+	local root, body, close = Kit.window(gui, "Setup", "NEW SHIFT")
+	windows.Setup = root
+	local limit = root:FindFirstChildOfClass("UISizeConstraint") :: UISizeConstraint
+	limit.MaxSize = Vector2.new(820, 480)
+	root.Size = UDim2.fromScale(0.86, 0.94)
+	close.Activated:Connect(function()
+		open(nil)
+	end)
+
+	-- left: the chapter and the map, as two picture cards
+	local cards = Kit.new("Frame", { Name = "Cards", Size = UDim2.new(0.46, 0, 1, 0), Parent = body })
+	local function card(order: number, name: string): (Frame, ImageLabel, TextLabel, TextLabel)
+		local c = Kit.plate(cards, {
+			Name = name,
+			Position = UDim2.new(0, 0, (order - 1) * 0.5, if order == 1 then 0 else 4),
+			Size = UDim2.new(1, 0, 0.5, -4),
+			ClipsDescendants = true,
+		})
+		local art = Kit.image(c, "", {
+			Name = "Art",
+			ScaleType = Enum.ScaleType.Crop,
+			Size = UDim2.fromScale(1, 1),
+		})
+		-- a dark band under the titles so they read on the picture
+		Kit.new("Frame", {
+			Name = "Band",
+			BackgroundColor3 = COLOR.shadow,
+			BackgroundTransparency = 0.25,
+			AnchorPoint = Vector2.new(0, 1),
+			Position = UDim2.fromScale(0, 1),
+			Size = UDim2.new(1, 0, 0, 40),
+			Parent = c,
+		})
+		local title = Kit.text(c, "", {
+			Name = "Title",
+			FontFace = FONT.title,
+			TextColor3 = COLOR.brass,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			AnchorPoint = Vector2.new(0, 1),
+			Position = UDim2.new(0, 10, 1, -18),
+			Size = UDim2.new(1, -20, 0, 20),
+			Max = 20,
+		})
+		local sub = Kit.text(c, "", {
+			Name = "Sub",
+			FontFace = FONT.paper,
+			TextColor3 = COLOR.ink,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			AnchorPoint = Vector2.new(0, 1),
+			Position = UDim2.new(0, 10, 1, -3),
+			Size = UDim2.new(1, -20, 0, 15),
+			Max = 14,
+		})
+		return c, art, title, sub
+	end
+	local chapterCard, chapterArt, chapterTitle, chapterSub = card(1, "Chapter")
+	local _, mapArt, mapTitle, mapSub = card(2, "Map")
+	-- the chapter's arrows (the next chapters show locked)
+	local function arrow(text: string, x: number, step: number)
+		local b = Kit.button(chapterCard, ART.DarkButton, text, {
+			Name = if step > 0 then "Next" else "Previous",
+			AnchorPoint = Vector2.new(x, 0),
+			Position = UDim2.new(x, if x == 0 then 6 else -6, 0, 6),
+			Size = UDim2.fromOffset(44, 44),
+			TextSize = 22,
+		})
+		b.Activated:Connect(function()
+			setup.chapter = math.clamp(setup.chapter + step, 1, #Config.Chapters)
+			for _, fn in refreshers do
+				fn()
+			end
+		end)
+	end
+	arrow("<", 0, -1)
+	arrow(">", 1, 1)
+	local lock = Kit.text(chapterCard, "LOCKED", {
+		Name = "Lock",
+		FontFace = FONT.title,
+		TextColor3 = COLOR.red,
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.42),
+		Size = UDim2.new(0.6, 0, 0, 34),
+		Max = 32,
+	})
+
+	-- right: the night, the guards, the lives, the difficulty and START
+	local side = Kit.new("Frame", {
+		Name = "Setup",
+		Position = UDim2.new(0.49, 0, 0, 0),
+		Size = UDim2.new(0.51, 0, 1, 0),
+		Parent = body,
+	})
+	Kit.new("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = side })
+	local function row(order: number, title: string): Frame
+		local r = Kit.plate(side, { Name = title, Size = UDim2.new(1, 0, 0, 50), LayoutOrder = order })
+		Kit.text(r, title, {
+			FontFace = FONT.title,
+			TextColor3 = COLOR.dim,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Position = UDim2.new(0, 10, 0.5, 0),
+			AnchorPoint = Vector2.new(0, 0.5),
+			Size = UDim2.new(0.28, 0, 0, 20),
+			Max = 18,
+		})
+		local options = Kit.new("Frame", {
+			Name = "Options",
+			AnchorPoint = Vector2.new(1, 0.5),
+			Position = UDim2.new(1, -4, 0.5, 0),
+			Size = UDim2.new(0.7, 0, 0, 44),
+			Parent = r,
+		}) :: Frame
+		return options
+	end
+
+	-- NIGHT: < 3 · BLACKOUT >
+	local nightRow = row(1, "NIGHT")
+	local nightLabel = Kit.text(nightRow, "", {
+		Name = "Night",
+		FontFace = FONT.title,
+		Position = UDim2.new(0, 50, 0, 0),
+		Size = UDim2.new(1, -100, 1, 0),
+		Max = 20,
+	})
+	local function nightButton(text: string, step: number, x: number)
+		local b = Kit.button(nightRow, ART.DarkButton, text, {
+			Name = if step > 0 then "NightUp" else "NightDown",
+			AnchorPoint = Vector2.new(x, 0),
+			Position = UDim2.fromScale(x, 0),
+			Size = UDim2.fromOffset(44, 44),
+			TextSize = 22,
+		})
+		b.Activated:Connect(function()
+			local profile = State.profile :: any
+			local unlocked = math.clamp((if profile then profile.bestNight or 0 else 0) + 1, 1, #Config.Nights)
+			setup.night = math.clamp(setup.night + step, 1, unlocked)
+			for _, fn in refreshers do
+				fn()
+			end
+		end)
+	end
+	nightButton("<", -1, 0)
+	nightButton(">", 1, 1)
+
+	-- GUARDS and LIVES: one button per value, the chosen one lit
+	local function pick(order: number, title: string, key: string, values: { number })
+		local options = row(order, title)
+		Kit.new("UIListLayout", {
+			FillDirection = Enum.FillDirection.Horizontal,
+			HorizontalAlignment = Enum.HorizontalAlignment.Right,
+			Padding = UDim.new(0, 6),
+			Parent = options,
+		})
+		local labels = {}
+		for k, v in values do
+			local b, l = Kit.button(options, ART.DarkButton, tostring(v), {
+				Name = title .. v,
+				Size = UDim2.new(1 / #values, -6, 1, 0),
+				LayoutOrder = k,
+				TextSize = 22,
+			})
+			b.Activated:Connect(function()
+				local chosen: any = setup
+				chosen[key] = v
+				for _, fn in refreshers do
+					fn()
+				end
+			end)
+			labels[k] = l
+		end
+		table.insert(refreshers, function()
+			for k, l in labels do
+				local chosen: any = setup
+				l.TextColor3 = if chosen[key] == values[k] then COLOR.green else COLOR.dim
+			end
+		end)
+	end
+	local guardValues = {}
+	for k = 1, C.lift_capacity do
+		guardValues[k] = k
+	end
+	pick(2, "GUARDS", "guards", guardValues)
+	local livesValues = {}
+	for k = 1, #C.lives_reward do
+		livesValues[k] = k
+	end
+	pick(3, "LIVES", "lives", livesValues)
+
+	-- the difficulty and what it pays
+	local diff = Kit.plate(side, { Name = "Difficulty", Size = UDim2.new(1, 0, 0, 40), LayoutOrder = 4 })
+	local diffText = Kit.text(diff, "", {
+		Name = "Text",
+		FontFace = FONT.title,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Position = UDim2.new(0, 10, 0.5, 0),
+		AnchorPoint = Vector2.new(0, 0.5),
+		Size = UDim2.new(0.6, 0, 0, 24),
+		Max = 22,
+	})
+	local payText = Kit.text(diff, "", {
+		Name = "Pay",
+		FontFace = FONT.mono,
+		TextColor3 = COLOR.green,
+		TextXAlignment = Enum.TextXAlignment.Right,
+		AnchorPoint = Vector2.new(1, 0.5),
+		Position = UDim2.new(1, -10, 0.5, 0),
+		Size = UDim2.new(0.4, 0, 0, 22),
+		Max = 20,
+	})
+
+	local start, startLabel = Kit.button(side, ART.PlayButton, "START", {
+		Name = "Start",
+		Size = UDim2.new(1, 0, 0, 52),
+		LayoutOrder = 5,
+		TextSize = 30,
+	})
+	start.Activated:Connect(function()
+		local chapter = Config.Chapters[setup.chapter]
+		if chapter and chapter.locked then
+			return
+		end
+		open(nil)
+		Net.send("Play", { night = setup.night, guards = setup.guards, lives = setup.lives })
+	end)
+
+	table.insert(refreshers, function()
+		local profile = State.profile :: any
+		local unlocked = math.clamp((if profile then profile.bestNight or 0 else 0) + 1, 1, #Config.Nights)
+		setup.night = math.clamp(setup.night, 1, unlocked)
+		local chapter = Config.Chapters[setup.chapter]
+		local art = ART :: any
+		chapterArt.Image = art[chapter.art] or ""
+		mapArt.Image = art[chapter.mapArt] or ""
+		chapterArt.ImageTransparency = if chapter.locked then 0.7 else 0
+		mapArt.ImageTransparency = if chapter.locked then 0.7 else 0
+		chapterTitle.Text = `CHAPTER {setup.chapter}  ·  {chapter.name}`
+		chapterSub.Text = if chapter.locked then "Coming soon" else `{#Config.Nights} nights`
+		mapTitle.Text = `MAP  ·  {chapter.map}`
+		mapSub.Text = chapter.mapNote
+		lock.Visible = chapter.locked
+		local def = Config.nightByNumber[setup.night]
+		nightLabel.Text = `{setup.night}  ·  {def.name}`
+		local mult = Difficulty.payMultiplier(setup, Config.nightByNumber, C)
+		local name, step = Difficulty.label(mult, C)
+		diffText.Text = name .. "  " .. string.rep("■", step) .. string.rep("□", 5 - step)
+		diffText.TextColor3 = if step >= 4 then COLOR.red elseif step >= 2 then COLOR.brass else COLOR.ink
+		payText.Text = string.format("PAY ×%.2f", mult)
+		Kit.setEnabled(start, ART.PlayButton, not chapter.locked)
+		startLabel.Text = if chapter.locked then "LOCKED" else "START"
+	end)
 end
 
 -- ---------------------------------------------------------------- SHOP
@@ -532,13 +791,15 @@ function Menu.build(gui: ScreenGui): (() -> (), GuiObject)
 	local rail = Kit.new("Frame", {
 		Name = "Rail",
 		Position = UDim2.fromOffset(10, 66),
-		Size = UDim2.fromOffset(5 * 72, 74),
+		Size = UDim2.fromOffset(3 * 72, 2 * 80),
 		Parent = gui,
 	})
-	-- a row under the pay: clear of the touch thumbstick (bottom left) and the jump button (bottom right)
-	Kit.new("UIListLayout", {
-		FillDirection = Enum.FillDirection.Horizontal,
-		Padding = UDim.new(0, 6),
+	-- two rows of three under the pay (Adrien, 7 Nov: one long strip looked odd), clear of the touch thumbstick
+	-- (bottom left) and the jump button (bottom right)
+	Kit.new("UIGridLayout", {
+		CellSize = UDim2.fromOffset(66, 74),
+		CellPadding = UDim2.fromOffset(6, 6),
+		FillDirectionMaxCells = 3,
 		SortOrder = Enum.SortOrder.LayoutOrder,
 		Parent = rail,
 	})
@@ -577,23 +838,14 @@ function Menu.build(gui: ScreenGui): (() -> (), GuiObject)
 	})
 	local playButton = Kit.button(bar, ART.PlayButton, "PLAY", {
 		Name = "Play",
-		Size = UDim2.new(0.64, 0, 1, 0),
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.fromScale(0.5, 0),
+		Size = UDim2.new(0.7, 0, 1, 0),
 		TextSize = 36,
 	})
-	local soloButton = Kit.button(bar, ART.DarkButton, "SOLO", {
-		Name = "Solo",
-		AnchorPoint = Vector2.new(1, 0.5),
-		Position = UDim2.new(1, 0, 0.5, 0),
-		Size = UDim2.new(0.33, 0, 0.84, 0),
-		TextSize = 26,
-	})
+	-- PLAY opens the shift setup (chapter, map, night, guards, lives); START there takes the lift
 	playButton.Activated:Connect(function()
-		open(nil)
-		Net.send("Play", "group")
-	end)
-	soloButton.Activated:Connect(function()
-		open(nil)
-		Net.send("Play", "solo")
+		open("Setup")
 	end)
 
 	-- the notice
@@ -632,6 +884,7 @@ function Menu.build(gui: ScreenGui): (() -> (), GuiObject)
 		end)
 	end
 
+	buildShift(gui)
 	buildShop(gui)
 	buildDaily(gui)
 	buildSettings(gui)
@@ -660,6 +913,14 @@ function Menu.start()
 	}) :: ScreenGui
 	local refresh, bar = Menu.build(gui)
 	State.on("Profile", refresh)
+	-- Adrien, 7 Nov: the game opens on the shift setup
+	local opened = false
+	State.on("Profile", function()
+		if not opened and not State.shift then
+			opened = true
+			open("Setup")
+		end
+	end)
 	State.on("Notice", function(text: string, good: boolean)
 		State.notice(text, good)
 	end)

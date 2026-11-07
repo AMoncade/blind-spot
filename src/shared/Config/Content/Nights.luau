@@ -20,6 +20,7 @@ return {
 		extraScans = 0,
 		cables = 0,
 		intro = "Learn the round. Stay where the cameras see you.",
+		reward = 1,
 	},
 	{
 		night = 2,
@@ -40,6 +41,7 @@ return {
 		extraScans = 0,
 		cables = 0,
 		intro = "The lights are acting up. Watch the red lights.",
+		reward = 1.1,
 	},
 	{
 		night = 3,
@@ -60,6 +62,7 @@ return {
 		extraScans = 0,
 		cables = 0,
 		intro = "The power will fail tonight. Stay on camera.",
+		reward = 1.25,
 	},
 	{
 		night = 4,
@@ -80,6 +83,7 @@ return {
 		extraScans = 1,
 		cables = 2,
 		intro = "Someone is cutting the camera lines.",
+		reward = 1.4,
 	},
 	{
 		night = 5,
@@ -100,6 +104,7 @@ return {
 		extraScans = 1,
 		cables = 2,
 		intro = "Finish the round. Whatever it takes.",
+		reward = 1.6,
 	},
 	{
 		night = 6,
@@ -120,5 +125,6 @@ return {
 		extraScans = 2,
 		cables = 3,
 		intro = "No breaks. One camera per zone. Good luck.",
+		reward = 2,
 	},
 }

@@ -20,6 +20,7 @@ local World = require(Server:WaitForChild("Core"):WaitForChild("World"))
 local Actions = require(Server:WaitForChild("Core"):WaitForChild("Actions"))
 local NightService = require(script.Parent:WaitForChild("NightService"))
 local Data = require(Server:WaitForChild("Core"):WaitForChild("Data"))
+local Difficulty = require(Shared:WaitForChild("Logic"):WaitForChild("Difficulty"))
 
 local C = Config.C
 
@@ -37,6 +38,8 @@ type Lift = {
 	guards: { Player }, -- in the order they stepped in
 	solo: Player?, -- SOLO: this lift is one guard's, it leaves at once
 	night: number, -- the night this lift goes down to: its first guard picks it (up to their unlocked night)
+	size: number, -- how many guards it waits for (the shift setup; lift_capacity for guards walking in)
+	lives: number, -- the team's lives (the shift setup)
 	deadline: number?, -- os.clock() when the doors close
 	state: "open" | "leaving" | "closed",
 }
@@ -101,10 +104,16 @@ local function sendLift(player: Player, lift: Lift?)
 			label = lift.label,
 			night = lift.night,
 			nightName = night.name,
+			lives = lift.lives,
+			multiplier = Difficulty.payMultiplier(
+				{ night = lift.night, guards = lift.size, lives = lift.lives },
+				Config.nightByNumber,
+				C
+			),
 			owner = owner == player,
 			maxNight = if owner then Data.unlockedNight(owner) else 1,
 			count = #lift.guards,
-			capacity = C.lift_capacity,
+			capacity = lift.size,
 			closesAt = workspace:GetServerTimeNow() + left,
 			leaving = lift.state ~= "open",
 		})
@@ -166,12 +175,20 @@ local function launch(lift: Lift)
 	table.clear(lift.guards)
 	lift.deadline = nil
 	lift.solo = nil
+	local setup = {
+		lives = lift.lives,
+		multiplier = Difficulty.payMultiplier(
+			{ night = lift.night, guards = lift.size, lives = lift.lives },
+			Config.nightByNumber,
+			C
+		),
+	}
 	if #stillHere > 0 then
 		if C.game_place_id ~= 0 and not RunService:IsStudio() then
 			-- to check on the published game: a reserved server of the game place for this group
 			local options = Instance.new("TeleportOptions")
 			options.ShouldReserveServer = true
-			options:SetTeleportData({ night = lift.night })
+			options:SetTeleportData({ night = lift.night, lives = setup.lives, multiplier = setup.multiplier })
 			local ok, err = pcall(function()
 				TeleportService:TeleportAsync(C.game_place_id, stillHere, options)
 			end)
@@ -179,7 +196,7 @@ local function launch(lift: Lift)
 				warn("[LobbyService] teleport failed: " .. tostring(err))
 			end
 		else
-			NightService.launch(stillHere, lift.night)
+			NightService.launch(stillHere, lift.night, setup)
 		end
 	end
 	for _, player in stillHere do
@@ -228,12 +245,15 @@ local function scan()
 				and not NightService.isPlaying(player)
 				and inside(lift.zone, root.Position)
 			then
-				if #lift.guards >= C.lift_capacity or (lift.solo and lift.solo ~= player) then
+				if #lift.guards >= lift.size or (lift.solo and lift.solo ~= player) then
 					stepOut(lift, player) -- full, or one guard's SOLO lift
 				else
 					table.insert(lift.guards, player)
 					if #lift.guards == 1 then
-						lift.night = Data.unlockedNight(player) -- the first guard's furthest night
+						-- walked in: the first guard's furthest night, a full lift, the default lives
+						lift.night = Data.unlockedNight(player)
+						lift.size = C.lift_capacity
+						lift.lives = C.shift_lives
 					end
 					if not lift.deadline then
 						lift.deadline = os.clock() + C.lift_countdown
@@ -247,7 +267,7 @@ local function scan()
 
 		if lift.deadline then
 			local left = math.max(0, math.ceil(lift.deadline - os.clock()))
-			display(lift, `NIGHT {lift.night}  ·  {#lift.guards}/{C.lift_capacity}  ·  {left}`)
+			display(lift, `NIGHT {lift.night}  ·  {#lift.guards}/{lift.size}  ·  {left}`)
 			if os.clock() >= lift.deadline then
 				task.spawn(launch, lift)
 			end
@@ -257,21 +277,26 @@ local function scan()
 	end
 end
 
--- PLAY: into the open lift with the most guards (a group forms faster); SOLO: into an empty one that leaves at once.
-local function play(player: Player, mode: string)
+-- START on the shift setup (Logic/Difficulty): one guard takes an empty lift that leaves at once; a group joins an
+-- open lift set up the same way (night, guards, lives) with room left, or an empty one it sets up. The lift leaves
+-- when it is full, or at the end of its countdown.
+local function play(player: Player, setup: Difficulty.Setup)
 	if liftOf(player) or NightService.isPlaying(player) then
 		return
 	end
+	local solo = setup.guards <= 1
 	local best: Lift? = nil
 	for _, lift in lifts do
-		if lift.state == "open" and not lift.solo and #lift.guards < C.lift_capacity then
-			if mode == "solo" then
-				if #lift.guards == 0 then
-					best = lift
-					break
-				end
-			elseif not best or #lift.guards > #best.guards then
+		if lift.state == "open" and not lift.solo then
+			local same = #lift.guards > 0
+				and lift.night == setup.night
+				and lift.size == setup.guards
+				and lift.lives == setup.lives
+				and #lift.guards < lift.size
+			if not solo and same and (not best or #best.guards == 0 or #lift.guards > #best.guards) then
 				best = lift
+			elseif #lift.guards == 0 and (not best or (solo and #best.guards > 0)) then
+				best = best or lift
 			end
 		end
 	end
@@ -281,17 +306,19 @@ local function play(player: Player, mode: string)
 		return
 	end
 	local lift = best :: Lift
-	if mode == "solo" then
+	if #lift.guards == 0 then
+		lift.night, lift.size, lift.lives = setup.night, setup.guards, setup.lives
+	end
+	if solo then
 		lift.solo = player
 	end
 	root.AssemblyLinearVelocity = Vector3.zero
 	root.CFrame = CFrame.new(lift.zone.Position.X, root.Position.Y, lift.zone.Position.Z - 1)
 
 	table.insert(lift.guards, player)
-	if #lift.guards == 1 then
-		lift.night = Data.unlockedNight(player)
-	end
-	local closeAt = os.clock() + (if mode == "solo" then C.lift_start_now else C.lift_countdown)
+	-- alone, or the group is complete: the doors close now
+	local full = solo or #lift.guards >= lift.size
+	local closeAt = os.clock() + (if full then C.lift_start_now else C.lift_countdown)
 	lift.deadline = if lift.deadline then math.min(lift.deadline, closeAt) else closeAt
 	for _, p in lift.guards do
 		sendLift(p, lift)
@@ -299,9 +326,15 @@ local function play(player: Player, mode: string)
 end
 
 function LobbyService.init()
-	Actions.on("Play", function(player: Player, mode: unknown)
-		if mode == "group" or mode == "solo" then
-			play(player, mode)
+	Actions.on("Play", function(player: Player, raw: unknown)
+		-- the shift setup (old clients: "group" or "solo")
+		local maxNight = Data.unlockedNight(player)
+		if raw == "solo" or raw == "group" then
+			raw = { night = maxNight, guards = if raw == "solo" then 1 else C.lift_capacity, lives = C.shift_lives }
+		end
+		local setup = Difficulty.clean(raw, maxNight, C)
+		if setup then
+			play(player, setup)
 		end
 	end)
 	Actions.on("Lift", function(player: Player, command: unknown)
@@ -360,6 +393,8 @@ function LobbyService.start()
 				guards = {},
 				solo = nil,
 				night = 1,
+				size = C.lift_capacity,
+				lives = C.shift_lives,
 				deadline = nil,
 				state = "closed", -- the first scan opens them
 			}

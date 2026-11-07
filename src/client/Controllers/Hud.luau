@@ -186,7 +186,7 @@ function Hud.build(gui: ScreenGui): Parts
 		Parent = track,
 	}) :: Frame
 	Kit.new("UICorner", { CornerRadius = UDim.new(0, 3), Parent = fill })
-	local warning = Kit.text(gui, "HE KNOWS WHERE YOU ARE", {
+	local warning = Kit.text(gui, "HE IS CLOSE", {
 		Name = "Warning",
 		FontFace = FONT.title,
 		TextColor3 = COLOR.red,
@@ -416,8 +416,11 @@ function Hud.start()
 			else COLOR.ink
 		parts.signalLabel.Text = if State.filmed then "● SIGNAL" else "SIGNAL"
 		parts.signalLabel.TextColor3 = if State.filmed then COLOR.red else COLOR.dim
-		-- empty: the warning blinks once a second (well under 3 flashes a second)
-		parts.signalWarning.Visible = live and State.marked and math.floor(os.clock() * C.rec_blink_hz * 2) % 2 == 0
+		-- low: the warning blinks once a second (well under 3 flashes a second)
+		parts.signalWarning.Visible = live
+			and not State.filmed
+			and e < C.signal_warn
+			and math.floor(os.clock() * C.rec_blink_hz * 2) % 2 == 0
 		local onShift = State.shift
 		local t = State.now()
 		if State.night then
@@ -452,15 +455,12 @@ function Hud.start()
 		local s = State.squad
 		parts.squad.Visible = onShift and s ~= nil
 		if s then
-			if s.solo then
-				parts.squad.Text = "LIVES  "
-					.. string.rep("■ ", math.max(s.lives, 0))
-					.. string.rep("□ ", math.max(C.solo_lives - s.lives, 0))
-				parts.squad.TextColor3 = if s.lives <= 1 then COLOR.red else COLOR.ink
-			else
-				parts.squad.Text = `GUARDS UP  {s.up}/{s.total}`
-				parts.squad.TextColor3 = if s.up < s.total then COLOR.red else COLOR.ink
-			end
+			-- the team's lives (the shift setup), and in co-op how many guards are still up
+			local hearts = "LIVES  "
+				.. string.rep("■ ", math.max(s.lives, 0))
+				.. string.rep("□ ", math.max((s.maxLives or C.shift_lives) - s.lives, 0))
+			parts.squad.Text = if s.solo then hearts else `{hearts}·  UP {s.up}/{s.total}`
+			parts.squad.TextColor3 = if s.lives <= 1 or s.up < s.total then COLOR.red else COLOR.ink
 		end
 		local showTitle = os.clock() < titleUntil and onShift
 		parts.title.Visible, parts.sub.Visible, parts.place.Visible = showTitle, showTitle, showTitle

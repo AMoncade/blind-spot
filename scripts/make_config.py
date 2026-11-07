@@ -93,7 +93,8 @@ def build():
          "blackoutStart": num(r["blackout_start"]), "blackoutEnd": num(r["blackout_end"]),
          "falseAlarmEvery": num(r["false_alarm_every"]), "holdoutsMin": int(r["holdouts_min"]),
          "holdoutsMax": int(r["holdouts_max"]), "name": r["name"], "unseenSpeed": num(r["unseen_speed"]),
-         "extraScans": int(r["extra_scans"]), "cables": int(r["cables"]), "intro": r["intro"]}
+         "extraScans": int(r["extra_scans"]), "cables": int(r["cables"]), "intro": r["intro"],
+         "reward": num(r["reward"])}
         for r in rows("nights.csv")])
 
     floors = rows("floors.csv")
@@ -145,6 +146,10 @@ def build():
             spots.append({"id": r["id"], "kind": r["kind"], "label": r["label"], "floor": f["floor"],
                           "x": num(r["x"]) + dx, "y": num(r["y"]), "z": num(r["z"]), "yaw": num(r["yaw"])})
     mods["Spots"] = ("spots*.csv", spots)
+
+    mods["Chapters"] = ("chapters.csv", [
+        {"id": r["id"], "name": r["name"], "map": r["map"], "mapNote": r["map_note"], "art": r["art"],
+         "mapArt": r["map_art"], "locked": flag(r["locked"])} for r in rows("chapters.csv")])
 
     mods["Signals"] = ("signals.csv", [
         {"id": r["id"], "text": r["text"], "kind": r["kind"], "color": r["color"]} for r in rows("signals.csv")])
