@@ -27,6 +27,7 @@ Config.Daily = Content.Daily
 Config.Codes = Content.Codes
 Config.Floors = Content.Floors
 Config.Stairs = Content.Stairs
+Config.Signals = Content.Signals
 
 Config.spotById = {} :: { [string]: typeof(Content.Spots[1]) }
 for _, spot in Content.Spots do
@@ -61,6 +62,11 @@ end
 Config.floorById = {} :: { [string]: typeof(Content.Floors[1]) }
 for _, floor in Content.Floors do
 	Config.floorById[floor.id] = floor
+end
+
+Config.signalById = {} :: { [string]: typeof(Content.Signals[1]) }
+for _, signal in Content.Signals do
+	Config.signalById[signal.id] = signal
 end
 
 Config.stairsBySpot = {} :: { [string]: typeof(Content.Stairs[1]) }

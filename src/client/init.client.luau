@@ -39,6 +39,7 @@ start("Story")
 start("SoundDirector")
 start("Hud")
 start("Tasks")
+start("Signals")
 start("Lobby")
 start("Menu", false, Ui)
 State.start() -- last: the controllers are listening when the server answers Ready

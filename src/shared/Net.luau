@@ -21,6 +21,7 @@ Net.ACTIONS = {
 	Buy = 4, -- (shop id)
 	Equip = 6, -- (shop id)
 	Redeem = 2, -- (code)
+	Signal = 2, -- (signal id, x, y, z): a coop signal; x, y, z = where the guard looks (OVER HERE)
 	SetSetting = 10, -- (name, value)
 	Debug = 10, -- Studio only (Core/Actions refuses it in a live server)
 }

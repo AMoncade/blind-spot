@@ -1,0 +1,7 @@
+id,text,kind,color,note
+here,OVER HERE,ping,#e8e2d6,a marker where you look
+seen,HE'S THERE,ping,#d63426,where you saw him: he is never on camera so only eyes can tell
+film,FILM ME,self,#7dff8a,raise your camcorder on me
+blackout,BLACKOUT,self,#c9a46a,the lights are going: get under a red light
+help,HELP,self,#d63426,on you
+coming,ON MY WAY,self,#e8e2d6,on you

@@ -18,6 +18,8 @@ local player = Players.LocalPlayer
 
 local FirstPerson = {}
 
+FirstPerson.cursorWanted = false -- another controller needs the cursor for a moment (the signal wheel)
+
 FirstPerson.frozen = false -- the death freezes the view
 
 local walked = 0
@@ -63,7 +65,7 @@ function FirstPerson.start()
 
 	RunService:BindToRenderStep("BlindSpotFirstPerson", Enum.RenderPriority.Camera.Value + 1, function(dt: number)
 		-- the cursor: hidden while the view is the aim (a shift, first person), back in the lobby and for a watcher
-		local cursor = not State.shift or State.down
+		local cursor = not State.shift or State.down or FirstPerson.cursorWanted
 		if UserInputService.MouseIconEnabled ~= cursor then
 			UserInputService.MouseIconEnabled = cursor
 		end
