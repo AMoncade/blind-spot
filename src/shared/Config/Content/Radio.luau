@@ -6,7 +6,7 @@ return {
 		night = 1,
 		trigger = "start",
 		delay = 3,
-		text = "Dispatch to P3. Welcome to the night shift.",
+		text = "Dispatch. Welcome to the night shift. You start at the post on P1. Nothing gets you in here.",
 	},
 	{
 		id = "n1b",
@@ -27,7 +27,7 @@ return {
 		night = 1,
 		trigger = "start",
 		delay = 25,
-		text = "The corridor generator is out. The fuel can is somewhere on the level. Mind the dark corners.",
+		text = "The P3 generator is out. Take the stairs down. The fuel can is somewhere on P3. Mind the dark corners.",
 	},
 	{
 		id = "n1e",

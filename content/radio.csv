@@ -1,8 +1,8 @@
 id,night,trigger,delay,text,note
-n1a,1,start,3,Dispatch to P3. Welcome to the night shift.,night 1 is the tutorial
+n1a,1,start,3,Dispatch. Welcome to the night shift. You start at the post on P1. Nothing gets you in here.,night 1 is the tutorial
 n1b,1,start,9,Rule one: stay where a camera can see you. The floor glows where they look.,
 n1c,1,start,17,Your round is on your clipboard. Do all of it before six.,
-n1d,1,start,25,The corridor generator is out. The fuel can is somewhere on the level. Mind the dark corners.,
+n1d,1,start,25,The P3 generator is out. Take the stairs down. The fuel can is somewhere on P3. Mind the dark corners.,
 n1e,1,start,34,Raise your camcorder with F. Whatever it films is safe.,
 n2a,2,start,3,Dispatch. The lights on P3 have been stuttering.,
 n2b,2,start,10,When they flicker look for the cameras whose red light stays on. Those keep working.,

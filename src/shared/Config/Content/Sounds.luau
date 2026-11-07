@@ -4,7 +4,7 @@ return {
 	{
 		id = "hum",
 		file = "hum.wav",
-		asset = "",
+		asset = "9125784796",
 		volume = 0.35,
 		loop = true,
 		caption = "",
@@ -12,7 +12,7 @@ return {
 	{
 		id = "vent",
 		file = "vent.wav",
-		asset = "",
+		asset = "9125446533",
 		volume = 0.45,
 		loop = true,
 		caption = "",
@@ -20,7 +20,7 @@ return {
 	{
 		id = "drone",
 		file = "drone.wav",
-		asset = "",
+		asset = "9114316917",
 		volume = 0.55,
 		loop = true,
 		caption = "[ A LOW DRONE ]",
@@ -28,7 +28,7 @@ return {
 	{
 		id = "drip",
 		file = "drip.wav",
-		asset = "",
+		asset = "9112900988",
 		volume = 0.4,
 		loop = false,
 		caption = "",
@@ -36,7 +36,7 @@ return {
 	{
 		id = "motor",
 		file = "motor.wav",
-		asset = "",
+		asset = "9118329245",
 		volume = 0.5,
 		loop = false,
 		caption = "[ A CAMERA TURNS TOWARD YOU ]",
@@ -44,7 +44,7 @@ return {
 	{
 		id = "clack",
 		file = "clack.wav",
-		asset = "",
+		asset = "9119717074",
 		volume = 0.6,
 		loop = false,
 		caption = "[ THE LIGHTS DIE ]",
@@ -52,7 +52,7 @@ return {
 	{
 		id = "static",
 		file = "static.wav",
-		asset = "",
+		asset = "9118027881",
 		volume = 0.35,
 		loop = false,
 		caption = "",
@@ -60,7 +60,7 @@ return {
 	{
 		id = "tear",
 		file = "tear.wav",
-		asset = "",
+		asset = "9120427584",
 		volume = 0.8,
 		loop = false,
 		caption = "[ THE TAPE TEARS ]",

@@ -10,9 +10,11 @@ local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared:WaitForChild("Net"))
+local Config = require(Shared:WaitForChild("Config"))
 local State = require(script.Parent.Parent:WaitForChild("State"))
 local Kit = require(script.Parent.Parent:WaitForChild("Ui"):WaitForChild("Kit"))
 
+local C = Config.C
 local player = Players.LocalPlayer
 
 local Lobby = {}
@@ -83,8 +85,14 @@ function Lobby.start()
 	})
 	panel.Parent = gui
 
-	local title =
-		text(panel, "Title", "LIFT A  ·  P3", UDim2.new(0.6, 0, 0, 22), UDim2.new(0, 14, 0, 10), THEME.outline)
+	local title = text(
+		panel,
+		"Title",
+		"LIFT A  ·  " .. C.lift_floor,
+		UDim2.new(0.6, 0, 0, 22),
+		UDim2.new(0, 14, 0, 10),
+		THEME.outline
+	)
 	local count = text(panel, "Count", "1/4 GUARDS", UDim2.new(0.38, -14, 0, 22), UDim2.new(0.62, 0, 0, 10), THEME.text)
 	count.TextXAlignment = Enum.TextXAlignment.Right
 	-- the night: the lift's first guard picks it, up to their unlocked night
@@ -144,7 +152,7 @@ function Lobby.start()
 		current = info
 		panel.Visible = info ~= nil and not State.shift
 		if info then
-			title.Text = `{info.label}  ·  P3`
+			title.Text = `{info.label}  ·  {C.lift_floor}`
 			count.Text = `{info.count}/{info.capacity} GUARDS`
 			startButton.Visible = not info.leaving
 			leaveButton.Visible = not info.leaving

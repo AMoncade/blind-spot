@@ -434,7 +434,9 @@ function TaskService.start()
 		for _, task in list do
 			if not shown[task.id] and released(task) then
 				shown[task.id] = true
-				table.insert(fresh, task)
+				if not task.done then -- (a task done before it showed up: the Studio "done" command)
+					table.insert(fresh, task)
+				end
 			end
 		end
 		if #fresh > 0 then

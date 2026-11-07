@@ -4,8 +4,8 @@ Ce que Claude ne peut pas faire (droits, comptes, appareils, ou réglages réser
 
 ## Tout de suite
 
-- [ ] **Enregistrer la place dans Studio (Ctrl+S)** : `Documents\Roblox\BlindSpot.rbxl`. Les modèles Blender du lobby et du P3 (`ServerStorage.LobbyModels`, `ServerStorage.LevelModels`) n'existent que dans la place, pas dans GitHub.
-- [ ] **Importer les sons** : les 8 fichiers de `assets/sounds/` (hum, vent, drone, drip, motor, clack, static, tear) dans Studio, Asset Manager, Import. Donner les ids à Claude (ou les mettre dans la colonne `asset` de `content/sounds.csv`). Sans eux le jeu est muet.
+- [x] **Enregistrer la place dans Studio** : fait par Claude le 7 novembre (Ctrl+S, « Saved new changes in BLIND SPOT to Roblox » ; la place est dans le cloud, pas publiée en ligne). À refaire après chaque séance : `Documents\Roblox\BlindSpot.rbxl`. Les modèles Blender du lobby et du P3 (`ServerStorage.LobbyModels`, `ServerStorage.LevelModels`) n'existent que dans la place, pas dans GitHub.
+- [x] **Les sons** : remplacés par 8 effets ProSoundEffects de la bibliothèque Roblox (libres dans tout jeu Roblox, ids dans `content/sounds.csv`). Nos fichiers synthétisés restent dans `assets/sounds/` si tu préfères les importer un jour. Ancienne note : les 8 fichiers de `assets/sounds/` (hum, vent, drone, drip, motor, clack, static, tear) dans Studio, Asset Manager, Import. Donner les ids à Claude (ou les mettre dans la colonne `asset` de `content/sounds.csv`). Sans eux le jeu est muet.
 - [ ] **Vérifier son compte pour l'audio** : sans vérification d'identité, Roblox limite les imports audio à 100 par 30 jours (2 000 avec).
 - [ ] **La licence du modèle de l'Invisible** : ton fichier Tripo (`tripo_convert_…fbx`). Avec un plan Tripo payant, le modèle est à toi ; avec le plan gratuit, il est public sous CC BY 4.0 et il faut créditer Tripo (dans la description du jeu par exemple). Dis-moi lequel, je l'écris dans `assets/SOURCES.csv`.
 - [ ] **Le groupe Kestrel & Vane Security** (id 689591627) : ses membres reçoivent l'uniforme Kestrel & Vane dans la boutique (testé en Studio avec ton compte). Le jeu appartient encore à ton compte : le transférer au groupe est ton choix (revenus et accès d'équipe au groupe ; à faire avant de téléverser plus d'assets, sinon il faut les republier sous le groupe).
@@ -48,7 +48,7 @@ Ce que Claude ne peut pas faire (droits, comptes, appareils, ou réglages réser
 
 ## Lancement (phase 3 du plan)
 
-- [ ] **La miniature et l'icône** (Claude peut proposer des images ; à valider par toi).
+- [x] **La miniature et l'icône** : Adrien a les siennes (4 miniatures, 7 novembre). Les mettre dans le Creator Dashboard (Places, Thumbnails ; Experience, Icon) au moment de publier.
 - [ ] **La bande-annonce** (capture vidéo en jeu).
 - [ ] **Le test fermé** d'une vingtaine de joueurs : la moitié doit finir la nuit 3.
 - [ ] **Relire chaque cassette, note et réplique radio** (`content/tapes.csv`, `logbook.csv`, `radio.csv`) : pas de jurons, rien qui ferait monter le label.

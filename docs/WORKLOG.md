@@ -111,3 +111,11 @@ Note : en Studio, ProfileStore affiche une erreur `StudioAccessToApisNotAllowed`
 - **L'Invisible a son modèle** : le modèle d'Adrien (riggé), posé dans Blender (`tools/blender/unseen.py`), 8,5 studs, `ReplicatedStorage.ClientModels.Unseen`, dessiné par `UnseenView`.
 - **Les zones sûres plus nettes** : un liseré lumineux au bord de chaque zone filmée (froid en LIVE ; rouge pour ce qui tient quand le courant lâche).
 - **Testé en playtest** : uniforme sur l'avatar (couleurs, changement, refus d'un uniforme non acheté), uniforme du groupe débloqué, liserés (538 bandes), tâches qui arrivent à leur heure avec avis et radio, signaux (repère, remplacement, refus trop loin), modèle de l'Invisible, analytique sans erreur.
+
+## 2026-11-07 (nuit) : le jeu de A à Z
+
+- **La place enregistrée** dans Studio par Claude (Ctrl+S envoyé à Studio une fois au premier plan ; le journal de Studio confirme « Saved new changes in BLIND SPOT to Roblox »). C'est un enregistrement dans le cloud, pas une publication.
+- **Le son** : 8 effets de la bibliothèque ProSoundEffects (sous licence Roblox, libres dans tout jeu), trouvés depuis Studio avec `AssetService:SearchAudio`, vérifiés au chargement : bourdonnement des néons, ventilation, drone du blackout, gouttes, moteur des caméras, disjoncteur, parasites radio, bande déchirée.
+- **Le parcours entier testé en playtest** (par les intentions réseau des boutons : l'outil de clic simulé bloque toujours) : lobby, récompense du jour, SOLO, ascenseur, nuit 1 au P1, sons qui jouent, escaliers, essence et générateur, prise et réveil au poste (3 vies), 6 h, rapport NIGHT CLEARED, retour au lobby, nuit 2 débloquée et choisie par défaut, achat et équipement en boutique, refus faute de paie, nuit 2 jusqu'au bout. Aucune erreur du jeu.
+- **Petits correctifs** : le radio de la nuit 1 parle du P1 et de l'escalier ; les panneaux d'ascenseur disent P1 (`lift_floor`) ; plus d'avis NEW TASK pour une tâche déjà faite.
+- **Restent hors de portée de Studio** : la sauvegarde réelle (accès API ou jeu publié), la coop à plusieurs, le téléphone. L'avertissement `rbxassetid://203785492` ne vient d'aucun asset du jeu (cherché dans toute la place et le code) : il vient de Roblox.

@@ -228,4 +228,5 @@ return {
 	vest_scale = { 1.02, 1, 1.04 },
 	vest_center = 0.85,
 	group_id = 689591627,
+	lift_floor = "P1",
 }

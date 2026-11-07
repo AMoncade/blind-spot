@@ -226,3 +226,4 @@ vm_lamp_angle,55,
 vest_scale,1.02;1;1.04,the uniform jacket over the torso: a little more than the torso's own scale (x y z)
 vest_center,0.85,studs from the jacket model's bottom to the torso's centre (tools/blender/floor_props.py)
 group_id,689591627,the game's Roblox group (Kestrel & Vane Security): its members get the un_kv uniform
+lift_floor,P1,where the lifts take the guards (the post): shown on the lift panels

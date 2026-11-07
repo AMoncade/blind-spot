@@ -252,7 +252,7 @@ local function scan()
 				task.spawn(launch, lift)
 			end
 		else
-			display(lift, `P3  ·  0/{C.lift_capacity}`)
+			display(lift, `{C.lift_floor}  ·  0/{C.lift_capacity}`)
 		end
 	end
 end
