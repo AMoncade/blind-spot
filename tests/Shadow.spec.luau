@@ -82,69 +82,67 @@ function spec.toFilmedCountsSteps()
 	eq(d[Grid.index(g, 3, 3) :: number], 3, "three diagonal steps")
 end
 
-function spec.modesFollowThePhase()
-	eq(Hunt.mode("LIVE", 0), "prowl", "LIVE")
-	eq(Hunt.mode("FLICKER", 0), "approach", "FLICKER")
-	eq(Hunt.mode("BLACKOUT", 0), "hunt", "BLACKOUT")
-	eq(Hunt.mode("BLACKOUT", 3), "retreat", "relief wins")
-end
-
-function spec.huntPicksTheMostExposed()
+function spec.heIsAfterTheLowestBar()
 	local list = {
-		{ id = 1, filmed = false, offTime = 5, fieldSteps = 1 },
-		{ id = 2, filmed = false, offTime = 4, fieldSteps = 12 },
-		{ id = 3, filmed = true, offTime = 0, fieldSteps = 0 },
+		{ id = 1, filmed = false, exposure = 0.6 },
+		{ id = 2, filmed = false, exposure = 0.3 },
+		{ id = 3, filmed = true, exposure = 0.1 },
 	}
-	eq(Hunt.target(list, "approach", C.hunt_distance_weight), 1, "approach: longest off camera")
-	eq(Hunt.target(list, "hunt", C.hunt_distance_weight), 2, "hunt: far from any field")
-	eq(Hunt.target(list, "prowl", C.hunt_distance_weight), nil, "prowl has no target")
-	eq(Hunt.target({ list[3] }, "hunt", 1), nil, "filmed players are never targets")
+	eq(Hunt.target(list), 2, "the lowest bar off camera")
+	eq(Hunt.target({ list[3] }), 3, "a filmed guard when nobody else is out")
+	eq(Hunt.target({}), nil, "nobody")
+	eq(
+		Hunt.target({ { id = 9, filmed = false, exposure = 0.5 }, { id = 4, filmed = false, exposure = 0.5 } }),
+		4,
+		"ties: lower id"
+	)
 end
 
-function spec.signalDrainsAndMarks()
-	local level, marked = 1, false
-	-- off camera in LIVE for the whole drain time: empty and marked
+function spec.signalDrainsAndEmpties()
+	local level, empty = 1, false
+	-- off camera in LIVE for the whole drain time: empty
 	for _ = 1, math.ceil(C.exposure_drain_live * 10) + 1 do
-		level, marked = Hunt.exposure(level, marked, false, "LIVE", 0.1, C)
+		level, empty = Hunt.exposure(level, empty, false, "LIVE", 0.1, C)
 	end
 	eq(level, 0, "empty")
-	ok(marked, "marked when empty")
-	-- back on camera: marked until the bar passes exposure_safe
-	level, marked = Hunt.exposure(level, marked, true, "LIVE", C.exposure_refill * (C.exposure_safe / 2), C)
-	ok(marked, "still marked under the safe level")
-	level, marked = Hunt.exposure(level, marked, true, "LIVE", C.exposure_refill, C)
-	eq(level, 1, "full again")
-	ok(not marked, "safe again")
-	-- a blackout drains faster than LIVE
+	ok(empty, "empty is reported")
+	level, empty = Hunt.exposure(level, empty, true, "LIVE", C.exposure_refill, C)
+	eq(level, 1, "full again under a camera")
+	ok(not empty, "not empty")
+	-- a blackout drains faster than LIVE, and a harder night too
 	local live = Hunt.exposure(1, false, false, "LIVE", 1, C)
 	local dark = Hunt.exposure(1, false, false, "BLACKOUT", 1, C)
 	ok(dark < live, "faster in a blackout")
+	local hard = Hunt.exposure(1, false, false, "LIVE", 1, C, 1.3)
+	ok(hard < live, "faster on a harder night")
 end
 
-function spec.aMarkedGuardIsHuntedFirst()
-	eq(Hunt.mode("LIVE", 0, true), "hunt", "hunted in LIVE when marked")
-	eq(Hunt.mode("LIVE", 0, false), "prowl", "prowl otherwise")
-	local list = {
-		{ id = 1, filmed = false, offTime = 30, fieldSteps = 20 },
-		{ id = 2, filmed = false, offTime = 2, fieldSteps = 1, marked = true },
-	}
-	eq(Hunt.target(list, "hunt", C.hunt_distance_weight), 2, "the marked guard")
+function spec.heComesCloserAsTheBarDrops()
+	eq(Hunt.stalkDistance(1, C), C.stalk_far, "full: far")
+	eq(Hunt.stalkDistance(0, C), C.stalk_near, "empty: on you")
+	local last = math.huge
+	for k = 10, 0, -1 do
+		local d = Hunt.stalkDistance(k / 10, C)
+		ok(d <= last, "never farther as the bar drops")
+		last = d
+	end
+	-- and he jumps more often when the power fails and when the bar is low
+	ok(Hunt.jumpDelay("BLACKOUT", 1, 1, 0.5, C) < Hunt.jumpDelay("LIVE", 1, 1, 0.5, C), "blackout: sooner")
+	ok(Hunt.jumpDelay("LIVE", 0.1, 1, 0.5, C) < Hunt.jumpDelay("LIVE", 1, 1, 0.5, C), "low bar: sooner")
+	ok(Hunt.jumpDelay("LIVE", 1, 1.3, 0.5, C) < Hunt.jumpDelay("LIVE", 1, 1, 0.5, C), "harder night: sooner")
 end
 
-function spec.killOnlyInABlindSpot()
-	ok(Hunt.canKill(1, false, 1, C), "off camera, close, past the grace")
-	ok(not Hunt.canKill(1, true, 1, C), "filmed")
-	ok(not Hunt.canKill(1, false, C.unwatched_grace / 2, C), "inside the grace")
-	ok(not Hunt.canKill(C.unseen_contact + 0.1, false, 5, C), "out of reach")
-	ok(Hunt.canKill(1, false, 1, C, "hunt") and Hunt.canKill(1, false, 1, C, "approach"), "after someone")
-	ok(not Hunt.canKill(1, false, 1, C, "prowl"), "prowling in LIVE he touches no one")
-	ok(not Hunt.canKill(1, false, 1, C, "retreat"), "nor during the director's break")
+function spec.theCatchNeedsAnEmptyBarInTheDark()
+	ok(Hunt.catches(0, false, 1, C), "empty, off camera, past the grace")
+	ok(not Hunt.catches(0.05, false, 5, C), "not empty yet")
+	ok(not Hunt.catches(0, true, 5, C), "filmed")
+	ok(not Hunt.catches(0, false, C.unwatched_grace / 2, C), "inside the grace")
 end
 
-function spec.hushComesBeforeReach()
-	local speed = C.unseen_speed_hunt
-	ok(Hunt.shouldHush(C.unseen_contact + speed * C.unseen_hush_lead - 0.01, speed, C), "just inside the lead")
-	ok(not Hunt.shouldHush(C.unseen_contact + speed * C.unseen_hush_lead + 1, speed, C), "too far yet")
+function spec.theHushComesBeforeHim()
+	ok(Hunt.shouldHush(C.hush_exposure - 0.01, false, C), "low bar: the sound dies")
+	ok(not Hunt.shouldHush(C.hush_exposure + 0.1, false, C), "not yet")
+	ok(not Hunt.shouldHush(0.05, true, C), "never under a camera")
 end
 
 return spec

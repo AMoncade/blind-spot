@@ -12,26 +12,24 @@ player_radius,1.5,a player covers every cell within this radius of their feet
 edge_margin,1,extra radius for lag: a player at the edge of a field counts as filmed
 unwatched_grace,0.4,seconds a player must be off camera before the Unseen can touch them
 unseen_height,8.5,the grey silhouette height
-unseen_contact,3.2,the Unseen kills within this distance (studs)
 unseen_tick,0.1,seconds between Unseen steps on the server
-unseen_repath,0.3,seconds between path searches
-unseen_speed_prowl,6,studs per second in LIVE
-unseen_speed_approach,9,studs per second in FLICKER
-unseen_speed_hunt,12.5,studs per second in BLACKOUT
-unseen_speed_retreat,10,studs per second while the director gives the players a break
-unseen_keep_distance_live,16,in LIVE he stays at least this far from every player
-unseen_corner_distance,7,in LIVE a guard who gets this close to him (his blind corner) sees him vanish: he touches no one while prowling
-unseen_hold_distance_flicker,9,in FLICKER he stops this far from the most exposed player
-unseen_hush_lead,1.5,the sound dies this many seconds before he is in reach (plan section 4)
-unseen_return_min_distance,18,after vanishing he comes back at least this far from every player
 unseen_relief_seconds,25,break after a kill or a long chase (the director)
-unseen_chase_max,20,seconds of chase before the director calls a break
-hunt_distance_weight,0.35,BLACKOUT target score = seconds off camera + weight x cells from the nearest field
+stalk_near,3,studs from his guard when their signal bar is almost empty (he never walks: he jumps from blind spot to blind spot)
+stalk_far,48,studs from his guard when their bar is full
+stalk_curve,0.8,how the distance follows the bar (under 1: he comes close early)
+stalk_band,5,studs of leeway around that distance when he picks a blind spot
+stalk_seen_chance,0.65,the chance he picks a blind spot his guard can see (otherwise one behind a pillar or behind them)
+stalk_live,5;8,seconds between two jumps in LIVE (min;max; shorter as the bar drops and on harder nights)
+stalk_flicker,4;6,seconds between two jumps in FLICKER
+stalk_blackout,2.5;4,seconds between two jumps in a BLACKOUT
+hush_exposure,0.2,the guard's sound dies when their bar is this low (he is about to come)
+signal_warn,0.3,the HUD warns HE IS CLOSE under this (and the music swells)
 unseen_broadcast,0.1,seconds between position updates to the clients
 camcorder_range,26,studs
 camcorder_hfov,55,degrees
 camcorder_vfov,40,degrees
-camcorder_battery,90,seconds of recording on a full battery (plan section 3)
+camcorder_battery,60,seconds of recording on a full battery (plan section 3)
+camcorder_recharge,0.5,seconds of battery won per second spent lowered under a fixed camera
 camcorder_rate,10,times per second the server computes a camcorder field
 camcorder_max_turn,540,degrees per second a camcorder may turn (anti cheat)
 camcorder_samples,1.5;5,heights a camcorder tests in a cell
@@ -181,7 +179,6 @@ stall_width,9,P3 stall width (studs): the stall lines' step
 coop_scan_per_guard,1,one more checkpoint to scan per guard after the first (plan section 3: more guards more tasks)
 coop_speed_per_guard,0.05,the Unseen is 5% faster per guard after the first
 pay_clear,120,bonus when the whole round is done before 6 AM
-solo_lives,3,a guard alone can be caught this many times in a night
 badge_color,#c9a46a,a taken guard's badge on the floor
 camera_turn_step,10,degrees a watcher turns a camera per press
 cuttable_cameras,C03;C04;C05;C06;C08;C09;C12,the cameras whose line the Unseen may cut (wall or pillar mounted: their junction box sits under them)
@@ -189,13 +186,6 @@ cable_cut_margin,0.15,no line is cut in the first or last 15% of the night
 junction_height,3.4,a junction box's bottom above the floor
 splice_hold,3,seconds to splice a cut line
 pay_splice,40,pay for a spliced line
-sighting_first,40,seconds into a LIVE before his first far sighting
-sighting_min,55,shortest gap between two far sightings
-sighting_max,110,longest gap between two far sightings
-sighting_stare,3.5,seconds he stands and stares
-sighting_near,26,closest distance of a far sighting
-sighting_far,64,farthest distance of a far sighting
-sighting_cone,32,degrees from where the guard faces
 drip_min,6,shortest gap between two water drops (s)
 drip_max,16,longest gap between two water drops (s)
 hush_volume,0.06,the beds' volume while the Unseen closes in (the silence)
@@ -204,7 +194,6 @@ exposure_drain_live,25,seconds off camera in LIVE to empty the signal bar
 exposure_drain_flicker,18,seconds off camera in FLICKER to empty it
 exposure_drain_blackout,12,seconds off camera in a BLACKOUT to empty it
 exposure_refill,5,seconds on camera to fill it from empty
-exposure_safe,0.4,a marked guard is safe again once the bar is back over this
 vignette_max,0.12,edge darkness when the signal bar is empty (0 black 1 clear)
 vignette_off,0.7,edge darkness as soon as the guard leaves every field
 fp_camera_forward,0.6,first person: the eyes sit this far ahead of the head's centre (a look down shows the legs)
@@ -223,12 +212,8 @@ door_seconds,0.6,seconds the swing takes
 stairs_hold,0.4,seconds to hold the prompt to take the stairs
 stairs_cooldown,2,seconds before a guard can take the stairs again
 stairs_out,4,studs in front of the stairwell door where a guard comes out
-unseen_floor_delay,14,seconds he waits before he follows the guards to another floor (by the stairs out of sight)
 film_half_x,9.5,a film task's room: half its width around the target spot (the sealed room is 20 wide)
 film_half_z,3.8,and half its depth (the sealed room is 8 deep)
-unseen_start_floor,P3,the floor he starts a night on
-unseen_start_x,50,and where on it (local x and z): its far east end
-unseen_start_z,0,
 spawn_marker,P1_Spawn,the map block where a guard starts a night and wakes up (World.spawnCFrame)
 signal_seconds,7,how long a coop signal's marker stays up
 signal_range,80,studs: the farthest a guard can put an OVER HERE marker (where they look)
@@ -241,3 +226,9 @@ vest_scale,1.02;1;1.04,the uniform jacket over the torso: a little more than the
 vest_center,0.85,studs from the jacket model's bottom to the torso's centre (tools/blender/floor_props.py)
 group_id,689591627,the game's Roblox group (Kestrel & Vane Security): its members get the un_kv uniform
 lift_floor,P1,where the lifts take the guards (the post): shown on the lift panels
+tension_start,0.75,the tension music starts when the signal bar drops under this and is loudest at 0
+lives_reward,1.6;1.25;1,the pay multiplier for 1 2 or 3 lives (the shift setup in the lobby)
+guards_reward,1.2;1.05;1;1,the pay multiplier for 1 2 3 or 4 guards (fewer guards: harder)
+difficulty_steps,1.2;1.5;1.95;2.6,pay multipliers where the difficulty goes up a step (5 steps: the names below)
+difficulty_names,CALM;UNEASY;TENSE;HARD;NIGHTMARE,the difficulty shown on the shift setup
+shift_lives,3,the lives a shift starts with when nobody chose (a guard walking into a lift)

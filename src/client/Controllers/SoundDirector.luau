@@ -105,9 +105,11 @@ local function build()
 			p.Name = def.id
 			p.Asset = "rbxassetid://" .. def.asset
 			p.Looping = def.loop
-			p.Volume = def.volume
+			p.Volume = if def.id == "tension" then 0 else def.volume -- the tension music fades in (below)
 			p.Parent = root
-			wire(p, if def.loop or def.id == "drip" then filter else cueFader, root)
+			-- the beds go through the muffle; the cues and the tension music never do
+			local bed = (def.loop or def.id == "drip") and def.id ~= "tension"
+			wire(p, if bed then filter else cueFader, root)
 			players[def.id] = p
 		end
 	end
@@ -137,7 +139,7 @@ function SoundDirector.start()
 	local lastFilmed = true
 	local seen: { [string]: boolean } = {}
 	local nextDrip = os.clock() + C.drip_min
-	RunService.Heartbeat:Connect(function()
+	RunService.Heartbeat:Connect(function(dt: number)
 		local _, seg = State.now()
 		local phase = if State.shift and seg then seg.phase else "LOBBY"
 		if phase ~= lastPhase then
@@ -167,6 +169,21 @@ function SoundDirector.start()
 			end
 		end
 		seen = now
+		-- the tension music swells as the signal bar drops (Adrien, 7 Nov), and fades back under a camera
+		local tension = players.tension
+		if tension then
+			local alive = State.shift and not State.dead and not State.down
+			local e = State.exposure
+			local want = if alive
+				then defs.tension.volume * math.clamp((C.tension_start - e) / C.tension_start, 0, 1)
+				else 0
+			tension.Volume += (want - tension.Volume) * math.min(1, dt * 2)
+			if want > 0.01 and not tension.IsPlaying then
+				tension:Play()
+			elseif want <= 0.01 and tension.Volume < 0.01 and tension.IsPlaying then
+				tension:Stop()
+			end
+		end
 		if State.shift and os.clock() >= nextDrip then
 			nextDrip = os.clock() + math.random(C.drip_min, C.drip_max)
 			play("drip")

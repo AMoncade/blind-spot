@@ -65,4 +65,12 @@ return {
 		loop = false,
 		caption = "[ THE TAPE TEARS ]",
 	},
+	{
+		id = "tension",
+		file = "",
+		asset = "103589353379765",
+		volume = 0.7,
+		loop = true,
+		caption = "",
+	},
 }

@@ -100,7 +100,9 @@ function UnseenView.start()
 		local jump = (u.x - x) ^ 2 + (u.z - z) ^ 2 > 36
 		x = if jump then u.x else x + (u.x - x) * a
 		z = if jump then u.z else z + (u.z - z) * a
-		yaw = u.yaw
+		-- he always looks at you (each guard sees him stare at them)
+		local eye = workspace.CurrentCamera.CFrame.Position
+		yaw = math.atan2(-(eye.X - x), -(eye.Z - z))
 		place()
 	end)
 end

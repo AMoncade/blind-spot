@@ -24,7 +24,6 @@ local Rng = require("../../src/shared/Logic/Rng")
 
 local C = Config.C
 local DT = 0.2
-local REPATH = 0.6
 local CAM_EVERY = 0.5
 local STAND_OUT = 2.5 -- studs in front of a wall spot where the bot stands to use it
 
@@ -52,7 +51,7 @@ local PROFILES = {
 		reactFlicker = 3.0,
 		misjudge = 0.35,
 		reactBlackout = 2.2,
-		refillBelow = 0,
+		refillBelow = 0.15,
 		refillTo = 0.5,
 		camReact = 1.4,
 		camChance = 0.55,
@@ -195,9 +194,6 @@ local function playNight(night: number, seed: number, profile: any): any
 			filmedAll = baseFilmed
 		end
 	end
-	local function free(i: number): boolean
-		return not g.blocked[i] and not filmedAll[i]
-	end
 
 	-- the bot
 	local spawnBlock
@@ -215,7 +211,7 @@ local function playNight(night: number, seed: number, profile: any): any
 		offTime = 0,
 		filmed = true,
 		dead = 0,
-		lives = C.solo_lives,
+		lives = C.shift_lives,
 		catches = 0,
 		carrying = nil :: string?,
 		path = nil :: { number }?,
@@ -241,8 +237,8 @@ local function playNight(night: number, seed: number, profile: any): any
 	-- the Unseen
 	local u = {
 		present = false,
-		x = Config.floorById[C.unseen_start_floor].offsetX + C.unseen_start_x,
-		z = C.unseen_start_z,
+		x = 0,
+		z = 0,
 		path = nil :: { number }?,
 		pathAt = 2,
 		goal = nil :: number?,
@@ -257,206 +253,10 @@ local function playNight(night: number, seed: number, profile: any): any
 		return Grid.at(g, bot.x, bot.z)
 	end
 
-	local function reappear(fx: number, fz: number)
-		local from = Grid.at(g, fx, fz) or 1
-		local cell = Shadow.nearest(g, from, function(i)
-			if not free(i) then
-				return false
-			end
-			local cx, cz = Grid.center(g, i)
-			return bot.dead > 0 or dist(cx, cz, bot.x, bot.z) >= C.unseen_return_min_distance
-		end)
-		if not cell then
-			u.present = false
-			return
-		end
-		u.x, u.z = Grid.center(g, cell)
-		u.present = true
-		u.path, u.goal, u.repathIn = nil, nil, 0
-	end
-
-	local islandFor: Watch.Set? = nil
-	local islandSet: { [number]: number } = {}
-	local islandList: { number } = {}
-	local function islandCells(): { number }
-		local mine = Grid.at(g, u.x, u.z)
-		if not mine then
-			return {}
-		end
-		if islandFor == filmedAll and islandSet[mine] then
-			return islandList
-		end
-		islandFor = filmedAll
-		islandSet = Shadow.island(g, filmedAll, mine)
-		islandList = {}
-		for i in islandSet do
-			table.insert(islandList, i)
-		end
-		table.sort(islandList)
-		return islandList
-	end
-
-	local function farthestCell(): number?
-		local cells = islandCells()
-		if #cells == 0 then
-			return nil
-		end
-		local best, bestD = nil, -1
-		for _ = 1, 24 do
-			local i = rng.pick(cells)
-			local cx, cz = Grid.center(g, i)
-			local d = dist(cx, cz, bot.x, bot.z)
-			if d > bestD then
-				best, bestD = i, d
-			end
-		end
-		return best
-	end
-
-	local function unseenTick(phase: string, dt: number): string?
-		if not u.present then
-			reappear(u.x, u.z)
-			if not u.present then
-				return nil
-			end
-		end
-		local mine = Grid.at(g, u.x, u.z)
-		if not mine or not free(mine) then
-			reappear(u.x, u.z) -- rule 1: filmed, he is gone from here
-			if not u.present then
-				return nil
-			end
-			mine = Grid.at(g, u.x, u.z)
-		end
-		u.relief = math.max(0, u.relief - dt)
-		local alive = bot.dead <= 0
-		local anyMarked = alive and bot.marked and not bot.filmed
-		local mode = Hunt.mode(phase :: any, u.relief, anyMarked)
-		local targetId = nil
-		if alive then
-			targetId = Hunt.target({
-				{ id = 1, filmed = bot.filmed, offTime = bot.offTime, fieldSteps = 0, marked = bot.marked },
-			}, mode, C.hunt_distance_weight)
-		end
-		local hasTarget = targetId ~= nil
-		if mode == "hunt" and hasTarget then
-			u.chase += dt
-			if u.chase >= C.unseen_chase_max then
-				u.relief, u.chase = C.unseen_relief_seconds, 0
-				mode, hasTarget = "retreat", false
-			end
-		else
-			u.chase = 0
-		end
-		-- the stairs: the guard he wants is on another floor
-		local want = if hasTarget then floorOf(bot.x) elseif alive and not bot.filmed then floorOf(bot.x) else nil
-		if want and want ~= floorOf(u.x) then
-			u.floorWait += dt
-			if u.floorWait >= C.unseen_floor_delay then
-				u.floorWait = 0
-				local row = stairsOf(want)
-				local s = Config.spotById[row.spot]
-				u.present = false
-				reappear(s.x, s.z)
-				return mode
-			end
-		else
-			u.floorWait = 0
-		end
-		if mode == "prowl" and alive and dist(u.x, u.z, bot.x, bot.z) < C.unseen_corner_distance then
-			u.present = false
-			reappear(u.x, u.z)
-			return mode
-		end
-		if u.lastMode ~= mode then
-			u.lastMode = mode
-			u.goal, u.path, u.repathIn = nil, nil, 0
-		end
-		u.repathIn -= dt
-		local reached = u.path == nil or u.pathAt > #(u.path :: { number })
-		local stopAt = 0
-		local keep = dist(u.x, u.z, bot.x, bot.z)
-		if hasTarget then
-			if u.repathIn <= 0 then
-				local tcell = botCell()
-				if tcell and not free(tcell) then
-					tcell = Shadow.nearest(g, tcell, free) or tcell
-				end
-				u.goal = tcell
-			end
-			if mode == "approach" then
-				stopAt = math.ceil(C.unseen_hold_distance_flicker / g.cell)
-			end
-		elseif mode == "retreat" then
-			if reached or u.repathIn <= 0 and u.goal == nil then
-				u.goal = farthestCell()
-			end
-		else
-			local tooClose = alive and keep < C.unseen_keep_distance_live
-			if reached or tooClose and u.repathIn <= 0 then
-				if tooClose then
-					u.goal = farthestCell()
-				else
-					local cells = islandCells()
-					u.goal = nil
-					for _ = 1, 12 do
-						if #cells == 0 then
-							break
-						end
-						local i = rng.pick(cells)
-						local cx, cz = Grid.center(g, i)
-						if not alive or dist(cx, cz, bot.x, bot.z) >= C.unseen_keep_distance_live then
-							u.goal = i
-							break
-						end
-					end
-				end
-			end
-		end
-		if u.repathIn <= 0 or reached then
-			u.repathIn = REPATH
-			u.path = if u.goal and mine then Shadow.path(g, filmedAll, mine :: number, u.goal :: number) else nil
-			if not u.path and u.goal and mine and hasTarget then
-				local gx, gz = Grid.center(g, u.goal :: number)
-				local best, bestD = nil, math.huge
-				for _, i in islandCells() do
-					local cx, cz = Grid.center(g, i)
-					local d = (cx - gx) ^ 2 + (cz - gz) ^ 2
-					if d < bestD then
-						best, bestD = i, d
-					end
-				end
-				if best and best ~= mine then
-					u.path = Shadow.path(g, filmedAll, mine :: number, best)
-				end
-			end
-			u.pathAt = 2
-		end
-		local speed = Hunt.speed(mode :: any, C) * def.unseenSpeed
-		if mode == "prowl" and alive and keep < C.unseen_keep_distance_live and u.goal == nil then
-			speed = 0
-		end
-		local path = u.path
-		if path then
-			local budget = speed * dt
-			while budget > 0 and u.pathAt <= #path do
-				local tx, tz = Grid.center(g, path[u.pathAt])
-				local dx, dz = tx - u.x, tz - u.z
-				local d = math.sqrt(dx * dx + dz * dz)
-				if d < 1e-3 then
-					u.pathAt += 1
-					continue
-				end
-				local move = math.min(budget, d)
-				u.x += dx / d * move
-				u.z += dz / d * move
-				budget -= move
-				if stopAt > 0 and #path - u.pathAt + 1 <= stopAt then
-					break
-				end
-			end
-		end
-		return mode
+	-- he jumps from blind spot to blind spot (UnseenService): in the simulator only his catch matters (an empty bar
+	-- off camera), and where he stands for the camcorder bots to aim at
+	local function unseenTick(_phase: string, _dt: number): string?
+		return "stalk"
 	end
 
 	-- the bot's next destination and what it does there
@@ -666,7 +466,8 @@ local function playNight(night: number, seed: number, profile: any): any
 		else
 			bot.filmed = Watch.circleFilmed(g, filmedAll, bot.x, bot.z, C.player_radius + C.edge_margin)
 			bot.offTime = if bot.filmed then 0 else bot.offTime + DT
-			bot.exposure, bot.marked = Hunt.exposure(bot.exposure, bot.marked, bot.filmed, phase, DT, C)
+			bot.exposure, bot.marked =
+				Hunt.exposure(bot.exposure, bot.marked, bot.filmed, phase, DT, C, def.unseenSpeed)
 
 			-- what it wants now
 			local danger = phase ~= "LIVE"
@@ -828,10 +629,9 @@ local function playNight(night: number, seed: number, profile: any): any
 		end
 
 		-- the Unseen
-		local mode = unseenTick(phase, DT)
-		if bot.dead <= 0 and u.present and mode then
-			local d = dist(bot.x, bot.z, u.x, u.z)
-			if Hunt.canKill(d, bot.filmed, bot.offTime, C, mode :: any) then
+		unseenTick(phase, DT)
+		if bot.dead <= 0 then
+			if Hunt.catches(bot.exposure, bot.filmed, bot.offTime, C) then
 				local doing = if bot.refilling then "refill" elseif bot.dangerSince then "shelter" else "task"
 				table.insert(
 					causes,
@@ -843,8 +643,8 @@ local function playNight(night: number, seed: number, profile: any): any
 				bot.carrying = nil
 				bot.hold = 0
 				camSet = nil
-				u.relief, u.chase = C.unseen_relief_seconds, 0
 				bot.offTime = 0
+				bot.exposure, bot.marked = 1, false
 				if bot.lives <= 0 then
 					lost = true
 					break
