@@ -4,7 +4,8 @@
 -- config), so the glow never lies. LIVE: a faint cold light. FLICKER: the cameras that will hold turn red, the others
 -- stay faint; that's where to run. BLACKOUT: only the red fields are left. Dead cameras (a task not done) show nothing.
 -- The field drawn is the cells themselves; a guard counts as filmed a little beyond it (the doubt goes to the player),
--- so the glow is on the safe side. Settings: SafeZones off hides it.
+-- so the glow is on the safe side. A brighter line runs along the edge of every zone (Adrien, Nov 7: "que ce soit
+-- clair où on est safe"): step over it and no camera sees you. Settings: SafeZones off hides it.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
@@ -89,6 +90,71 @@ local function draw(cells: Watch.Set, color: Color3, alpha: number)
 	end
 end
 
+-- The edge of a cell set: one thin bright strip per run of cell sides that face a cell outside the set (runs merged
+-- along their row or column, so a long straight edge is one part).
+local function edges(cells: Watch.Set, color: Color3, alpha: number)
+	local w = C.zone_edge_width
+	local y = g.floorY + C.zone_height + 0.02
+	local function strip(cx: number, cz: number, sx: number, sz: number)
+		local p = Instance.new("Part")
+		p.Anchored = true
+		p.CanCollide = false
+		p.CanQuery = false
+		p.CanTouch = false
+		p.CastShadow = false
+		p.Material = Enum.Material.Neon
+		p.Color = color
+		p.Transparency = alpha
+		p.Size = Vector3.new(sx, 0.05, sz)
+		p.CFrame = CFrame.new(cx, y, cz)
+		p.Parent = folder
+	end
+	local function inside(ix: number, iz: number): boolean
+		local i = Grid.index(g, ix, iz)
+		return i ~= nil and cells[i] == true
+	end
+	-- sides facing -z and +z: runs along x
+	for _, dz in { -1, 1 } do
+		for iz = 0, g.d - 1 do
+			local ix = 0
+			while ix < g.w do
+				if inside(ix, iz) and not inside(ix, iz + dz) then
+					local start = ix
+					while ix < g.w and inside(ix, iz) and not inside(ix, iz + dz) do
+						ix += 1
+					end
+					local x0 = g.ox + start * g.cell
+					local x1 = g.ox + ix * g.cell
+					local z = g.oz + (iz + (if dz > 0 then 1 else 0)) * g.cell - dz * w / 2
+					strip((x0 + x1) / 2, z, x1 - x0, w)
+				else
+					ix += 1
+				end
+			end
+		end
+	end
+	-- sides facing -x and +x: runs along z
+	for _, dx in { -1, 1 } do
+		for ix = 0, g.w - 1 do
+			local iz = 0
+			while iz < g.d do
+				if inside(ix, iz) and not inside(ix + dx, iz) then
+					local start = iz
+					while iz < g.d and inside(ix, iz) and not inside(ix + dx, iz) do
+						iz += 1
+					end
+					local z0 = g.oz + start * g.cell
+					local z1 = g.oz + iz * g.cell
+					local x = g.ox + (ix + (if dx > 0 then 1 else 0)) * g.cell - dx * w / 2
+					strip(x, (z0 + z1) / 2, w, z1 - z0)
+				else
+					iz += 1
+				end
+			end
+		end
+	end
+end
+
 local function rebuild(phase: string, holdouts: { [string]: boolean }, broken: { [string]: boolean })
 	folder:ClearAllChildren()
 	if not State.shift or Settings.get("SafeZones") == false then
@@ -115,8 +181,17 @@ local function rebuild(phase: string, holdouts: { [string]: boolean }, broken: {
 	for i in strongSet do
 		faintSet[i] = nil
 	end
-	draw(faintSet, Color3.fromRGB(Config.rgb(C.zone_color)), C.zone_live_alpha)
-	draw(strongSet, Color3.fromRGB(Config.rgb(C.zone_hold_color)), C.zone_dark_alpha)
+	local cold = Color3.fromRGB(Config.rgb(C.zone_color))
+	local red = Color3.fromRGB(Config.rgb(C.zone_hold_color))
+	draw(faintSet, cold, C.zone_live_alpha)
+	draw(strongSet, red, C.zone_dark_alpha)
+	-- the edges: of everything filmed in LIVE (cold); once the power fails, of what goes (cold) and what holds (red)
+	if phase == "LIVE" then
+		edges(Watch.union({ faintSet, strongSet }), cold, C.zone_edge_alpha)
+	else
+		edges(faintSet, cold, C.zone_edge_alpha)
+		edges(strongSet, red, C.zone_edge_dark_alpha)
+	end
 end
 
 function SafeZones.start()

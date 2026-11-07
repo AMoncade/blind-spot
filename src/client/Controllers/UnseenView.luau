@@ -1,8 +1,8 @@
 --!strict
 -- Draws the Unseen for the naked eye and hides him in every camera view (plan sections 4 and 11, UnseenView):
 -- "visible à l'œil, jamais à l'écran". The server sends where he is; through the raised camcorder he is never there.
--- Phase 0 draws the grey silhouette (too tall, too thin, head tilted) from client-only parts; the rigged Blender
--- model replaces it in phase 1.
+-- His model is ReplicatedStorage.ClientModels.Unseen (Adrien's model, posed in Blender: too tall, too thin, the head
+-- hanging; tools/blender/unseen.py); without it, the grey silhouette of phase 0 from client-only parts.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
@@ -15,6 +15,7 @@ local C = Config.C
 local UnseenView = {}
 
 local model: Model
+local feet: CFrame? = nil -- the Blender model: its PrimaryPart from the bottom centre of its bounds
 local shown = false
 local x, z, yaw = 0, 0, 0
 
@@ -51,8 +52,26 @@ local function build(): Model
 	return m
 end
 
+-- the Blender model, ready to place (nil when it isn't in the place)
+local function fromBlender(): Model?
+	local folder = ReplicatedStorage:FindFirstChild("ClientModels")
+	local template = folder and folder:WaitForChild("Unseen", 10)
+	if not (template and template:IsA("Model") and template.PrimaryPart) then
+		return nil
+	end
+	local m = template:Clone()
+	local cf, size = m:GetBoundingBox()
+	feet = (cf * CFrame.new(0, -size.Y / 2, 0)):ToObjectSpace((m.PrimaryPart :: BasePart).CFrame)
+	return m
+end
+
 local function place()
+	-- yaw follows Logic/Look (0 looks along -z); the model's face is its +z, so it turns half a turn more
 	local base = CFrame.new(x, C.floor_y, z) * CFrame.Angles(0, yaw, 0)
+	if feet then
+		model:SetPrimaryPartCFrame(base * CFrame.Angles(0, math.pi, 0) * feet)
+		return
+	end
 	for _, p in model:GetChildren() do
 		if p:IsA("BasePart") then
 			p.CFrame = base * (p:GetAttribute("Offset") :: CFrame)
@@ -61,7 +80,7 @@ local function place()
 end
 
 function UnseenView.start()
-	model = build()
+	model = fromBlender() or build()
 	RunService.RenderStepped:Connect(function(dt)
 		local u = State.unseen
 		-- rule 3: never on a screen, the camcorder's or a security camera's (the watcher)
