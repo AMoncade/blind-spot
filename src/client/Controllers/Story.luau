@@ -34,7 +34,7 @@ function Story.start()
 		SliceCenter = ART.DarkButton.Slice,
 		SliceScale = 0.2,
 		AnchorPoint = Vector2.new(0.5, 1),
-		Position = UDim2.new(0.5, 0, 1, -18),
+		Position = UDim2.new(0.5, 0, 1, -50),
 		Size = UDim2.new(0.62, 0, 0, 58),
 		Visible = false,
 		Parent = gui,

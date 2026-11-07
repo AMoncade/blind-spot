@@ -23,6 +23,12 @@ if _G.BS_PREVIEW == "Shift" or _G.BS_PREVIEW == "Report" then
 	parts.clock.Text = "2:14 AM"
 	parts.statusText.Text = "BLIND SPOT"
 	parts.statusText.TextColor3 = Color3.fromRGB(150, 143, 130)
+	-- off camera for a while: the edges darken, the signal bar is a third full
+	for _, edge in parts.vignetteEdges do
+		edge.BackgroundTransparency = 0.3
+	end
+	parts.signalFill.Size = UDim2.fromScale(0.35, 1)
+	parts.signalFill.BackgroundColor3 = Color3.fromRGB(224, 160, 60)
 	local clip = Tasks.build(gui)
 	Tasks.fill(clip, {
 		tasks = {

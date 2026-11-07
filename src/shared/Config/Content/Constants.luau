@@ -184,4 +184,11 @@ return {
 	drip_max = 16,
 	hush_volume = 0.06,
 	hush_seconds = 0.5,
+	exposure_drain_live = 25,
+	exposure_drain_flicker = 18,
+	exposure_drain_blackout = 12,
+	exposure_refill = 5,
+	exposure_safe = 0.4,
+	vignette_max = 0.12,
+	vignette_off = 0.7,
 }

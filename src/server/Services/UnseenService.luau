@@ -50,6 +50,9 @@ local stare: { player: Player, untilT: number }? = nil
 local nextSighting = 0
 local hushed: { [Player]: boolean } = {}
 local offTime: { [Player]: number } = {}
+local exposure: { [Player]: number } = {} -- the signal bar, 1 full (Hunt.exposure)
+local marked: { [Player]: boolean } = {}
+local sentExposure: { [Player]: number } = {}
 local toFilmed: { [number]: number } = {}
 local toFilmedVersion = -1
 
@@ -170,6 +173,14 @@ local function statuses(dt: number): { Status }
 		if root and onShift then
 			local isFilmed = WatchService.isFilmed(player)
 			offTime[player] = if isFilmed then 0 else (offTime[player] or 0) + dt
+			exposure[player], marked[player] = Hunt.exposure(
+				exposure[player] or 1,
+				marked[player] == true,
+				isFilmed,
+				PowerDirector.phase() or "LIVE",
+				dt,
+				C
+			)
 			table.insert(out, {
 				player = player,
 				root = root,
@@ -178,6 +189,8 @@ local function statuses(dt: number): { Status }
 			})
 		else
 			offTime[player] = 0
+			exposure[player] = 1
+			marked[player] = nil
 		end
 	end
 	return out
@@ -300,7 +313,13 @@ local function tick(dt: number)
 
 	relief = math.max(0, relief - dt)
 	local list = statuses(dt)
-	local mode = Hunt.mode(phase, relief)
+	local anyMarked = false
+	for _, s in list do
+		if marked[s.player] and not s.filmed then
+			anyMarked = true
+		end
+	end
+	local mode = Hunt.mode(phase, relief, anyMarked)
 
 	-- he stands still and looks at the guard, then he isn't there any more
 	local st = stare
@@ -330,6 +349,7 @@ local function tick(dt: number)
 			filmed = s.filmed,
 			offTime = offTime[s.player] or 0,
 			fieldSteps = if s.cell then toFilmed[s.cell] or 0 else 0,
+			marked = marked[s.player] == true,
 		})
 	end
 	local targetId = Hunt.target(candidates, mode, C.hunt_distance_weight)
@@ -442,6 +462,9 @@ function UnseenService.start()
 	Players.PlayerRemoving:Connect(function(player)
 		hushed[player] = nil
 		offTime[player] = nil
+		exposure[player] = nil
+		marked[player] = nil
+		sentExposure[player] = nil
 	end)
 	-- he starts in the far east of the level until the night places him
 	x, z = Grid.center(g, Grid.index(g, g.w - 2, g.d // 2) :: number)
@@ -460,6 +483,14 @@ function UnseenService.start()
 		if sinceBroadcast >= C.unseen_broadcast then
 			sinceBroadcast = 0
 			Net.unseen():FireAllClients(present, x, z, yaw)
+			-- each guard's signal bar, when it moved
+			for _, player in Players:GetPlayers() do
+				local e = exposure[player] or 1
+				if math.abs((sentExposure[player] or -1) - e) >= 0.01 or (e == 0) ~= (sentExposure[player] == 0) then
+					sentExposure[player] = e
+					Net.event():FireClient(player, "Exposure", e, marked[player] == true)
+				end
+			end
 		end
 	end
 end

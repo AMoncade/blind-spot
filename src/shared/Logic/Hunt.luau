@@ -11,14 +11,16 @@ export type Candidate = {
 	filmed: boolean,
 	offTime: number, -- seconds off camera in a row
 	fieldSteps: number, -- cells to the nearest filmed cell
+	marked: boolean?, -- their signal ran out: he knows where they are (Hunt.exposure)
 }
 
 -- LIVE: he roams and keeps his distance. FLICKER: he closes in on the most exposed player. BLACKOUT: he hunts.
 -- After a kill or a long chase, the director gives the players a break (relief).
-function Hunt.mode(phase: string, reliefLeft: number): Mode
+function Hunt.mode(phase: string, reliefLeft: number, anyMarked: boolean?): Mode
 	if reliefLeft > 0 then
 		return "retreat"
-	elseif phase == "BLACKOUT" then
+	elseif phase == "BLACKOUT" or anyMarked then
+		-- a guard whose signal ran out is hunted in any phase
 		return "hunt"
 	elseif phase == "FLICKER" then
 		return "approach"
@@ -44,10 +46,17 @@ function Hunt.target(list: { Candidate }, mode: Mode, weight: number): number?
 	if mode ~= "approach" and mode ~= "hunt" then
 		return nil
 	end
+	-- a marked guard comes first: he goes for them before anyone else
+	local anyMarked = false
+	for _, c in list do
+		if c.marked and not c.filmed then
+			anyMarked = true
+		end
+	end
 	local best: number? = nil
 	local bestScore = -math.huge
 	for _, c in list do
-		if not c.filmed then
+		if not c.filmed and (c.marked or not anyMarked) then
 			local score = c.offTime
 			if mode == "hunt" then
 				score += weight * c.fieldSteps
@@ -58,6 +67,34 @@ function Hunt.target(list: { Candidate }, mode: Mode, weight: number): number?
 		end
 	end
 	return best
+end
+
+-- The signal bar (Adrien, Nov 7): 1 on camera, it drains off camera (faster when the power fails) and fills up again
+-- under a camera. Empty, the guard is marked: he knows where they are and hunts them in any phase, until the bar is
+-- back over exposure_safe. Returns the new level and whether the guard is marked.
+function Hunt.exposure(
+	level: number,
+	marked: boolean,
+	filmed: boolean,
+	phase: string,
+	dt: number,
+	C: any
+): (number, boolean)
+	if filmed then
+		level = math.min(1, level + dt / C.exposure_refill)
+	else
+		local drain = if phase == "BLACKOUT"
+			then C.exposure_drain_blackout
+			elseif phase == "FLICKER" then C.exposure_drain_flicker
+			else C.exposure_drain_live
+		level = math.max(0, level - dt / drain)
+	end
+	if level <= 0 then
+		marked = true
+	elseif marked and level >= C.exposure_safe then
+		marked = false
+	end
+	return level, marked
 end
 
 -- Can he touch this player? Only in a blind spot (the player off camera for the whole grace), within reach.

@@ -77,3 +77,7 @@ Demande d'Adrien : faire tout le gameplay, étape par étape. Six étapes, chacu
 6. **Le son** (`Controllers/SoundDirector`, `content/sounds.csv`) : 8 sons synthétisés par code (`tools/audio/make_sounds.py` vers `assets/sounds/`) ; bourdonnement et ventilation qui s'étouffent hors champ et meurent au silence, drone de blackout, moteur d'une caméra qui te filme, néons qui claquent, grésillement radio, bande qui se déchire, gouttes d'eau ; sous-titres des sons qui comptent. **Les sons ne s'entendent pas encore** : il faut les importer dans Studio (Asset Manager, Import) et mettre leurs ids dans `content/sounds.csv`.
 
 Studio : `Debug` accepte maintenant `kill`, `done`, `tape`, `sight` et `task <spot>` (Studio seulement).
+
+## 2026-11-07 : la barre de signal et les bords qui noircissent
+
+Demande d'Adrien. En bas au centre, la barre SIGNAL : pleine sous une caméra, elle se vide hors champ (25 s en LIVE, 18 en FLICKER, 12 en BLACKOUT) et se remplit en 5 s sous une caméra. Vide, le garde est marqué : HE KNOWS WHERE YOU ARE, l'Invisible le chasse quelle que soit la phase jusqu'à ce que la barre repasse 40 % (`Hunt.exposure`, specs). Hors champ, les bords de l'écran noircissent, de plus en plus à mesure que la barre se vide. La radio est remontée pour lui laisser la place.

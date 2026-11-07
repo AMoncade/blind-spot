@@ -126,7 +126,7 @@ function SoundDirector.start()
 		Name = "Caption",
 		FontFace = Kit.FONT.paper,
 		AnchorPoint = Vector2.new(0.5, 1),
-		Position = UDim2.new(0.5, 0, 1, -112),
+		Position = UDim2.new(0.5, 0, 1, -140),
 		Size = UDim2.new(0.5, 0, 0, 22),
 		Max = 18,
 		Visible = false,

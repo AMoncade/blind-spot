@@ -101,6 +101,36 @@ function spec.huntPicksTheMostExposed()
 	eq(Hunt.target({ list[3] }, "hunt", 1), nil, "filmed players are never targets")
 end
 
+function spec.signalDrainsAndMarks()
+	local level, marked = 1, false
+	-- off camera in LIVE for the whole drain time: empty and marked
+	for _ = 1, math.ceil(C.exposure_drain_live * 10) + 1 do
+		level, marked = Hunt.exposure(level, marked, false, "LIVE", 0.1, C)
+	end
+	eq(level, 0, "empty")
+	ok(marked, "marked when empty")
+	-- back on camera: marked until the bar passes exposure_safe
+	level, marked = Hunt.exposure(level, marked, true, "LIVE", C.exposure_refill * (C.exposure_safe / 2), C)
+	ok(marked, "still marked under the safe level")
+	level, marked = Hunt.exposure(level, marked, true, "LIVE", C.exposure_refill, C)
+	eq(level, 1, "full again")
+	ok(not marked, "safe again")
+	-- a blackout drains faster than LIVE
+	local live = Hunt.exposure(1, false, false, "LIVE", 1, C)
+	local dark = Hunt.exposure(1, false, false, "BLACKOUT", 1, C)
+	ok(dark < live, "faster in a blackout")
+end
+
+function spec.aMarkedGuardIsHuntedFirst()
+	eq(Hunt.mode("LIVE", 0, true), "hunt", "hunted in LIVE when marked")
+	eq(Hunt.mode("LIVE", 0, false), "prowl", "prowl otherwise")
+	local list = {
+		{ id = 1, filmed = false, offTime = 30, fieldSteps = 20 },
+		{ id = 2, filmed = false, offTime = 2, fieldSteps = 1, marked = true },
+	}
+	eq(Hunt.target(list, "hunt", C.hunt_distance_weight), 2, "the marked guard")
+end
+
 function spec.killOnlyInABlindSpot()
 	ok(Hunt.canKill(1, false, 1, C), "off camera, close, past the grace")
 	ok(not Hunt.canKill(1, true, 1, C), "filmed")

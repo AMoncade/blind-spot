@@ -42,6 +42,11 @@ local function plate(parent: Instance, name: string, props: { [string]: any }): 
 end
 
 export type Parts = {
+	vignetteEdges: { Frame },
+	signal: ImageLabel,
+	signalLabel: TextLabel,
+	signalFill: Frame,
+	signalWarning: TextLabel,
 	hush: Frame,
 	caption: TextLabel,
 	squad: TextLabel,
@@ -104,6 +109,82 @@ function Hud.build(gui: ScreenGui): Parts
 		Max = 22,
 	})
 
+	-- off camera, the screen's edges darken, more as the signal bar drains (Adrien, Nov 7)
+	local vignette = Kit.new("Frame", { Name = "Vignette", Size = UDim2.fromScale(1, 1), Parent = gui })
+	local vignetteEdges = {}
+	for k, rotation in { 0, 90, 180, 270 } do
+		local edge = Kit.new("Frame", {
+			Name = "Edge" .. k,
+			BackgroundColor3 = Color3.new(0, 0, 0),
+			BackgroundTransparency = 1,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = if rotation % 180 == 0 then UDim2.fromScale(1.2, 1.2) else UDim2.fromScale(1.2 * 0.5, 2.4),
+			Rotation = rotation,
+			Parent = vignette,
+		}) :: Frame
+		Kit.new("UIGradient", {
+			Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 0),
+				NumberSequenceKeypoint.new(0.32, 1),
+				NumberSequenceKeypoint.new(1, 1),
+			}),
+			Parent = edge,
+		})
+		table.insert(vignetteEdges, edge)
+	end
+
+	-- the signal bar, bottom centre (clear of the thumbstick and the jump button): full on camera, it drains off
+	-- camera; empty, he knows where you are
+	local bar = Kit.new("ImageLabel", {
+		Name = "Signal",
+		Image = ART.DarkButton.Image,
+		ScaleType = Enum.ScaleType.Slice,
+		SliceCenter = ART.DarkButton.Slice,
+		SliceScale = 0.12,
+		AnchorPoint = Vector2.new(0.5, 1),
+		Position = UDim2.new(0.5, 0, 1, -8),
+		Size = UDim2.fromOffset(320, 34),
+		Parent = gui,
+	}) :: ImageLabel
+	local barLabel = Kit.text(bar, "SIGNAL", {
+		Name = "Label",
+		FontFace = FONT.title,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Position = UDim2.new(0, 14, 0.5, 0),
+		AnchorPoint = Vector2.new(0, 0.5),
+		Size = UDim2.new(0, 64, 0, 16),
+		Max = 14,
+	})
+	local track = Kit.new("Frame", {
+		Name = "Track",
+		BackgroundColor3 = Color3.fromRGB(10, 10, 11),
+		BackgroundTransparency = 0,
+		Position = UDim2.new(0, 82, 0.5, 0),
+		AnchorPoint = Vector2.new(0, 0.5),
+		Size = UDim2.new(1, -96, 0, 12),
+		Parent = bar,
+	})
+	Kit.new("UICorner", { CornerRadius = UDim.new(0, 3), Parent = track })
+	local fill = Kit.new("Frame", {
+		Name = "Fill",
+		BackgroundColor3 = COLOR.ink,
+		BackgroundTransparency = 0,
+		Size = UDim2.fromScale(1, 1),
+		Parent = track,
+	}) :: Frame
+	Kit.new("UICorner", { CornerRadius = UDim.new(0, 3), Parent = fill })
+	local warning = Kit.text(gui, "HE KNOWS WHERE YOU ARE", {
+		Name = "Warning",
+		FontFace = FONT.title,
+		TextColor3 = COLOR.red,
+		AnchorPoint = Vector2.new(0.5, 1),
+		Position = UDim2.new(0.5, 0, 1, -44),
+		Size = UDim2.fromOffset(320, 22),
+		Max = 20,
+		Visible = false,
+	})
+
 	-- the hush (plan section 4: the sound dies 1.5 s before he is in reach): until the sounds come, a darkening
 	-- of the screen's edges and the caption of what would be heard
 	local hush = Kit.new("Frame", { Name = "Hush", Size = UDim2.fromScale(1, 1), Visible = false, Parent = gui })
@@ -133,7 +214,7 @@ function Hud.build(gui: ScreenGui): Parts
 		FontFace = FONT.paper,
 		TextColor3 = COLOR.ink,
 		AnchorPoint = Vector2.new(0.5, 1),
-		Position = UDim2.new(0.5, 0, 1, -86),
+		Position = UDim2.new(0.5, 0, 1, -116),
 		Size = UDim2.new(0.5, 0, 0, 22),
 		Max = 18,
 		Visible = false,
@@ -207,6 +288,11 @@ function Hud.build(gui: ScreenGui): Parts
 		Max = 16,
 	})
 	return {
+		vignetteEdges = vignetteEdges,
+		signal = bar,
+		signalLabel = barLabel,
+		signalFill = fill,
+		signalWarning = warning,
 		hush = hush,
 		caption = caption,
 		squad = squad,
@@ -294,7 +380,31 @@ function Hud.start()
 	end)
 
 	local lastFilmed: boolean? = nil
-	RunService.RenderStepped:Connect(function()
+	local darkness = 1 -- the vignette's edge transparency, eased
+	RunService.RenderStepped:Connect(function(dt: number)
+		-- the vignette and the signal bar
+		local live = State.shift and not State.dead and not State.down
+		local e = State.exposure
+		local target = 1
+		if live and not State.filmed then
+			target = C.vignette_off + (C.vignette_max - C.vignette_off) * (1 - e)
+		elseif live and State.marked then
+			target = C.vignette_off
+		end
+		darkness += (target - darkness) * math.min(1, dt * 4)
+		for _, edge in parts.vignetteEdges do
+			edge.BackgroundTransparency = darkness
+		end
+		parts.signal.Visible = live
+		parts.signalFill.Size = UDim2.fromScale(e, 1)
+		parts.signalFill.BackgroundColor3 = if State.marked or e < 0.25
+			then COLOR.red
+			elseif e < 0.6 then Color3.fromRGB(224, 160, 60)
+			else COLOR.ink
+		parts.signalLabel.Text = if State.filmed then "● SIGNAL" else "SIGNAL"
+		parts.signalLabel.TextColor3 = if State.filmed then COLOR.red else COLOR.dim
+		-- empty: the warning blinks once a second (well under 3 flashes a second)
+		parts.signalWarning.Visible = live and State.marked and math.floor(os.clock() * C.rec_blink_hz * 2) % 2 == 0
 		local onShift = State.shift
 		local t = State.now()
 		if State.night then

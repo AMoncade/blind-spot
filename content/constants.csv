@@ -182,3 +182,10 @@ drip_min,6,shortest gap between two water drops (s)
 drip_max,16,longest gap between two water drops (s)
 hush_volume,0.06,the beds' volume while the Unseen closes in (the silence)
 hush_seconds,0.5,how fast the sound dies
+exposure_drain_live,25,seconds off camera in LIVE to empty the signal bar
+exposure_drain_flicker,18,seconds off camera in FLICKER to empty it
+exposure_drain_blackout,12,seconds off camera in a BLACKOUT to empty it
+exposure_refill,5,seconds on camera to fill it from empty
+exposure_safe,0.4,a marked guard is safe again once the bar is back over this
+vignette_max,0.12,edge darkness when the signal bar is empty (0 black 1 clear)
+vignette_off,0.7,edge darkness as soon as the guard leaves every field

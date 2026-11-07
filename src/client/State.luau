@@ -18,6 +18,8 @@ State.batteryMax = Config.C.camcorder_battery
 State.hushed = false
 State.dead = false
 State.shift = false -- on a shift in the P3 (false: in the lobby)
+State.exposure = 1 -- the signal bar: 1 full on camera, it drains off camera (event Exposure)
+State.marked = false -- the bar ran out: he knows where you are
 State.down = false -- co-op: taken, watching through the cameras from the booth
 State.squad = nil :: any -- { solo, lives, up, total, down = names } (event Squad)
 State.badges = {} :: { any } -- taken guards' badges: { id, name, pos, carriedBy } (event Badges)
@@ -80,6 +82,9 @@ function State.start()
 			State.squad = ...
 		elseif name == "Badges" then
 			State.badges = ...
+		elseif name == "Exposure" then
+			local e, m = ...
+			State.exposure, State.marked = e, m
 		elseif name == "Tasks" then
 			State.tasks = ...
 		elseif name == "Profile" then
