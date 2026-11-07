@@ -51,12 +51,18 @@ function spec.shopConfigIsSane()
 	for _, item in Config.Shop do
 		eq(ids[item.id], nil, "unique id " .. item.id)
 		ids[item.id] = true
-		assert(item.kind == "viewfinder" or item.kind == "robux", "kind " .. item.kind)
+		local kinds = { viewfinder = true, uniform = true, lamp = true, robux = true }
+		assert(kinds[item.kind], "kind " .. item.kind)
+		assert(item.unlock == "" or item.unlock == "group", "unlock " .. item.unlock)
 		Config.rgb(item.frame)
 		Config.rgb(item.rec)
 		Config.rgb(item.text)
 	end
 	eq(Config.shopById.vf_classic.price, 0, "the factory viewfinder is free")
+	-- what every new profile owns and wears (Core/Data, TEMPLATE)
+	eq(Config.shopById.un_navy.price, 0, "the night shift jacket is free")
+	eq(Config.shopById.lp_halogen.price, 0, "the halogen lamp is free")
+	eq(Config.shopById.un_kv.unlock, "group", "the company uniform comes with the group")
 end
 
 return spec

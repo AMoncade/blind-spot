@@ -85,7 +85,7 @@ local function buildShop(gui: ScreenGui)
 	close.Activated:Connect(function()
 		open(nil)
 	end)
-	Kit.text(body, "CAMCORDER VIEWFINDERS  ·  PAID FROM YOUR NIGHT SHIFTS", {
+	Kit.text(body, "VIEWFINDERS  ·  UNIFORMS  ·  LAMPS  ·  PAID FROM YOUR SHIFTS", {
 		FontFace = FONT.paper,
 		TextColor3 = COLOR.dim,
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -128,8 +128,9 @@ local function buildShop(gui: ScreenGui)
 			Position = UDim2.new(0.5, 0, 0.5, -2),
 			AnchorPoint = Vector2.new(0.5, 0.5),
 		})
-		if item.kind == "viewfinder" then
-			for n, hex in { item.frame, item.rec } do
+		local cosmetic = item.kind == "viewfinder" or item.kind == "uniform" or item.kind == "lamp"
+		if cosmetic then
+			for n, hex in (if item.kind == "lamp" then { item.frame } else { item.frame, item.rec }) do
 				Kit.new("Frame", {
 					BackgroundColor3 = Color3.fromRGB(Config.rgb(hex)),
 					BackgroundTransparency = 0,
@@ -167,7 +168,7 @@ local function buildShop(gui: ScreenGui)
 		})
 		buy.Activated:Connect(function()
 			local profile = State.profile
-			if item.kind == "viewfinder" and profile and profile.owned[item.id] then
+			if cosmetic and profile and profile.owned[item.id] then
 				Net.send("Equip", item.id)
 			else
 				Net.send("Buy", item.id)
@@ -178,13 +179,17 @@ local function buildShop(gui: ScreenGui)
 			if item.kind == "robux" then
 				label.Text = if item.product ~= 0 then "R$" else "SOON"
 				Kit.setEnabled(buy, ART.DarkButton, item.product ~= 0)
-			elseif profile and profile.viewfinder == item.id then
+			elseif profile and cosmetic and (profile :: any)[item.kind] == item.id then
 				label.Text = "EQUIPPED"
 				label.TextColor3 = COLOR.green
 				Kit.setEnabled(buy, ART.DarkButton, false)
 			elseif profile and profile.owned[item.id] then
 				label.Text = "EQUIP"
 				label.TextColor3 = COLOR.ink
+				Kit.setEnabled(buy, ART.DarkButton, true)
+			elseif item.unlock == "group" then
+				label.Text = "GROUP"
+				label.TextColor3 = COLOR.brass
 				Kit.setEnabled(buy, ART.DarkButton, true)
 			else
 				label.Text = Kit.money(item.price)

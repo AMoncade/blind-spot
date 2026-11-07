@@ -14,6 +14,7 @@ local Net = require(Shared:WaitForChild("Net"))
 
 local Server = script.Parent.Parent
 local World = require(Server:WaitForChild("Core"):WaitForChild("World"))
+local Analytics = require(Server:WaitForChild("Core"):WaitForChild("Analytics"))
 local Actions = require(Server:WaitForChild("Core"):WaitForChild("Actions"))
 local PowerDirector = require(script.Parent:WaitForChild("PowerDirector"))
 local UnseenService = require(script.Parent:WaitForChild("UnseenService"))
@@ -22,6 +23,7 @@ local Data = require(Server:WaitForChild("Core"):WaitForChild("Data"))
 local TaskService = require(script.Parent:WaitForChild("TaskService"))
 local DoorService = require(script.Parent:WaitForChild("DoorService"))
 local StairsService = require(script.Parent:WaitForChild("StairsService"))
+local SignalService = require(script.Parent:WaitForChild("SignalService"))
 local CoopService = require(script.Parent:WaitForChild("CoopService"))
 local StoryService = require(script.Parent:WaitForChild("StoryService"))
 
@@ -39,6 +41,7 @@ local lives = 0 -- solo: catches left tonight
 local running = false
 local shift = 0 -- counts shifts, so a late return to the lobby never touches the next one
 local nightNumber = C.night_test
+local startedAt = 0 -- os.clock() at the shift's start (analytics: the night's length)
 
 local function rootOf(player: Player): BasePart?
 	local character = player.Character
@@ -56,6 +59,11 @@ end
 
 function NightService.isDead(player: Player): boolean
 	return dead[player] == true
+end
+
+-- on tonight's shift, alive, dead for a moment or down and watching (the coop signals reach all of them)
+function NightService.onShift(player: Player): boolean
+	return running and playing[player] == true
 end
 
 -- on this shift and not frozen in a death (the Unseen only sees these guards)
@@ -107,6 +115,14 @@ function NightService.kill(player: Player)
 	dead[player] = true
 	deaths += 1
 	diedThisShift[player] = true
+	do
+		local t = PowerDirector.now() or 0
+		Analytics.event(player, "GuardCaught", math.floor(t), {
+			"N" .. nightNumber,
+			(Config.floorAt(root.Position.X)),
+			PowerDirector.phase() or "LIVE",
+		})
+	end
 	CamcorderService.block(player, true)
 	TaskService.drop(player)
 	local at = root.Position
@@ -188,7 +204,21 @@ function endNight(outcome: string)
 		end
 		Data.addPay(player, pay)
 		local profile = Data.get(player)
+		Analytics.event(player, "NightEnded", math.floor(os.clock() - startedAt), { "N" .. nightNumber, outcome })
 		if profile then
+			Analytics.pay(
+				player,
+				pay,
+				profile.pay,
+				Enum.AnalyticsEconomyTransactionType.Gameplay,
+				"night" .. nightNumber
+			)
+			if profile.nights == 0 then
+				Analytics.onboarding(player, 3)
+			end
+			if nightNumber == 1 and outcome == "cleared" and profile.bestNight < 1 then
+				Analytics.onboarding(player, 4)
+			end
 			profile.nights += 1
 			if outcome == "cleared" then
 				profile.bestNight = math.max(profile.bestNight, nightNumber)
@@ -248,8 +278,19 @@ function NightService.launch(guards: { Player }, night: number?): boolean
 	TaskService.reset(seed, def.extraScans + extraGuards * C.coop_scan_per_guard, def.cables, def.length, nightNumber)
 	solo = #guards <= 1
 	lives = C.solo_lives
+	startedAt = os.clock()
 	for k, player in guards do
 		playing[player] = true
+		Analytics.event(
+			player,
+			"NightStarted",
+			nightNumber,
+			{ "N" .. nightNumber, if #guards > 1 then "coop" else "solo" }
+		)
+		local profile = Data.get(player)
+		if profile and profile.nights == 0 then
+			Analytics.onboarding(player, 2)
+		end
 		-- side by side in the booth
 		moveTo(player, World.spawnCFrame() * CFrame.new((k - 2.5) * 1.6, 0, 0))
 		Net.event():FireClient(player, "Shift", true)
@@ -268,9 +309,17 @@ function NightService.init()
 	TaskService.isPlaying = NightService.isPlaying
 	DoorService.isPlaying = NightService.isPlaying
 	StairsService.isPlaying = NightService.isPlaying
+	SignalService.onShift = NightService.onShift
+	StairsService.onTake = function()
+		StoryService.trigger("first_floor") -- once a night: the first time a guard leaves their floor
+	end
+	SignalService.isPlaying = NightService.isPlaying
 	-- a task done: the radio answers the ones it has a line for (night 5: the plaster, the sealed room)
 	TaskService.onDone = function(taskId: string)
 		StoryService.trigger(taskId)
+	end
+	TaskService.onNew = function(taskId: string)
+		StoryService.trigger("new:" .. taskId)
 	end
 	CoopService.isPlaying = NightService.isPlaying
 	StoryService.guards = function(): { Player }
@@ -321,6 +370,9 @@ function NightService.init()
 		end)
 	end)
 	Players.PlayerRemoving:Connect(function(player)
+		if running and playing[player] then
+			Analytics.event(player, "QuitDuringShift", math.floor(PowerDirector.now() or 0), { "N" .. nightNumber })
+		end
 		dead[player] = nil
 		down[player] = nil
 		playing[player] = nil

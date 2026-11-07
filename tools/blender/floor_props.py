@@ -371,7 +371,39 @@ def couch():
     return coll
 
 
+def guard_vest():
+    """The uniform jacket worn over the torso (UniformService scales it to each avatar's torso and paints it with the
+    equipped uniform: Fabric gets the cloth colour, Stripe the reflective band, Badge stays brass). Built around an
+    R15 UpperTorso of 2 x 1 x 1.6 studs centred on the origin. Bounds x -1.14..1.14, y -0.66..0.64, z -0.85..1.0."""
+    coll = K.begin("GuardVest", OUT)
+    fabric = K.join("Fabric", [
+        K.box("front", coll, -1.1, 1.1, -0.62, -0.5, -0.85, 0.8, bevel=0.04),
+        K.box("back", coll, -1.1, 1.1, 0.5, 0.62, -0.85, 0.8, bevel=0.04),
+        K.box("sideL", coll, -1.13, -1.0, -0.6, 0.6, -0.85, 0.35, bevel=0.04),
+        K.box("sideR", coll, 1.0, 1.13, -0.6, 0.6, -0.85, 0.35, bevel=0.04),
+        K.box("shoulderL", coll, -1.1, -0.42, -0.6, 0.6, 0.7, 0.82, bevel=0.04),
+        K.box("shoulderR", coll, 0.42, 1.1, -0.6, 0.6, 0.7, 0.82, bevel=0.04),
+        K.box("collarF", coll, -0.48, 0.48, -0.62, -0.42, 0.76, 0.95, bevel=0.04),
+        K.box("collarB", coll, -0.5, 0.5, 0.4, 0.62, 0.76, 1.0, bevel=0.04),
+        K.box("collarL", coll, -0.52, -0.4, -0.6, 0.6, 0.76, 0.97, bevel=0.04),
+        K.box("collarR", coll, 0.4, 0.52, -0.6, 0.6, 0.76, 0.97, bevel=0.04),
+        K.box("hem", coll, -1.12, 1.12, -0.63, 0.63, -0.85, -0.72, bevel=0.04),
+    ])
+    K.flat(fabric, "vest_fabric", (0.17, 0.2, 0.28), roughness=0.9)
+    stripe = K.join("Stripe", [
+        K.box("stripeF", coll, -1.12, 1.12, -0.66, -0.6, 0.0, 0.18, bevel=0.01),
+        K.box("stripeB", coll, -1.12, 1.12, 0.58, 0.64, 0.0, 0.18, bevel=0.01),
+        K.box("stripeL", coll, -1.14, -1.1, -0.64, 0.62, 0.0, 0.18, bevel=0.01),
+        K.box("stripeR", coll, 1.1, 1.14, -0.64, 0.62, 0.0, 0.18, bevel=0.01),
+    ])
+    K.flat(stripe, "vest_stripe", (0.75, 0.76, 0.72), roughness=0.3, metallic=0.2)
+    badge = K.box("Badge", coll, 0.42, 0.72, -0.66, -0.6, 0.32, 0.6, bevel=0.02)
+    K.flat(badge, "vest_badge", (0.78, 0.62, 0.36), roughness=0.35, metallic=0.9)
+    return coll
+
+
 BUILD = {
+    "GuardVest": guard_vest,
     "StairDoor": stair_door, "BreakerPanel": breaker_panel, "Sledgehammer": sledgehammer, "Crates": crates,
     "Boiler": boiler, "PlasterWall": plaster_wall, "FireDoor": fire_door, "Workbench": workbench, "Couch": couch,
 }

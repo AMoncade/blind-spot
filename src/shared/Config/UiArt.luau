@@ -17,6 +17,16 @@ return {
 	VfCold = "rbxassetid://126387297855702",
 	VfNightOps = "rbxassetid://90979840514536",
 	VfOldGuard = "rbxassetid://89113531459871",
+	-- uniforms and camcorder lamps (a third set, 2026-11-07, same style)
+	UniformNavy = "rbxassetid://133481694676289",
+	UniformHiVis = "rbxassetid://88955564314213",
+	UniformRanger = "rbxassetid://95440230604214",
+	UniformOldGuard = "rbxassetid://103145079424114",
+	UniformGhost = "rbxassetid://87596335735879",
+	LampHalogen = "rbxassetid://74121273770904",
+	LampSodium = "rbxassetid://81147796105072",
+	LampLed = "rbxassetid://98831295491288",
+	LampDarkroom = "rbxassetid://118612328756857",
 	VipBadge = "rbxassetid://124901545765408",
 	Overtime = "rbxassetid://113476037194681",
 	PlayButton = {

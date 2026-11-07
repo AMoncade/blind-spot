@@ -56,4 +56,59 @@ return {
 			"Something on the other side was holding its breath.",
 		},
 	},
+	{
+		id = "t6",
+		title = "WHAT THE CAMERA SAW",
+		stamp = "OCT 08 1998 01:12",
+		lines = {
+			"I played back what I filmed in the room on P4.",
+			"Forty seconds of an empty room.",
+			"At thirty-one seconds the timecode stops. Then it starts again at thirty-one.",
+			"Something stood in that second.",
+		},
+	},
+	{
+		id = "t7",
+		title = "MEMO P4-07",
+		stamp = "KESTREL & VANE 1979",
+		lines = {
+			"Internal memo. To all night staff.",
+			"Room P4-07 is to remain sealed. No camera is to be installed in P4-07.",
+			"Any footage of P4-07 is property of Kestrel and Vane.",
+			"Do not watch it. Bring it up.",
+		},
+	},
+	{
+		id = "t8",
+		title = "THE DISPATCHER",
+		stamp = "OCT 09 1998 03:03",
+		lines = {
+			"I asked the office who was on the radio last night.",
+			"They said nobody. The dispatcher clocks out at midnight.",
+			"I have heard her every night at two.",
+			"Then who tells me to stay on camera?",
+		},
+	},
+	{
+		id = "t9",
+		title = "LAST NIGHT",
+		stamp = "OCT 10 1998 05:58",
+		lines = {
+			"Two minutes to six.",
+			"Every camera on P3 is turned toward me.",
+			"Not at me. Behind me.",
+			"If you find this don't turn around. Turn the camcorder around.",
+		},
+	},
+	{
+		id = "t10",
+		title = "SIX A.M.",
+		stamp = "NOV 1998 (NO DATE)",
+		lines = {
+			"This is the day guard. I came down at six.",
+			"The night guard's chair was warm. The camcorder was still recording.",
+			"The tape was full of P3. Empty. From every angle.",
+			"I am leaving this one in the dark for the next one of you.",
+		},
+	},
 }

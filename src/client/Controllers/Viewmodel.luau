@@ -47,6 +47,14 @@ function Viewmodel.start()
 	spot.Position = Vector3.new(0, 0.5, -1.1)
 	spot.Parent = model.PrimaryPart
 	fill.Parent = spot
+	-- the camcorder's little work lamp (a cosmetic: content/shop.csv, kind lamp; every lamp is as strong)
+	local lamp = Instance.new("SpotLight")
+	lamp.Face = Enum.NormalId.Back -- the lens side (+Z)
+	lamp.Brightness = C.vm_lamp_brightness
+	lamp.Range = C.vm_lamp_range
+	lamp.Angle = C.vm_lamp_angle
+	lamp.Shadows = false
+	lamp.Parent = model.PrimaryPart
 	local idle = pose(C.vm_idle)
 	local raised = pose(C.vm_raised)
 
@@ -61,6 +69,10 @@ function Viewmodel.start()
 		if trim and trim:IsA("BasePart") then
 			trim.Color = Color3.fromRGB(Config.rgb(item.frame))
 		end
+		local light = Config.shopById[profile and profile.lamp or "lp_halogen"] or Config.shopById.lp_halogen
+		local color = Color3.fromRGB(Config.rgb(light.frame))
+		fill.Color = color
+		lamp.Color = color
 	end
 	paint()
 	State.on("Profile", paint)

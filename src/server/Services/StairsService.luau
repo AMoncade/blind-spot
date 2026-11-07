@@ -17,6 +17,7 @@ local C = Config.C
 local StairsService = {}
 
 StairsService.isPlaying = nil :: ((player: Player) -> boolean)? -- NightService: on shift and alive
+StairsService.onTake = nil :: ((player: Player, floor: string) -> ())? -- a guard took the stairs (the radio)
 
 local nextUse: { [Player]: number } = {}
 
@@ -48,6 +49,9 @@ function StairsService.take(player: Player, target: string)
 	root.CFrame = StairsService.exitCFrame(target)
 	local floor = Config.spotById[target].floor
 	Net.event():FireClient(player, "Notice", Config.floorById[floor].name, true)
+	if StairsService.onTake then
+		StairsService.onTake(player, floor)
+	end
 end
 
 local function addPrompt(

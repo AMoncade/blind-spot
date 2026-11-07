@@ -1,8 +1,18 @@
-id,name,kind,price,robux_product,art,frame,rec,text,blurb,note
-vf_classic,Factory,viewfinder,0,0,VfFactory,#ffffff,#ff2a2a,#ffffff,The camcorder as it left the shop.,owned by everyone
-vf_amber,Sodium,viewfinder,350,0,VfSodium,#ffc46b,#ff6a2a,#ffd9a0,Warm like the street lamps.,
-vf_ice,Cold Storage,viewfinder,500,0,VfCold,#9fe6ff,#ff3355,#d6f6ff,Blue as the P3 at 4 AM.,
-vf_mil,Night Ops,viewfinder,800,0,VfNightOps,#7dff8a,#ffe14a,#c8ffcf,Green phosphor. Military surplus.,
-vf_brass,Old Guard,viewfinder,1500,0,VfOldGuard,#d9a94e,#c0392b,#f0d79a,Brass trim from before 1979.,
-vip,VIP Guard,robux,0,0,VipBadge,#c9a46a,#ff2a2a,#ffffff,Exclusive uniform and private server controls.,plan section 10: 499 R$; Adrien creates the product
-payboost,Overtime,robux,0,0,Overtime,#7dff8a,#ff2a2a,#ffffff,+25% pay every night.,plan section 10: 299 R$; Adrien creates the product
+id,name,kind,price,robux_product,art,frame,rec,text,blurb,unlock,note
+vf_classic,Factory,viewfinder,0,0,VfFactory,#ffffff,#ff2a2a,#ffffff,The camcorder as it left the shop.,,owned by everyone
+vf_amber,Sodium,viewfinder,350,0,VfSodium,#ffc46b,#ff6a2a,#ffd9a0,Warm like the street lamps.,,
+vf_ice,Cold Storage,viewfinder,500,0,VfCold,#9fe6ff,#ff3355,#d6f6ff,Blue as the P3 at 4 AM.,,
+vf_mil,Night Ops,viewfinder,800,0,VfNightOps,#7dff8a,#ffe14a,#c8ffcf,Green phosphor. Military surplus.,,
+vf_brass,Old Guard,viewfinder,1500,0,VfOldGuard,#d9a94e,#c0392b,#f0d79a,Brass trim from before 1979.,,
+un_navy,Night Shift,uniform,0,0,UniformNavy,#2b3448,#b9bab2,#ffffff,The jacket they hand you on night one.,,owned by everyone (frame: the cloth; rec: the stripe)
+un_hivis,Hi-Vis,uniform,400,0,UniformHiVis,#b8c935,#d9dad3,#ffffff,Seen by every camera. And by everything else.,,
+un_ranger,Ranger,uniform,650,0,UniformRanger,#4a5236,#b49a6a,#ffffff,Surplus from a park that closed at dusk.,,
+un_oldguard,Old Guard,uniform,1200,0,UniformOldGuard,#5a3e2b,#c9a46a,#ffffff,Brown wool. Kestrel and Vane 1979.,,
+un_ghost,Ghost Shift,uniform,2000,0,UniformGhost,#19191b,#55565a,#ffffff,Black on black. For the long nights.,,
+un_kv,Kestrel & Vane,uniform,0,0,UniformNavy,#1b2232,#c9a46a,#ffffff,The company's own. For members of Kestrel & Vane Security.,group,the Roblox group's reward (constants: group_id)
+lp_halogen,Halogen,lamp,0,0,LampHalogen,#fff0d2,#fff0d2,#ffffff,The camcorder's work lamp. Warm and weak.,,owned by everyone (frame: the light)
+lp_sodium,Sodium,lamp,300,0,LampSodium,#ffae55,#ffae55,#ffffff,Orange like the street outside.,,
+lp_led,Cold LED,lamp,500,0,LampLed,#d2e8ff,#d2e8ff,#ffffff,Hard white. Every shadow sharp.,,
+lp_red,Darkroom,lamp,900,0,LampDarkroom,#ff4636,#ff4636,#ffffff,Red light. Your eyes stay used to the dark.,,
+vip,VIP Guard,robux,0,0,VipBadge,#c9a46a,#ff2a2a,#ffffff,Exclusive uniform and private server controls.,,plan section 10: 499 R$; Adrien creates the product
+payboost,Overtime,robux,0,0,Overtime,#7dff8a,#ff2a2a,#ffffff,+25% pay every night.,,plan section 10: 299 R$; Adrien creates the product
