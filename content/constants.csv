@@ -44,7 +44,21 @@ night_start_delay,6,seconds from the first spawn to the night start
 night_clock_start,0,hour shown when the night starts (midnight)
 night_clock_end,6,hour shown when the night ends
 night_restart_delay,12,seconds between the end of a night and the next one (phase 0 loop)
-death_seconds,2.2,freeze and tape tear before the respawn (plan section 4)
+death_seconds,3,the catch before the respawn (plan section 4; Controllers/Death)
+catch_turn,0.28,seconds for the view to snap around to him when he catches you
+catch_lunge,1.35,seconds into the catch when he lunges (before it: he stands over you and the view dolly zooms)
+catch_freeze,1.7,seconds into the catch when the image freezes and the tape tears
+catch_black,1,seconds of the fade to black and SIGNAL LOST after the freeze
+catch_distance,3.6,studs from the guard to his feet during the catch (his hands then reach right into the view)
+catch_lunge_from,2,studs he jumps forward when he lunges
+catch_reach,1.7,studs from the guard's eye to the centre of his lunge pose at its end (his hands then fill the view)
+catch_aim_height,5.6,studs above the floor the view looks at while he lunges (between his hands and his face)
+catch_light_color,#b8c8d8,a dim cold light on him during the catch
+catch_light_brightness,0.8,
+catch_light_range,14,
+catch_max_distance,40,beyond this (or on another floor) he appears straight ahead of the guard
+catch_dolly,1.4,studs the view backs away during the dolly zoom
+catch_fov,48,field of view at the end of the dolly zoom (the room stretches behind him)
 flicker_min_interval,0.34,never more than 3 flashes a second (WCAG 2.3.1)
 flicker_max_interval,0.9,longest gap between two flicker steps
 flicker_reduced_dim,0.35,with Reduce flashes the tubes dim to this instead of blinking

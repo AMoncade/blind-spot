@@ -184,7 +184,12 @@ function SoundDirector.start()
 		play("static")
 	end)
 	State.on("Death", function()
-		play("tear")
+		-- the tear comes with his lunge (Controllers/Death), after a moment of silence
+		task.delay(C.catch_lunge, function()
+			if State.dead then
+				play("tear")
+			end
+		end)
 	end)
 end
 

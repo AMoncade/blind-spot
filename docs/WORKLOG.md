@@ -119,3 +119,12 @@ Note : en Studio, ProfileStore affiche une erreur `StudioAccessToApisNotAllowed`
 - **Le parcours entier testé en playtest** (par les intentions réseau des boutons : l'outil de clic simulé bloque toujours) : lobby, récompense du jour, SOLO, ascenseur, nuit 1 au P1, sons qui jouent, escaliers, essence et générateur, prise et réveil au poste (3 vies), 6 h, rapport NIGHT CLEARED, retour au lobby, nuit 2 débloquée et choisie par défaut, achat et équipement en boutique, refus faute de paie, nuit 2 jusqu'au bout. Aucune erreur du jeu.
 - **Petits correctifs** : le radio de la nuit 1 parle du P1 et de l'escalier ; les panneaux d'ascenseur disent P1 (`lift_floor`) ; plus d'avis NEW TASK pour une tâche déjà faite.
 - **Restent hors de portée de Studio** : la sauvegarde réelle (accès API ou jeu publié), la coop à plusieurs, le téléphone. L'avertissement `rbxassetid://203785492` ne vient d'aucun asset du jeu (cherché dans toute la place et le code) : il vient de Roblox.
+
+## 2026-11-07 (nuit) : la prise
+
+Demande d'Adrien : une vraie animation quand l'Invisible te prend. Le plan : « l'image se fige, la bande VHS déraille, une main entre dans le cadre, noir ». `Controllers/Death`, 3 s (`death_seconds`, réglages `catch_*`) :
+- la vue se retourne vers lui (le serveur envoie sa position avec l'événement Death) ;
+- il est là, tout près, trop grand, la tête penchée sur toi, sous une faible lumière froide ; travelling compensé (la vue recule pendant que l'angle se resserre : le garage s'étire derrière lui, il ne bouge pas) et un léger tremblement (coupé par Reduce Flashes) ;
+- à 1,35 s il se jette sur toi : deuxième pose Blender de son modèle (`UnseenLunge`, `tools/blender/unseen.py` avec POSE = "lunge" : voûté, genoux pliés, les deux bras tendus vers le visage) ; ses mains entrent dans le cadre ; le son de bande déchirée part à ce moment ;
+- l'image se fige et perd sa couleur, la bande déraille, noir, SIGNAL LOST en rouge REC ; réveil au poste, la vue droite.
+Pas de sang, aucun flash. Testé en playtest, image par image (temps, champ de vision, modèles, effets, son, nettoyage au réveil) ; vu dans Studio aux deux moments clés.

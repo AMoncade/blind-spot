@@ -131,7 +131,9 @@ function NightService.kill(player: Player)
 	if solo then
 		lives -= 1
 	end
-	Net.event():FireClient(player, "Death", C.death_seconds)
+	-- where he is: the catch turns the guard's view to him (Controllers/Death)
+	local _, ux, uz = UnseenService.position()
+	Net.event():FireClient(player, "Death", C.death_seconds, ux, uz)
 	StoryService.trigger("death")
 	sendSquad()
 	local thisShift = shift
