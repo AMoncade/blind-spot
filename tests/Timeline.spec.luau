@@ -141,7 +141,13 @@ function spec.activeCamerasPerPhase()
 	local live = Timeline.active({ phase = "LIVE", t0 = 0, t1 = 1 }, Config.Cameras)
 	eq(#live, #Config.Cameras, "LIVE: all")
 	local dark = Timeline.active({ phase = "BLACKOUT", t0 = 0, t1 = 1, holdouts = { "C03" } }, Config.Cameras)
-	eq(table.concat(dark, ","), "C01,C02,C03", "BLACKOUT: the booth and the holdouts")
+	local expected = {}
+	for _, cam in Config.Cameras do
+		if cam.always or cam.id == "C03" then
+			table.insert(expected, cam.id)
+		end
+	end
+	eq(table.concat(dark, ","), table.concat(expected, ","), "BLACKOUT: the always-on cameras and the holdouts")
 end
 
 function spec.clockRunsMidnightToSix()

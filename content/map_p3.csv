@@ -10,7 +10,7 @@ WallS3,wall,52,5,-32.5,16,10,1,1,0,1,1,
 WallC,wall,0,5,-42.5,122,10,1,1,0,1,1,outer wall of the corridor
 BoothE,wall,-47.5,5,24,1,10,16,1,0,1,1,security booth
 BoothS,wall,-56,5,15.5,8,10,1,1,0,1,1,booth front: the door is x -52 to -48
-BoothDesk,desk,-56,1.5,29.5,6,3,3,1,0,1,1,monitors and log book
+BoothDesk,hidden,-53.75,1.8,28.35,12.4,3.6,7.3,1,0,1,1,the cabin counter (collision)
 PillarS,pillar,-48,5,-13,2.5,10,2.5,5,24,1,1,south pillar line
 PillarN,pillar,-24,5,13,2.5,10,2.5,4,24,1,1,north pillar line (the booth replaces the west one)
 CarN1,car,-36,2.5,24,6.5,5,15,1,0,1,1,
@@ -28,9 +28,7 @@ BoothLamp,post,-53,9.4,24,1.5,0.4,1.5,1,0,0,0,amber booth light: never goes out
 ExitW,exit,-42,8.2,-32,2.2,0.8,0.25,1,0,0,0,corridor door west
 ExitE,exit,42,8.2,-32,2.2,0.8,0.25,1,0,0,0,corridor door east
 ExitStairs,exit,60,8.2,-20,0.25,0.8,2.2,1,0,0,0,stairs door
-Spawn,spawn,-53,0.5,22,6,1,6,1,0,0,0,the booth: always filmed
 GeneratorBlock,hidden,20,1.75,-40.75,5,3.5,2.4,1,0,1,1,collision under the generator model
-LockerBlock,hidden,-59.1,3.5,20,1.6,7,2.4,1,0,1,1,collision under the booth locker
 StallsN,stalls,-40.5,0.015,24,0.25,0.03,15,12,9,0,0,north row stall lines every 9 studs (2.5 m)
 StallsS,stalls,-58.5,0.015,-24,0.25,0.03,15,14,9,0,0,south row stall lines
 Dash,dash,-54,0.015,0,3,0.03,0.3,19,6,0,0,dashed yellow line down the aisle
@@ -43,3 +41,6 @@ BandS3,band,52,1.6,-31.96,16,3.2,0.08,1,0,0,0,
 BandC,band,0,1.6,-41.96,120,3.2,0.08,1,0,0,0,corridor outer wall
 PipesAisle,pipes,-48,8.5,-8,3.7,1.5,24,5,24,0,0,ceiling services over the aisle (PipeRun model)
 PipesCorridor,pipes,-48,8.5,-39.8,3.7,1.5,24,5,24,0,0,ceiling services in the corridor
+BoothCounter,deskmodel,-53.75,3.5,28.35,12.4,7,7.3,1,0,0,0,the P3 cabin: counter and monitor wall (Blender SecurityDesk)
+DoorW,firedoor,-42,4,-32.5,4,8,0.4,1,0,0,0,fire door of the corridor's west opening (stands open; a guard can close it: the Unseen can't pass a closed door)
+DoorE,firedoor,42,4,-32.5,4,8,0.4,1,0,0,0,fire door of the east opening

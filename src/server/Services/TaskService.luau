@@ -1,9 +1,10 @@
 --!strict
 -- The night's tasks (plan section 3, "La ronde"), on the server: the list is drawn at the shift's start (Logic/Tasks);
 -- the spots in workspace.P3.Spots get ProximityPrompts; a guard carries one item at a time; using it at its target
--- finishes the task and lifts its effect (a dead camera comes back, the corridor lights return). A guard caught by the
--- Unseen drops what they carried: it goes back where it was found. Every guard on shift gets the list and who carries
--- what (event "Tasks").
+-- finishes the task and lifts its effect (a dead camera comes back, the corridor lights return, open:<id> breaks a
+-- wall through DoorService). A film task is done by standing in the target's room with the camcorder raised for its
+-- hold. A guard caught by the Unseen drops what they carried: it goes back where it was found. Every guard on shift
+-- gets the list and who carries what (event "Tasks").
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -16,6 +17,8 @@ local Rng = require(Shared:WaitForChild("Logic"):WaitForChild("Rng"))
 local Server = script.Parent.Parent
 local World = require(Server:WaitForChild("Core"):WaitForChild("World"))
 local PowerDirector = require(script.Parent:WaitForChild("PowerDirector"))
+local DoorService = require(script.Parent:WaitForChild("DoorService"))
+local CamcorderService = require(script.Parent:WaitForChild("CamcorderService"))
 
 local C = Config.C
 
@@ -24,6 +27,7 @@ local TaskService = {}
 -- NightService sets it: is this guard on shift and alive?
 TaskService.isPlaying = nil :: ((player: Player) -> boolean)?
 TaskService.onCut = nil :: (() -> ())? -- the radio's first_cut line (NightService wires it)
+TaskService.onDone = nil :: ((taskId: string) -> ())? -- a task done: the radio may answer (NightService wires it)
 
 local list: { Tasks.Task } = {}
 -- the cut lines (plan section 3, night 4: "les câbles de caméras arrachés"): when each is cut, and the spots added
@@ -32,6 +36,7 @@ local cutRng: any = nil
 local dynamic: { [string]: any } = {} -- spot id -> its row (x, y, z, ...), for the spots added during the night
 local carrying: { [Player]: string } = {} -- player -> task id of the item they hold
 local prompts: { [string]: ProximityPrompt } = {} -- spot id -> its prompt
+local filming: { [string]: number } = {} -- film task id -> seconds filmed so far
 local dirty = true
 
 local function playing(player: Player): boolean
@@ -142,6 +147,7 @@ local function payload(): any
 			item = t.item,
 			done = t.done,
 			carriedBy = if h then h.UserId else nil,
+			progress = if t.kind == "film" then math.min(1, (filming[t.id] or 0) / math.max(t.hold, 0.01)) else nil,
 			target = { target.x, target.y, target.z },
 			pickup = if pickup then { pickup.x, pickup.y, pickup.z } else nil,
 		})
@@ -165,8 +171,9 @@ local function clearDynamic()
 	table.clear(cuts)
 end
 
-function TaskService.reset(seed: number, extraScans: number, cables: number?, length: number?)
+function TaskService.reset(seed: number, extraScans: number, cables: number?, length: number?, night: number?)
 	table.clear(carrying)
+	table.clear(filming)
 	clearDynamic()
 	-- the night's cut lines, spread over it
 	cutRng = Rng.new(seed + 77)
@@ -178,13 +185,14 @@ function TaskService.reset(seed: number, extraScans: number, cables: number?, le
 	table.sort(cuts)
 	list = Tasks.build(Config.Tasks, function(id)
 		return Config.spotById[id].label
-	end, C.scan_count + extraScans, seed)
+	end, C.scan_count + extraScans, seed, night)
 	changed()
 end
 
 -- the shift is over: no list, every dead camera and dark zone back to normal
 function TaskService.clear()
 	table.clear(carrying)
+	table.clear(filming)
 	clearDynamic()
 	list = {}
 	changed()
@@ -273,6 +281,61 @@ local function cutLine()
 	changed()
 end
 
+-- a task is done: its open:<id> effects break their wall, the radio may answer
+local function finish(t: Tasks.Task, player: Player?)
+	t.done = true
+	for _, e in t.effect do
+		local id = string.match(e, "^open:(.+)$")
+		if id then
+			DoorService.open(id)
+		end
+	end
+	if player then
+		local text = if t.kind == "scan"
+			then (if string.sub(t.id, 1, 7) == "splice:" then "LINE SPLICED" else "CHECKPOINT LOGGED")
+			else string.upper(t.label) .. ": DONE"
+		notify(player, text, true)
+	end
+	if TaskService.onDone then
+		TaskService.onDone(t.id)
+	end
+	changed()
+end
+
+-- the film tasks: a guard on shift inside the target's room (film_half_x by film_half_z around its spot) with the
+-- camcorder raised fills it; the room is out of every camera, so it is the most dangerous minute of the night
+local function filmStep(dt: number)
+	for _, t in list do
+		if t.done or t.kind ~= "film" then
+			continue
+		end
+		local spot = spotRow(t.target)
+		local who: Player? = nil
+		for _, player in Players:GetPlayers() do
+			local character = player.Character
+			local root = character and character:FindFirstChild("HumanoidRootPart")
+			if root and root:IsA("BasePart") and playing(player) and CamcorderService.isRaised(player) then
+				local p = root.Position
+				if math.abs(p.X - spot.x) <= C.film_half_x and math.abs(p.Z - spot.z) <= C.film_half_z then
+					who = player
+					break
+				end
+			end
+		end
+		if who then
+			local before = filming[t.id] or 0
+			filming[t.id] = before + dt
+			if before == 0 then
+				notify(who, "RECORDING")
+			end
+			dirty = true
+			if filming[t.id] >= t.hold then
+				finish(t, who)
+			end
+		end
+	end
+end
+
 local function onTriggered(spotId: string, player: Player)
 	if not playing(player) then
 		return
@@ -282,9 +345,7 @@ local function onTriggered(spotId: string, player: Player)
 			continue
 		end
 		if t.kind == "scan" and t.target == spotId then
-			t.done = true
-			notify(player, if string.sub(t.id, 1, 7) == "splice:" then "LINE SPLICED" else "CHECKPOINT LOGGED", true)
-			changed()
+			finish(t, player)
 			return
 		elseif t.kind == "fetch" and t.pickup == spotId and not holder(t.id) then
 			if carrying[player] then
@@ -301,9 +362,7 @@ local function onTriggered(spotId: string, player: Player)
 				return
 			end
 			carrying[player] = nil
-			t.done = true
-			notify(player, string.upper(t.label) .. ": DONE", true)
-			changed()
+			finish(t, player)
 			return
 		end
 	end
@@ -311,10 +370,12 @@ end
 
 -- Studio debug: the whole round done at once
 function TaskService.completeAll()
-	for _, t in list do
-		t.done = true
-	end
 	table.clear(carrying)
+	for _, t in list do
+		if not t.done then
+			finish(t, nil)
+		end
+	end
 	changed()
 end
 
@@ -335,13 +396,15 @@ function TaskService.start()
 	for _, spot in spots:GetChildren() do
 		-- the sign-in book belongs to CoopService, the hidden tapes and the log book to StoryService
 		local kind = spot:GetAttribute("Kind")
-		if kind ~= "signin" and kind ~= "collect" and kind ~= "logbook" then
+		-- the stairwell doors belong to StairsService
+		if kind ~= "signin" and kind ~= "collect" and kind ~= "logbook" and kind ~= "stairs" then
 			register(spot.Name, spot)
 		end
 	end
 	refreshPrompts()
 	while true do
-		task.wait(C.task_broadcast)
+		local dt = task.wait(C.task_broadcast)
+		filmStep(dt)
 		local t, _, tl = PowerDirector.now()
 		if tl and #cuts > 0 and t >= cuts[1] then
 			table.remove(cuts, 1)

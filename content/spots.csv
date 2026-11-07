@@ -6,17 +6,14 @@ R4,checkpoint,Stairs door,59.85,3.2,-14,-90,east wall near the exit
 R5,checkpoint,Ramp gate,-59.85,3.2,-24,90,west wall south corner
 FuelCan,fuelcan,Fuel can,56,0,-29,0,a blind spot in the south east corner
 Generator,generator,Generator,20,0,-40.75,0,against the corridor's outer wall
-Locker,locker,Booth locker,-59.1,0,20,90,in the booth: the fuses
 FuseBox07,fusebox,Fuse box C07,0,3.4,11.6,180,on the pillar under camera 07
 Tape1,tape,Lost tape,-8,0,-30.6,0,south stalls
 Tape2,tape,Lost tape,-44,0,28,0,north west stalls
 Tape3,tape,Lost tape,48,0,-40.8,0,corridor east
-VCR,vcr,Booth VCR,-56,3,29.5,180,on the booth desk
-SignIn,signin,Sign-in book,-58.4,3,29.5,180,on the booth desk: a teammate's badge brings them back here
 Hidden1,collect,Old tape,17,0,-29,30,a tape hiding place: a deep blind spot in the south stalls
 Hidden2,collect,Old tape,2,0,26,200,between two cars in the north row
 Hidden3,collect,Old tape,-57,0,-25,90,the south west corner
 Hidden4,collect,Old tape,57,0,-10,270,along the east wall
 Hidden5,collect,Old tape,-56,0,8,120,the west end of the aisle
 Hidden6,collect,Old tape,58,0,-39,250,the east end of the service corridor
-LogBook,logbook,Shift log,-54,3,29.5,180,on the booth desk: the last guard's notes
+Stairs,stairs,Stairwell,59.6,0,-20,-90,the P3 stairwell door (east wall): up to P2 and down to P4

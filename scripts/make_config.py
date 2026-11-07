@@ -96,25 +96,37 @@ def build():
          "extraScans": int(r["extra_scans"]), "cables": int(r["cables"]), "intro": r["intro"]}
         for r in rows("nights.csv")])
 
-    mods["Cameras"] = ("cameras.csv", [
-        {"id": r["id"], "zone": r["zone"], "x": num(r["x"]), "y": num(r["y"]), "z": num(r["z"]),
-         "tx": num(r["tx"]), "ty": num(r["ty"]), "tz": num(r["tz"]), "hfov": num(r["hfov"]),
-         "vfov": num(r["vfov"]), "range": num(r["range"]), "always": flag(r["always"])}
-        for r in rows("cameras.csv")])
+    floors = rows("floors.csv")
+    mods["Floors"] = ("floors.csv", [
+        {"id": f["floor"], "name": f["name"], "offsetX": num(f["offset_x"])} for f in floors])
 
-    def blocks(name):
+    cams = []
+    for f in floors:
+        dx = num(f["offset_x"])
+        for r in rows(f["cameras"]):
+            cams.append({"id": r["id"], "floor": f["floor"], "zone": r["zone"], "x": num(r["x"]) + dx,
+                         "y": num(r["y"]), "z": num(r["z"]), "tx": num(r["tx"]) + dx, "ty": num(r["ty"]),
+                         "tz": num(r["tz"]), "hfov": num(r["hfov"]), "vfov": num(r["vfov"]),
+                         "range": num(r["range"]), "always": flag(r["always"])})
+    mods["Cameras"] = ("cameras*.csv", cams)
+
+    def blocks(name, dx=0, floor=""):
         out = []
         for r in rows(name):
             count = int(r["count"])
             for i in range(count):
                 out.append({
-                    "id": r["id"] if count == 1 else f"{r['id']}{i + 1}", "kind": r["kind"],
-                    "x": num(r["x"]) + i * num(r["step_x"]), "y": num(r["y"]), "z": num(r["z"]),
+                    "id": r["id"] if count == 1 else f"{r['id']}{i + 1}", "kind": r["kind"], "floor": floor,
+                    "x": num(r["x"]) + i * num(r["step_x"]) + dx, "y": num(r["y"]), "z": num(r["z"]),
                     "sx": num(r["sx"]), "sy": num(r["sy"]), "sz": num(r["sz"]),
-                    "occludes": flag(r["occludes"]), "blocks": flag(r["blocks"])})
+                    "occludes": flag(r["occludes"]), "blocks": flag(r["blocks"]),
+                    "yaw": num(r.get("yaw") or "0")})
         return out
 
-    mods["Map"] = ("map_p3.csv", blocks("map_p3.csv"))
+    level = []
+    for f in floors:
+        level += blocks(f["map"], num(f["offset_x"]), f["floor"])
+    mods["Map"] = ("map_p*.csv", level)
     mods["LobbyMap"] = ("map_lobby.csv", blocks("map_lobby.csv"))
 
     mods["Lifts"] = ("lifts.csv", [
@@ -126,24 +138,34 @@ def build():
          "yaw": num(r["yaw"])}
         for r in rows("lobby_props.csv")])
 
-    mods["Spots"] = ("spots.csv", [
-        {"id": r["id"], "kind": r["kind"], "label": r["label"], "x": num(r["x"]), "y": num(r["y"]),
-         "z": num(r["z"]), "yaw": num(r["yaw"])}
-        for r in rows("spots.csv")])
+    spots = []
+    for f in floors:
+        dx = num(f["offset_x"])
+        for r in rows(f["spots"]):
+            spots.append({"id": r["id"], "kind": r["kind"], "label": r["label"], "floor": f["floor"],
+                          "x": num(r["x"]) + dx, "y": num(r["y"]), "z": num(r["z"]), "yaw": num(r["yaw"])})
+    mods["Spots"] = ("spots*.csv", spots)
+
+    mods["Stairs"] = ("stairs.csv", [
+        {"spot": r["spot"], "floor": r["floor"], "up": r["up"], "down": r["down"]} for r in rows("stairs.csv")])
 
     def ids(s):
         return [x for x in s.split(";") if x]
 
     mods["Tasks"] = ("tasks.csv", [
         {"id": r["id"], "kind": r["kind"], "label": r["label"], "item": r["item"], "pickup": ids(r["pickup"]),
-         "target": ids(r["target"]), "effect": ids(r["effect"]), "pay": num(r["pay"]), "hold": num(r["hold"])}
+         "target": ids(r["target"]), "effect": ids(r["effect"]), "pay": num(r["pay"]), "hold": num(r["hold"]),
+         "nights": [int(x) for x in ids(r["nights"])]}
         for r in rows("tasks.csv")])
 
-    mods["Signs"] = ("signs.csv", [
-        {"id": r["id"], "x": num(r["x"]), "y": num(r["y"]), "z": num(r["z"]), "yaw": num(r["yaw"]),
-         "flat": flag(r["flat"]), "w": num(r["w"]), "h": num(r["h"]), "text": r["text"], "color": r["color"],
-         "alpha": num(r["alpha"])}
-        for r in rows("signs.csv")])
+    signs = []
+    for f in floors:
+        dx = num(f["offset_x"])
+        for r in rows(f["signs"]):
+            signs.append({"id": r["id"], "x": num(r["x"]) + dx, "y": num(r["y"]), "z": num(r["z"]),
+                          "yaw": num(r["yaw"]), "flat": flag(r["flat"]), "w": num(r["w"]), "h": num(r["h"]),
+                          "text": r["text"], "color": r["color"], "alpha": num(r["alpha"])})
+    mods["Signs"] = ("signs*.csv", signs)
 
     mods["CarColors"] = ("car_colors.csv", [r["hex"] for r in rows("car_colors.csv")])
 

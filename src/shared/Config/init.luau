@@ -25,6 +25,8 @@ Config.LobbyProps = Content.LobbyProps
 Config.Shop = Content.Shop
 Config.Daily = Content.Daily
 Config.Codes = Content.Codes
+Config.Floors = Content.Floors
+Config.Stairs = Content.Stairs
 
 Config.spotById = {} :: { [string]: typeof(Content.Spots[1]) }
 for _, spot in Content.Spots do
@@ -54,6 +56,28 @@ end
 Config.nightByNumber = {} :: { [number]: typeof(Content.Nights[1]) }
 for _, night in Content.Nights do
 	Config.nightByNumber[night.night] = night
+end
+
+Config.floorById = {} :: { [string]: typeof(Content.Floors[1]) }
+for _, floor in Content.Floors do
+	Config.floorById[floor.id] = floor
+end
+
+Config.stairsBySpot = {} :: { [string]: typeof(Content.Stairs[1]) }
+for _, row in Content.Stairs do
+	Config.stairsBySpot[row.spot] = row
+end
+
+-- The floor a world x is on (content/floors.csv: the floors lie side by side along x), and its offset.
+function Config.floorAt(x: number): (string, number)
+	local best, bestOffset, bestD = "P3", 0, math.huge
+	for _, f in Content.Floors do
+		local d = math.abs(x - f.offsetX)
+		if d < bestD then
+			best, bestOffset, bestD = f.id, f.offsetX, d
+		end
+	end
+	return best, bestOffset
 end
 
 -- "#rrggbb" -> r, g, b in 0..255 (Color3.fromRGB on the Roblox side, plain numbers in Lune)

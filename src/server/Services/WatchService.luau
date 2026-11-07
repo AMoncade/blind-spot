@@ -44,9 +44,46 @@ local function rebuild()
 	WatchService.changed:Fire()
 end
 
+-- The dynamic blocks (Watch.DYNAMIC: fire doors, the plaster wall): their state now, and a change of it. The grid
+-- and the occluders are rebuilt in place (the Unseen's paths change at once) and the cameras near the block see
+-- again. The world model of the block (World) carries the attribute Solid for the clients.
+WatchService.states = {} :: { [string]: boolean }
+local aims: { [string]: number } = {} -- watchers' turns (below)
+
+function WatchService.setSolid(id: string, solid: boolean)
+	local block
+	for _, b in Config.Map do
+		if b.id == id then
+			block = b
+		end
+	end
+	local current = WatchService.states[id]
+	if current == nil and block then
+		current = Watch.DYNAMIC[block.kind]
+	end
+	WatchService.states[id] = solid
+	if current == solid then
+		return
+	end
+	Watch.relevel(WatchService.level, Config.Map, C, WatchService.states)
+	if block and WatchService.ready then
+		for _, cam in Config.Cameras do
+			local d = math.sqrt((cam.x - block.x) ^ 2 + (cam.z - block.z) ^ 2)
+			if d <= cam.range + math.max(block.sx, block.sz) then
+				WatchService.fields[cam.id] = Watch.coverage(
+					WatchService.level,
+					Watch.cameraView(cam, aims[cam.id]),
+					C.sample_heights,
+					C.sample_inset
+				)
+			end
+		end
+	end
+	rebuild()
+end
+
 -- A watcher turns a camera (CoopService): its field is computed again at the new aim, and the camera model carries
 -- the offset (attribute AimOffset) so the clients turn its head and redraw its safe zone.
-local aims: { [string]: number } = {}
 
 function WatchService.aimOffset(id: string): number
 	return aims[id] or 0

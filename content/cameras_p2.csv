@@ -1,0 +1,11 @@
+id,zone,x,y,z,tx,ty,tz,hfov,vfov,range,always,note
+C23,P2-west,-59.2,9,-8,-30,0,2,62,42,50,0,west wall down the aisle
+C24,P2-east,59.2,9,8,30,0,-2,62,42,50,0,east wall down the aisle
+C25,P2-west,-24,9,-11.6,-29,0,22,70,48,42,0,pillar: north stalls west
+C26,P2-east,24,9,-11.6,30,0,22,70,48,42,0,pillar: north stalls east
+C27,P2-west,0,9,11.6,-14,0,-26,70,48,44,0,pillar: south stalls centre
+C28,P2-east,48,9,11.6,28,0,-24,70,48,44,0,pillar: south stalls east
+C29,P2-west,-48,9,-14.4,-42,0,-26,70,48,30,0,pillar: south stalls west
+C30,P2-corridor,-57.5,9,-37.5,-8,1,-37.5,46,34,56,0,service corridor from the west
+C31,P2-corridor,57.5,9,-37.5,8,1,-37.5,46,34,56,0,service corridor from the east
+C32,P2-east,59.2,9,30.5,50,0,22,70,48,34,0,north east corner

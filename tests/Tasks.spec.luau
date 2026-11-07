@@ -27,41 +27,55 @@ local spec = {}
 
 function spec.everyNightHasTheSameShape()
 	for seed = 1, 50 do
-		local list = Tasks.build(Config.Tasks, label, C.scan_count, seed)
-		local scans, fetches = 0, 0
+		local list = Tasks.build(Config.Tasks, label, C.scan_count, seed, 3)
+		local checkpoints, fetches = 0, 0
 		for _, t in list do
-			if t.kind == "scan" then
-				scans += 1
-			else
+			if string.sub(t.id, 1, 5) == "scan:" then
+				checkpoints += 1
+			elseif t.kind == "fetch" then
 				fetches += 1
 				ok(t.item and t.pickup, t.id .. " has an item and a pickup")
 			end
 			ok(Config.spotById[t.target], t.id .. " target exists")
 		end
-		eq(scans, C.scan_count, "scans")
-		eq(fetches, 3, "fetch tasks")
+		eq(checkpoints, C.scan_count, "checkpoints")
+		eq(fetches, 3, "fetch tasks on night 3")
 	end
 end
 
+function spec.theFinaleIsOnlyOnNightFive()
+	local function has(night: number, id: string): boolean
+		for _, t in Tasks.build(Config.Tasks, label, C.scan_count, 1, night) do
+			if t.id == id then
+				return true
+			end
+		end
+		return false
+	end
+	ok(not has(3, "plaster") and not has(3, "sealed"), "no finale on night 3")
+	ok(has(5, "plaster") and has(5, "sealed"), "the finale on night 5")
+	ok(has(3, "breakers") and has(5, "breakers"), "the P4 breakers every night")
+end
+
 function spec.labelsAreFilled()
-	local list = Tasks.build(Config.Tasks, label, C.scan_count, 3)
+	local list = Tasks.build(Config.Tasks, label, C.scan_count, 3, 3)
 	for _, t in list do
 		ok(not string.find(t.label, "{", 1, true), "label filled: " .. t.label)
 	end
 end
 
 function spec.effectsLastUntilDone()
-	local list = Tasks.build(Config.Tasks, label, C.scan_count, 1)
+	local list = Tasks.build(Config.Tasks, label, C.scan_count, 1, 3)
 	local cams, lights = Tasks.broken(list)
 	ok(cams.C07 and cams.C10 and cams.C11, "dead cameras at the start")
-	ok(lights.corridor, "the corridor is dark at the start")
+	ok(lights["P3:corridor"], "the corridor is dark at the start")
 	for _, t in list do
 		if t.id == "generator" then
 			t.done = true
 		end
 	end
 	cams, lights = Tasks.broken(list)
-	ok(not cams.C10 and not lights.corridor, "the generator brings the corridor back")
+	ok(not cams.C10 and not lights["P3:corridor"], "the generator brings the corridor back")
 	ok(cams.C07, "camera 07 still waits for its fuse")
 end
 
@@ -78,7 +92,7 @@ function spec.everySpotIsOnTheMapAndReachable()
 end
 
 function spec.payAddsUp()
-	local list = Tasks.build(Config.Tasks, label, C.scan_count, 9)
+	local list = Tasks.build(Config.Tasks, label, C.scan_count, 9, 3)
 	list[1].done = true
 	list[#list].done = true
 	local pay, done = Tasks.pay(list)

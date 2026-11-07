@@ -25,6 +25,8 @@ local g = level.grid
 local fields: { [string]: Watch.Set } = {}
 local folder: Folder
 local lastKey = ""
+local aims: { [string]: number } = {} -- a watcher's turn of a camera
+local states: { [string]: boolean } = {} -- the fire doors and the plaster (Watch.DYNAMIC), from their attribute Solid
 
 -- Greedy rectangles over a cell set: few parts instead of one per cell.
 local function rectangles(cells: Watch.Set): { { number } }
@@ -132,11 +134,48 @@ function SafeZones.start()
 		if model then
 			model:GetAttributeChangedSignal("AimOffset"):Connect(function()
 				local offset = model:GetAttribute("AimOffset") or 0
+				aims[cam.id] = offset :: number
 				fields[cam.id] =
 					Watch.coverage(level, Watch.cameraView(cam, offset :: number), C.sample_heights, C.sample_inset)
 				lastKey = ""
 			end)
 		end
+	end
+	-- a fire door closed or the plaster broken: the grid changes, the cameras near it see again (as on the server)
+	local geometry = workspace:WaitForChild("P3"):WaitForChild("Geometry")
+	for _, b in Config.Map do
+		if Watch.DYNAMIC[b.kind] == nil then
+			continue
+		end
+		local box = geometry:WaitForChild(b.id, 10)
+		if not box then
+			continue
+		end
+		local function apply()
+			local solid = box:GetAttribute("Solid")
+			if type(solid) ~= "boolean" then
+				return
+			end
+			local current = states[b.id]
+			if current == nil then
+				current = Watch.DYNAMIC[b.kind]
+			end
+			states[b.id] = solid
+			if current == solid then
+				return
+			end
+			Watch.relevel(level, Config.Map, C, states)
+			for _, cam in Config.Cameras do
+				local d = math.sqrt((cam.x - b.x) ^ 2 + (cam.z - b.z) ^ 2)
+				if d <= cam.range + math.max(b.sx, b.sz) then
+					fields[cam.id] =
+						Watch.coverage(level, Watch.cameraView(cam, aims[cam.id]), C.sample_heights, C.sample_inset)
+				end
+			end
+			lastKey = ""
+		end
+		box:GetAttributeChangedSignal("Solid"):Connect(apply)
+		apply()
 	end
 	RunService.Heartbeat:Connect(function()
 		local _, seg = State.now()

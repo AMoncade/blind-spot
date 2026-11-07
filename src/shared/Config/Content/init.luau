@@ -6,6 +6,7 @@ return {
 	Codes = require(if script then script:WaitForChild("Codes") else "@self/Codes"),
 	Constants = require(if script then script:WaitForChild("Constants") else "@self/Constants"),
 	Daily = require(if script then script:WaitForChild("Daily") else "@self/Daily"),
+	Floors = require(if script then script:WaitForChild("Floors") else "@self/Floors"),
 	Items = require(if script then script:WaitForChild("Items") else "@self/Items"),
 	Lifts = require(if script then script:WaitForChild("Lifts") else "@self/Lifts"),
 	LobbyMap = require(if script then script:WaitForChild("LobbyMap") else "@self/LobbyMap"),
@@ -18,6 +19,7 @@ return {
 	Signs = require(if script then script:WaitForChild("Signs") else "@self/Signs"),
 	Sounds = require(if script then script:WaitForChild("Sounds") else "@self/Sounds"),
 	Spots = require(if script then script:WaitForChild("Spots") else "@self/Spots"),
+	Stairs = require(if script then script:WaitForChild("Stairs") else "@self/Stairs"),
 	Tapes = require(if script then script:WaitForChild("Tapes") else "@self/Tapes"),
 	Tasks = require(if script then script:WaitForChild("Tasks") else "@self/Tasks"),
 }

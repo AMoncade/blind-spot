@@ -50,6 +50,7 @@ export type Parts = {
 	hush: Frame,
 	caption: TextLabel,
 	squad: TextLabel,
+	floor: TextLabel,
 	clock: TextLabel,
 	status: ImageLabel,
 	statusText: TextLabel,
@@ -91,6 +92,17 @@ function Hud.build(gui: ScreenGui): Parts
 		Position = UDim2.fromOffset(16, 64),
 		Size = UDim2.fromOffset(200, 20),
 		Max = 16,
+	})
+
+	-- the floor the guard is on (the floors lie side by side: Config.floorAt)
+	local floor = Kit.text(gui, "", {
+		Name = "Floor",
+		FontFace = FONT.mono,
+		TextColor3 = COLOR.dim,
+		TextXAlignment = Enum.TextXAlignment.Left,
+		Position = UDim2.fromOffset(16, 84),
+		Size = UDim2.fromOffset(200, 18),
+		Max = 14,
 	})
 
 	-- the camera status
@@ -296,6 +308,7 @@ function Hud.build(gui: ScreenGui): Parts
 		hush = hush,
 		caption = caption,
 		squad = squad,
+		floor = floor,
 		clock = clock,
 		status = status,
 		statusText = statusText,
@@ -413,6 +426,12 @@ function Hud.start()
 		end
 		local watch = parts.clock.Parent :: GuiObject
 		watch.Visible = onShift
+		local character = player.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		parts.floor.Visible = onShift and root ~= nil
+		if onShift and root and root:IsA("BasePart") then
+			parts.floor.Text = Config.floorById[(Config.floorAt(root.Position.X))].name
+		end
 		parts.status.Visible = onShift and not State.dead and not State.down and Settings.get("RecDot") ~= false
 		if State.filmed ~= lastFilmed then
 			lastFilmed = State.filmed

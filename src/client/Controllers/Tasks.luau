@@ -128,7 +128,15 @@ function Tasks.fill(parts: Parts, data: any, myId: number)
 			end
 			local mine = t.carriedBy == myId
 			local mark = if t.done then "[x]" elseif mine then "[>]" else "[ ]"
-			l.Text = `{mark} {t.label}`
+			-- where the next step is: the pickup until the item is in someone's hands
+			local at = if t.pickup and not mine and t.carriedBy == nil then t.pickup else t.target
+			local where = if at and not t.done then "  · " .. (Config.floorAt(at[1])) else ""
+			local filmed = if t.progress
+					and t.progress > 0
+					and not t.done
+				then string.format("  %d%%", math.floor(t.progress * 100))
+				else ""
+			l.Text = `{mark} {t.label}{filmed}{where}`
 			l.TextColor3 = if t.done then Color3.fromRGB(140, 132, 118) elseif mine then COLOR.red else COLOR.paperInk
 			l.Visible = true
 		else
@@ -258,6 +266,8 @@ local function refreshMarkers(data: any, myId: number)
 			local pos, text
 			if t.kind == "scan" then
 				pos, text = t.target, "SCAN"
+			elseif t.kind == "film" then
+				pos, text = t.target, "FILM"
 			elseif t.carriedBy == myId then
 				pos, text = t.target, "USE " .. string.upper(t.item)
 			elseif t.carriedBy == nil and t.pickup then
@@ -269,6 +279,7 @@ local function refreshMarkers(data: any, myId: number)
 				if anchor then
 					local b = marker(key, text)
 					b.Adornee = anchor
+					b:SetAttribute("Floor", (Config.floorAt(pos[1])))
 					wanted[key] = true
 				end
 			end
@@ -308,8 +319,10 @@ function Tasks.start()
 	RunService.RenderStepped:Connect(function()
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart")
+		-- a marker shows on its own floor only (the floors lie side by side in the world)
+		local here = if root and root:IsA("BasePart") then (Config.floorAt(root.Position.X)) else nil
 		for _, b in markers do
-			b.Enabled = State.shift and not State.dead and not State.down
+			b.Enabled = State.shift and not State.dead and not State.down and b:GetAttribute("Floor") == here
 			local adornee = b.Adornee
 			local distance = b:FindFirstChild("Distance")
 			if root and root:IsA("BasePart") and adornee and adornee:IsA("BasePart") and distance then

@@ -65,6 +65,12 @@ local function lower(player: Player, s: State)
 	end
 end
 
+-- is this guard's camcorder up and filming? (TaskService: the film task)
+function CamcorderService.isRaised(player: Player): boolean
+	local s = states[player]
+	return s ~= nil and s.raised
+end
+
 -- a full battery for everyone (a new night)
 function CamcorderService.reset()
 	for player, s in states do

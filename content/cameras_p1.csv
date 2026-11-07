@@ -1,0 +1,8 @@
+id,zone,x,y,z,tx,ty,tz,hfov,vfov,range,always,note
+C41,P1,-39,9,31,-20,0,8,90,70,40,1,lift hall from the north west
+C42,P1,-5,9,-23,-22,0,14,90,70,60,1,lift hall from the south east
+C43,P1,39,9,31,16,0,6,90,70,40,1,the post from the north east
+C44,P1,-3,9,-23,20,0,6,90,70,50,1,the post from the south west
+C45,P1,-3,9,31,16,0,16,90,70,40,1,the post's counter from the north west (the guard's side of the desk)
+C46,P1,39,9,-23,14,0,-6,90,70,40,1,the post from the south east
+C47,P1,-5,9,31,-26,0,-14,90,70,66,1,lift hall from the north east

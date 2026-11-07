@@ -1,0 +1,5 @@
+id,x,y,z,yaw,flat,w,h,text,color,alpha,note
+P1_Post,20,8.6,-23.9,0,0,14,1.6,SECURITY POST - KESTREL & VANE,#c9a46a,0,
+P1_Level,-39.9,6.4,4,90,0,14,2.2,LEVEL P1,#e7e1cf,0.1,
+P1_Lifts,-23,9.4,31.9,180,0,10,1.2,SERVICE LIFTS,#e7e1cf,0.1,
+P1_StairsSign,-20,8.6,-23.9,0,0,6,1.2,STAIRS - P2 - P3 - P4,#e7e1cf,0.1,

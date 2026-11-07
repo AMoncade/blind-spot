@@ -1,0 +1,5 @@
+id,x,y,z,yaw,flat,w,h,text,color,alpha,note
+P4_Level,-39.9,6.4,-20,90,0,14,2.2,LEVEL P4,#e7e1cf,0.1,
+P4_Elec,-20,8.4,24.9,180,0,16,1.6,ELECTRICAL - HIGH VOLTAGE,#e0b93a,0.05,
+P4_Boiler,20,8.6,-35.9,0,0,12,1.6,BOILER ROOM,#e7e1cf,0.1,
+P4_Fresh,18,7.8,24.95,180,0,8,0.9,DO NOT REMOVE - 1979,#8a2a20,0.25,on the plaster

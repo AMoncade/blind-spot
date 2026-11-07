@@ -18,3 +18,12 @@ UI art (2 sets),image,generated with Ropilot (style: 1990s night security office
 Sounds (8),audio,own (tools/audio/make_sounds.py: synthesised),own work,,2026-11-06,set in content/sounds.csv after import,hum vent drone drip motor clack static tear
 TapesIcon,image,generated with Ropilot (same style as the UI art),generated for the game,,2026-11-06,rbxassetid://122036744672501,
 Viewmodel,mesh+texture,own (tools/blender/viewmodel.py; textures drawn in code),own work,,2026-11-07,ReplicatedStorage.ClientModels.Viewmodel,the hands and the camcorder in first person
+StairDoor,mesh+texture,own (tools/blender/floor_props.py; textures drawn in code),own work,,2026-11-07,ServerStorage.LevelModels.StairDoor,stairwell door with its STAIRS sign
+BreakerPanel,mesh+texture,own (tools/blender/floor_props.py; textures drawn in code),own work,,2026-11-07,ServerStorage.LevelModels.BreakerPanel,P4 main breakers
+Sledgehammer,mesh+texture,own (tools/blender/floor_props.py; textures drawn in code),own work,,2026-11-07,ServerStorage.LevelModels.Sledgehammer,night 5 item
+Crates,mesh+texture,own (tools/blender/floor_props.py; textures drawn in code),own work,,2026-11-07,ServerStorage.LevelModels.Crates,P2 stall detail
+Boiler,mesh+texture,own (tools/blender/floor_props.py; textures drawn in code),own work,,2026-11-07,ServerStorage.LevelModels.Boiler,P4 boiler room
+PlasterWall,mesh+texture,own (tools/blender/floor_props.py; textures drawn in code),own work,,2026-11-07,ServerStorage.LevelModels.PlasterWall,the sealed room's plaster and its rubble
+FireDoor,mesh+texture,own (tools/blender/floor_props.py; textures drawn in code),own work,,2026-11-07,ServerStorage.LevelModels.FireDoor,service corridor fire door
+Workbench,mesh+texture,own (tools/blender/floor_props.py; textures drawn in code),own work,,2026-11-07,ServerStorage.LevelModels.Workbench,P4 workbench
+Couch,mesh+texture,own (tools/blender/floor_props.py; textures drawn in code),own work,,2026-11-07,ServerStorage.LevelModels.Couch,P1 post couch

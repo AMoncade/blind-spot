@@ -1,8 +1,8 @@
 key,value,note
 grid_cell,2,side of a WatchService cell in studs (plan section 11)
-grid_origin_x,-60,west edge of the P3 grid
+grid_origin_x,-232,west edge of the grid (P1 is the westmost floor)
 grid_origin_z,-42,south edge of the P3 grid
-grid_width,60,cells along x
+grid_width,302,cells along x (P1 to P4 side by side: content/floors.csv)
 grid_depth,38,cells along z
 floor_y,0,top of the P3 floor slab
 sample_heights,0.5;3;6.5,heights above the floor a camera tests in a cell: any one seen and the cell is filmed (the doubt goes to the player)
@@ -197,3 +197,18 @@ vm_sway,2.5,how far the hands lag behind a turn
 vm_bob,0.035,how much the hands bob with the walk
 vm_fill_brightness,1.2,a dim light near the hands so they read in the dark (client only, no shadow)
 vm_fill_range,4,
+plaster_color,#d9d2c3,the fresh plaster patch on P4
+door_hold,0.5,seconds to hold the prompt to close or open a fire door
+door_cooldown,1.5,seconds before the same fire door can move again
+door_swing,95,degrees a fire door turns when it opens
+door_seconds,0.6,seconds the swing takes
+stairs_hold,0.4,seconds to hold the prompt to take the stairs
+stairs_cooldown,2,seconds before a guard can take the stairs again
+stairs_out,4,studs in front of the stairwell door where a guard comes out
+unseen_floor_delay,14,seconds he waits before he follows the guards to another floor (by the stairs out of sight)
+film_half_x,9.5,a film task's room: half its width around the target spot (the sealed room is 20 wide)
+film_half_z,3.8,and half its depth (the sealed room is 8 deep)
+unseen_start_floor,P3,the floor he starts a night on
+unseen_start_x,50,and where on it (local x and z): its far east end
+unseen_start_z,0,
+spawn_marker,P1_Spawn,the map block where a guard starts a night and wakes up (World.spawnCFrame)

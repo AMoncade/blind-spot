@@ -1,0 +1,13 @@
+id,kind,label,x,y,z,yaw,note
+P2_R1,checkpoint,P2 Stall 14,-21,3.2,31.85,180,wall reader on the north wall (faces south)
+P2_R2,checkpoint,P2 Stall 31,30,3.2,-31.85,0,south row behind the east car
+P2_R3,checkpoint,P2 Service corridor,0,3.2,-41.85,0,middle of the corridor
+P2_R4,checkpoint,P2 Stairs door,59.85,3.2,-14,-90,east wall near the exit
+P2_R5,checkpoint,P2 Ramp gate,-59.85,3.2,-24,90,west wall south corner
+P2_Hidden1,collect,Old tape,17,0,-29,30,a tape hiding place: a deep blind spot in the south stalls
+P2_Hidden2,collect,Old tape,2,0,26,200,between two cars in the north row
+P2_Hidden3,collect,Old tape,-57,0,-25,90,the south west corner
+P2_Hidden4,collect,Old tape,57,0,-10,270,along the east wall
+P2_Hidden5,collect,Old tape,-56,0,8,120,the west end of the aisle
+P2_Hidden6,collect,Old tape,58,0,-39,250,the east end of the service corridor
+P2_Stairs,stairs,Stairwell,59.6,0,-20,-90,the P3 stairwell door (east wall): up to P2 and down to P4

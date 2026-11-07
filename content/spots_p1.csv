@@ -1,0 +1,6 @@
+id,kind,label,x,y,z,yaw,note
+P1_Stairs,stairs,Stairwell,-20,0,-23.6,0,P1 stairwell door (south wall of the hall)
+Locker,locker,Post locker,39.1,0,10,-90,the fuses
+VCR,vcr,Post VCR,17,3.6,25.2,180,on the counter
+LogBook,logbook,Shift log,23,3.6,25.2,180,on the counter
+SignIn,signin,Sign-in book,26,3.6,25.2,180,a teammate's badge brings them back here

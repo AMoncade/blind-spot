@@ -155,4 +155,18 @@ return {
 		delay = 6,
 		text = "That wasn't me on the radio a minute ago. I wasn't talking.",
 	},
+	{
+		id = "n5c",
+		night = 5,
+		trigger = "plaster",
+		delay = 0,
+		text = "Guard. Stop. Don't go in there. That room is not on any camera.",
+	},
+	{
+		id = "n5d",
+		night = 5,
+		trigger = "sealed",
+		delay = 0,
+		text = "What did you film? ... Bring the tape up. Bring it up to me.",
+	},
 }

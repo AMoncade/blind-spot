@@ -1,0 +1,6 @@
+id,zone,x,y,z,tx,ty,tz,hfov,vfov,range,always,note
+C61,P4-elec,-39,9,24,-18,0,-10,80,60,48,0,electrical room from the north west
+C62,P4-elec,-2,9,-35,-24,0,6,80,60,52,0,electrical room from the south east
+C63,P4-boiler,39,9,-35,14,0,10,80,60,58,0,boiler room toward the plaster wall
+C64,P4-boiler,2,9,24,26,0,-6,80,60,40,0,boiler room from the north west
+C65,P4-boiler,39,9,-2,37,0,-30,70,50,36,0,the stairwell door

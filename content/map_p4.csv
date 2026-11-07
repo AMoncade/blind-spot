@@ -1,0 +1,22 @@
+id,kind,x,y,z,sx,sy,sz,count,step_x,occludes,blocks,yaw,note
+P4_Floor,floor,0,-0.5,-1,82,1,72,1,0,0,0,0,P4 slab (local x -40..40 z -36..34)
+P4_Ceiling,ceiling,0,10.5,-1,82,1,72,1,0,0,0,0,
+P4_WallW,wall,-40.5,5,-5,1,10,62,1,0,1,1,0,
+P4_WallE,wall,40.5,5,-5,1,10,62,1,0,1,1,0,
+P4_WallS,wall,0,5,-36.5,82,10,1,1,0,1,1,0,
+P4_WallN1,wall,-14,5,25.5,52,10,1,1,0,1,1,0,north wall: the plaster patch is x 12 to 24
+P4_WallN2,wall,32,5,25.5,16,10,1,1,0,1,1,0,
+P4_Plaster,plaster,18,5,25.5,12,10,1,1,0,1,1,0,the fresh plaster: broken on night 5
+P4_RoomW,wall,7.5,5,30,1,10,8,1,0,1,1,0,the sealed room behind it (no camera ever)
+P4_RoomE,wall,28.5,5,30,1,10,8,1,0,1,1,0,
+P4_RoomN,wall,18,5,33.5,22,10,1,1,0,1,1,0,
+P4_Div1,wall,0,5,10,1,10,30,1,0,1,1,0,electrical | boiler divider (door z -10 to -4)
+P4_Div2,wall,0,5,-23,1,10,26,1,0,1,1,0,
+P4_Boiler1,boiler,16,4,-24,8,8,8,1,0,1,1,0,
+P4_Boiler2,boiler,30,4,-24,8,8,8,1,0,1,1,0,
+P4_Bench,bench,-30,1.5,22.5,10,3,3,1,0,1,1,180,the workbench (the sledgehammer lies on it on night 5)
+P4_TubeE,tube,-30,9.7,-24,4,0.3,0.6,3,10,0,0,0,electrical room
+P4_TubeE2,tube,-30,9.7,8,4,0.3,0.6,3,10,0,0,0,
+P4_TubeB,tube,10,9.7,-10,4,0.3,0.6,3,10,0,0,0,boiler room
+P4_TubeB2,tube,10,9.7,12,4,0.3,0.6,3,10,0,0,0,
+P4_Exit,exit,40,8.2,-30,0.25,0.8,2.2,1,0,0,0,0,stairs

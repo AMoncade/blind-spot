@@ -1,6 +1,6 @@
 id,zone,x,y,z,tx,ty,tz,hfov,vfov,range,always,note
 C01,post,-58.5,9,31,-53,0,21,90,70,24,1,booth: the desk and the lockers
-C02,post,-48.6,9,16.4,-56,0,27,90,70,24,1,booth: the door side
+C02,post,-48.6,9,16.4,-55,0,20,90,70,24,1,booth: the door side
 C03,west,-59.2,9,-8,-30,0,2,62,42,50,0,west wall down the aisle
 C04,east,59.2,9,8,30,0,-2,62,42,50,0,east wall down the aisle
 C05,west,-24,9,-11.6,-29,0,22,70,48,42,0,pillar: north stalls west

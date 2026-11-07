@@ -1,0 +1,8 @@
+id,kind,label,x,y,z,yaw,note
+P4_Stairs,stairs,Stairwell,39.6,0,-30,-90,P4 stairwell door (east wall)
+Breakers,breakers,Breaker panel,-39.6,0,0,90,the electrical room's breakers
+Hammer,hammer,Sledgehammer,-30,3,22.2,180,on the workbench (night 5)
+Plaster,plaster,Fresh plaster,18,0,24.9,180,the plaster patch (night 5)
+SealedRoom,sealed,Sealed room,18,0,29.5,180,film it with the camcorder (night 5)
+P4_Hidden1,collect,Old tape,-36,0,-32,45,electrical room south west corner
+P4_Hidden2,collect,Old tape,36,0,14,270,boiler room north east

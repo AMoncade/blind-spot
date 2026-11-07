@@ -42,20 +42,71 @@ export type CameraDef = {
 }
 
 -- The level's grid and occluders from the map config (Config.Map) and the constants (Config.C).
-function Watch.level(map: { MapBlock }, C: any): Level
-	local grid = Grid.new(C.grid_origin_x, C.grid_origin_z, C.grid_cell, C.grid_width, C.grid_depth, C.floor_y)
-	local occluders, solids = {}, {}
+-- The blocks that change during a night (DYNAMIC kinds): a fire door that opens and closes, the plaster wall that
+-- is broken on night 5. Their state is solid (true) or not; by default a fire door stands open and the plaster holds.
+Watch.DYNAMIC = { firedoor = false, plaster = true }
+
+local function isSolid(b: MapBlock, states: { [string]: boolean }?): (boolean, boolean)
+	local default = Watch.DYNAMIC[b.kind]
+	if default == nil then
+		return b.occludes, b.blocks
+	end
+	local solid = default
+	if states and states[b.id] ~= nil then
+		solid = states[b.id]
+	end
+	return solid, solid
+end
+
+-- Fills a level's grid and occluders from the map (and the dynamic blocks' states), in place.
+function Watch.relevel(level: Level, map: { MapBlock }, C: any, states: { [string]: boolean }?)
+	local grid = level.grid
+	table.clear(grid.blocked)
+	table.clear(level.occluders)
+	local solids = {}
 	for _, b in map do
 		local box = Grid.box(b.x, b.y, b.z, b.sx, b.sy, b.sz)
-		if b.occludes then
-			table.insert(occluders, box)
+		local occludes, blocks = isSolid(b, states)
+		if occludes then
+			table.insert(level.occluders, box)
 		end
-		if b.blocks then
+		if blocks then
 			table.insert(solids, box)
 		end
 	end
 	Grid.block(grid, solids, C.block_pad)
-	return { grid = grid, occluders = occluders }
+	-- the cells between the floors (laid side by side, content/floors.csv) are nowhere: solid
+	local slabs = {}
+	for _, b in map do
+		if b.kind == "floor" then
+			table.insert(slabs, Grid.box(b.x, b.y, b.z, b.sx, b.sy, b.sz))
+		end
+	end
+	if #slabs > 0 then
+		for i = 1, Grid.count(grid) do
+			local cx, cz = Grid.center(grid, i)
+			local inside = false
+			for _, s in slabs do
+				if cx > s.minX and cx < s.maxX and cz > s.minZ and cz < s.maxZ then
+					inside = true
+					break
+				end
+			end
+			if not inside then
+				grid.blocked[i] = true
+			end
+		end
+	end
+end
+
+-- The level's grid and occluders from the map config (Config.Map) and the constants (Config.C).
+function Watch.level(map: { MapBlock }, C: any, states: { [string]: boolean }?): Level
+	local level: Level = {
+		grid = Grid.new(C.grid_origin_x, C.grid_origin_z, C.grid_cell, C.grid_width, C.grid_depth, C.floor_y),
+		occluders = {},
+	}
+	Watch.relevel(level, map, C, states)
+	return level
 end
 
 -- a fixed camera's view from its config row (it aims at its target), turned by yawOffset radians when a watcher

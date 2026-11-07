@@ -7,6 +7,9 @@
 --   5. he kills on contact, and only a player who has been off camera for the whole grace.
 -- The director (Logic/Hunt) picks his mode and his target per phase, and gives the players a break after a kill or a
 -- long chase. It sets the pressure, never the rules.
+-- The floors (content/floors.csv) are separate islands of one grid: he walks on one floor at a time. When the guards
+-- he wants are on another floor, he takes the stairs out of sight: after unseen_floor_delay he is gone from his floor
+-- and comes back in shadow near their stairwell door, out of everyone's reach (rule 1 holds through it).
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -55,6 +58,7 @@ local marked: { [Player]: boolean } = {}
 local sentExposure: { [Player]: number } = {}
 local toFilmed: { [number]: number } = {}
 local toFilmedVersion = -1
+local floorWait = 0 -- seconds the guards he wants have been on another floor
 
 local function minPlayerDistance(px: number, pz: number): number
 	local best = math.huge
@@ -246,6 +250,39 @@ function trySighting(list: { Status })
 	end
 end
 
+-- The floor he should be on: his target's, or (no target) the floor with the most guards off camera; nil: stay.
+local function wantedFloor(list: { Status }, target: Status?): string?
+	if target then
+		return (Config.floorAt(target.root.Position.X))
+	end
+	local count: { [string]: number } = {}
+	local best, bestN = nil, 0
+	for _, s in list do
+		if not s.filmed then
+			local f = Config.floorAt(s.root.Position.X)
+			count[f] = (count[f] or 0) + 1
+			if count[f] > bestN or (count[f] == bestN and best ~= nil and f < best) then
+				best, bestN = f, count[f]
+			end
+		end
+	end
+	return best
+end
+
+-- he takes the stairs to `floor`: gone from here, back in shadow near its stairwell door (or not at all for now)
+local function changeFloor(floor: string)
+	for _, row in Config.Stairs do
+		if row.floor == floor then
+			local spot = Config.spotById[row.spot]
+			present = false
+			stare = nil
+			goal, path = nil, nil
+			reappear(spot.x, spot.z)
+			return
+		end
+	end
+end
+
 local function walk(dt: number, speed: number, stopAt: number)
 	if not path then
 		return
@@ -369,6 +406,19 @@ local function tick(dt: number)
 		lastTarget = targetId
 		unhush(target and target.player)
 	end
+
+	-- the guards he wants are on another floor: after a while he is on theirs
+	local want = wantedFloor(list, target)
+	if want and want ~= (Config.floorAt(x)) then
+		floorWait += dt
+		if floorWait >= C.unseen_floor_delay then
+			floorWait = 0
+			changeFloor(want)
+			return
+		end
+	else
+		floorWait = 0
+	end
 	if lastMode ~= mode then
 		-- a new mode forgets the old goal (after a kill he must not keep walking to where the player was)
 		lastMode = mode
@@ -410,6 +460,21 @@ local function tick(dt: number)
 	if repathIn <= 0 or reached then
 		repathIn = C.unseen_repath
 		path = if goal and mine then Shadow.path(g, WatchService.filmed(), mine, goal) else nil
+		if not path and goal and mine and target then
+			-- a field stands between them (rule 4): he waits at the edge of his shadow, as close to the guard as it goes
+			local gx, gz = Grid.center(g, goal)
+			local best, bestD = nil, math.huge
+			for _, i in islandCells() do
+				local cx, cz = Grid.center(g, i)
+				local d = (cx - gx) ^ 2 + (cz - gz) ^ 2
+				if d < bestD then
+					best, bestD = i, d
+				end
+			end
+			if best and best ~= mine then
+				path = Shadow.path(g, WatchService.filmed(), mine, best)
+			end
+		end
 		pathAt = 2
 	end
 
@@ -466,8 +531,9 @@ function UnseenService.start()
 		marked[player] = nil
 		sentExposure[player] = nil
 	end)
-	-- he starts in the far east of the level until the night places him
-	x, z = Grid.center(g, Grid.index(g, g.w - 2, g.d // 2) :: number)
+	-- he starts at the far end of his floor (unseen_start_*), and reappears in shadow from there
+	x = Config.floorById[C.unseen_start_floor].offsetX + C.unseen_start_x
+	z = C.unseen_start_z
 	local sinceBroadcast = 0
 	local last = os.clock()
 	while true do

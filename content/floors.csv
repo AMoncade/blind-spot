@@ -1,0 +1,5 @@
+floor,name,offset_x,map,cameras,spots,signs,note
+P1,LEVEL P1,-190,map_p1.csv,cameras_p1.csv,spots_p1.csv,signs_p1.csv,the lift hall and the security post (always filmed)
+P2,LEVEL P2,160,map_p2.csv,cameras_p2.csv,spots_p2.csv,signs_p2.csv,a near copy of P3 (tools/make_floor_p2.py)
+P3,LEVEL P3,0,map_p3.csv,cameras.csv,spots.csv,signs.csv,the parking level of phase 0
+P4,LEVEL P4,330,map_p4.csv,cameras_p4.csv,spots_p4.csv,signs_p4.csv,the electrical room and the boiler room; the sealed room behind the plaster

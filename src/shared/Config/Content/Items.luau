@@ -13,4 +13,8 @@ return {
 		id = "tape",
 		name = "VHS tape",
 	},
+	{
+		id = "hammer",
+		name = "Sledgehammer",
+	},
 }

@@ -1,0 +1,44 @@
+id,kind,x,y,z,sx,sy,sz,count,step_x,occludes,blocks,note
+P2_Floor,floor,0,-0.5,-5,122,1,76,1,0,0,0,P3 slab
+P2_Ceiling,ceiling,0,10.5,-5,122,1,76,1,0,0,0,
+P2_WallN,wall,0,5,32.5,122,10,1,1,0,1,1,north wall
+P2_WallW,wall,-60.5,5,-5,1,10,76,1,0,1,1,west wall (the ramp to P2 comes later)
+P2_WallE,wall,60.5,5,-5,1,10,76,1,0,1,1,east wall
+P2_WallS1,wall,-52,5,-32.5,16,10,1,1,0,1,1,aisle side of the service corridor
+P2_WallS2,wall,0,5,-32.5,80,10,1,1,0,1,1,
+P2_WallS3,wall,52,5,-32.5,16,10,1,1,0,1,1,
+P2_WallC,wall,0,5,-42.5,122,10,1,1,0,1,1,outer wall of the corridor
+P2_PillarS,pillar,-48,5,-13,2.5,10,2.5,5,24,1,1,south pillar line
+P2_PillarN,pillar,-24,5,13,2.5,10,2.5,4,24,1,1,north pillar line (the booth replaces the west one)
+P2_CarN1,car,-36,2.5,24,6.5,5,15,1,0,1,1,
+P2_CarN2,car,-6,2.5,24,6.5,5,15,1,0,1,1,
+P2_CarN3,car,18,2.5,24,6.5,5,15,1,0,1,1,
+P2_CarN4,car,42,2.5,24,6.5,5,15,1,0,1,1,
+P2_CarS1,car,-30,2.5,-24,6.5,5,15,1,0,1,1,
+P2_CarS2,car,6,2.5,-24,6.5,5,15,1,0,1,1,
+P2_CarS3,car,36,2.5,-24,6.5,5,15,1,0,1,1,
+P2_TubeAisle,tube,-48,9.7,0,4,0.3,0.6,9,12,0,0,fluorescent tubes over the aisle
+P2_TubeN,tube,-24,9.7,24,4,0.3,0.6,2,24,0,0,P2: only the west half of the north row is lit
+P2_TubeS,tube,-36,9.7,-24,4,0.3,0.6,4,24,0,0,
+P2_TubeC,tube,-48,9.7,-37.5,4,0.3,0.6,5,24,0,0,service corridor
+P2_ExitW,exit,-42,8.2,-32,2.2,0.8,0.25,1,0,0,0,corridor door west
+P2_ExitE,exit,42,8.2,-32,2.2,0.8,0.25,1,0,0,0,corridor door east
+P2_ExitStairs,exit,60,8.2,-20,0.25,0.8,2.2,1,0,0,0,stairs door
+P2_GeneratorBlock,hidden,20,1.75,-40.75,5,3.5,2.4,1,0,1,1,collision under the generator model
+P2_StallsN,stalls,-40.5,0.015,24,0.25,0.03,15,12,9,0,0,north row stall lines every 9 studs (2.5 m)
+P2_StallsS,stalls,-58.5,0.015,-24,0.25,0.03,15,14,9,0,0,south row stall lines
+P2_Dash,dash,-54,0.015,0,3,0.03,0.3,19,6,0,0,dashed yellow line down the aisle
+P2_BandN,band,0,1.6,31.96,120,3.2,0.08,1,0,0,0,painted lower band on the north wall
+P2_BandW,band,-59.96,1.6,-5,0.08,3.2,74,1,0,0,0,
+P2_BandE,band,59.96,1.6,-5,0.08,3.2,74,1,0,0,0,
+P2_BandS1,band,-52,1.6,-31.96,16,3.2,0.08,1,0,0,0,aisle side of the corridor wall
+P2_BandS2,band,0,1.6,-31.96,80,3.2,0.08,1,0,0,0,
+P2_BandS3,band,52,1.6,-31.96,16,3.2,0.08,1,0,0,0,
+P2_BandC,band,0,1.6,-41.96,120,3.2,0.08,1,0,0,0,corridor outer wall
+P2_PipesAisle,pipes,-48,8.5,-8,3.7,1.5,24,5,24,0,0,ceiling services over the aisle (PipeRun model)
+P2_PipesCorridor,pipes,-48,8.5,-39.8,3.7,1.5,24,5,24,0,0,ceiling services in the corridor
+P2_BoothCounter,deskmodel,-53.75,3.5,28.35,12.4,7,7.3,1,0,0,0,the P3 cabin: counter and monitor wall (Blender SecurityDesk)
+P2_DoorW,firedoor,-42,4,-32.5,4,8,0.4,1,0,0,0,fire door of the corridor's west opening (stands open; a guard can close it: the Unseen can't pass a closed door)
+P2_DoorE,firedoor,42,4,-32.5,4,8,0.4,1,0,0,0,fire door of the east opening
+P2_CarAisle,car,30,2.5,5,15,5,6.5,1,0,1,1,P2 detail 1: a car left across the aisle
+P2_Crates,crates,-48,2.5,-25,7,5,9,1,0,1,1,P2 detail 3: crates in the south west stalls

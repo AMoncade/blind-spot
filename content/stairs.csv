@@ -1,0 +1,5 @@
+spot,floor,up,down,note
+P1_Stairs,P1,,P2_Stairs,
+P2_Stairs,P2,P1_Stairs,Stairs,
+Stairs,P3,P2_Stairs,P4_Stairs,
+P4_Stairs,P4,Stairs,,

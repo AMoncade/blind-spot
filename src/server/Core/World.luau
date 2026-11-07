@@ -12,6 +12,7 @@ local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local Watch = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Logic"):WaitForChild("Watch"))
 
 local C = Config.C
 
@@ -61,13 +62,40 @@ local GEOMETRY_COLOR = {
 	pillar = "grey_pillar",
 	car = "grey_car",
 	desk = "grey_desk",
+	-- stand-ins until their Blender model is in ServerStorage.LevelModels
+	crates = "grey_desk",
+	boiler = "grey_pillar",
+	plaster = "plaster_color",
+	firedoor = "grey_car",
+	elevator = "grey_car",
+	deskmodel = "grey_desk",
+	bench = "grey_desk",
+	couch = "grey_car",
 }
 
 -- kinds drawn by a Blender model from ServerStorage.LevelModels (a missing model falls back to the grey box)
-local MODEL_FOR: { [string]: string } = { pillar = "Pillar", car = "Sedan" }
+local MODEL_FOR: { [string]: string } = {
+	pillar = "Pillar",
+	car = "Sedan",
+	crates = "Crates",
+	boiler = "Boiler",
+	plaster = "PlasterWall",
+	firedoor = "FireDoor",
+	elevator = "Lobby:Elevator",
+	deskmodel = "Lobby:SecurityDesk",
+	bench = "Workbench",
+	couch = "Couch",
+}
+
+-- the floor a world position is on (content/floors.csv: each floor is moved along x), and its offset
+World.floorAt = Config.floorAt
 
 local function levelModel(name: string): Model?
-	local source = ServerStorage:FindFirstChild("LevelModels")
+	local folderName = "LevelModels"
+	if string.sub(name, 1, 6) == "Lobby:" then
+		folderName, name = "LobbyModels", string.sub(name, 7)
+	end
+	local source = ServerStorage:FindFirstChild(folderName)
 	local model = source and source:FindFirstChild(name)
 	if model and model:IsA("Model") then
 		return model:Clone()
@@ -122,7 +150,8 @@ end
 
 -- the pillar's painted name (P3 · S1) on its four faces
 local function pillarLabel(parent: Instance, b: typeof(Config.Map[1]), cf: CFrame, size: Vector3)
-	local name = "P3 · " .. string.sub(b.id, 7, 7) .. (string.match(b.id, "%d+$") or "")
+	local row = string.match(b.id, "Pillar(%a)") or ""
+	local name = (if b.floor ~= "" then b.floor else "P3") .. " · " .. row .. (string.match(b.id, "%d+$") or "")
 	for k = 0, 3 do
 		local face = cf * CFrame.Angles(0, math.rad(90 * k), 0) * CFrame.new(0, 1.2, size.Z / 2 + 0.03)
 		paint(parent, b.id .. "Label" .. k, face, 2.2, 0.9, name, rgb("#1c1c1c"), 0.1)
@@ -142,7 +171,17 @@ local function buildBlock(root: Model, folders: { [string]: Folder }, b: typeof(
 		p.CastShadow = false
 		p:SetAttribute("Kind", b.kind)
 		local index = tonumber(string.match(b.id, "%d+$")) or 0
-		local yaw = if b.kind == "car" and (index + #b.id) % 2 == 0 then 180 else 0
+		local yaw = b.yaw
+		if b.kind == "car" then
+			-- nose in or nose out; a car across the aisle (wider than long) turns a quarter
+			yaw = (if (index + #b.id) % 2 == 0 then 180 else 0) + (if b.sx > b.sz then 90 else 0)
+		end
+		if Watch.DYNAMIC[b.kind] ~= nil then
+			-- a fire door or the plaster: DoorService moves it and its collision with its state
+			p:SetAttribute("Dynamic", true)
+			p.CanCollide = Watch.DYNAMIC[b.kind]
+			model:SetAttribute("Block", b.id)
+		end
 		World.placeModel(model, Vector3.new(b.x, b.y - b.sy / 2, b.z), yaw)
 		if b.kind == "car" then
 			local color = rgb(Config.CarColors[(stringHash(b.id) % #Config.CarColors) + 1])
@@ -194,6 +233,10 @@ local function buildBlock(root: Model, folders: { [string]: Folder }, b: typeof(
 	elseif colorKey then
 		local p = part(folders.Geometry, b.id, cf, size, rgb((C :: any)[colorKey]), Enum.Material.Concrete)
 		p:SetAttribute("Kind", b.kind)
+		if Watch.DYNAMIC[b.kind] ~= nil then
+			p:SetAttribute("Dynamic", true)
+			p.CanCollide = Watch.DYNAMIC[b.kind]
+		end
 		if b.kind == "car" then
 			p.Material = Enum.Material.SmoothPlastic
 		elseif b.kind == "floor" or b.kind == "ceiling" then
@@ -205,7 +248,12 @@ local function buildBlock(root: Model, folders: { [string]: Folder }, b: typeof(
 		p.CanQuery = false
 		p.CastShadow = false
 		p:SetAttribute("Kind", "tube")
-		p:SetAttribute("Zone", if b.z < -32 then "corridor" elseif b.x < 0 then "west" else "east")
+		-- light zones per floor: P3:corridor, P2:west... (a task's effect can darken one: lights:P3:corridor)
+		local floor, offset = World.floorAt(b.x)
+		p:SetAttribute(
+			"Zone",
+			floor .. ":" .. (if b.z < -32 then "corridor" elseif b.x - offset < 0 then "west" else "east")
+		)
 		local light = Instance.new("SurfaceLight")
 		light.Face = Enum.NormalId.Bottom
 		light.Color = rgb(C.tube_color)
@@ -243,7 +291,7 @@ local function buildBlock(root: Model, folders: { [string]: Folder }, b: typeof(
 		p.CastShadow = false
 	elseif b.kind == "spawn" then
 		-- where a guard wakes up in the booth: a marker, not a SpawnLocation (everyone spawns in the lobby)
-		local s = part(root, "Spawn", cf, size, Color3.new(1, 1, 1), Enum.Material.SmoothPlastic)
+		local s = part(root, b.id, cf, size, Color3.new(1, 1, 1), Enum.Material.SmoothPlastic)
 		s.Transparency = 1
 		s.CanCollide = false
 		s.CanQuery = false
@@ -335,6 +383,21 @@ local SPOT_LOOK: { [string]: { model: string, size: Vector3, color: Color3, item
 		color = Color3.fromRGB(150, 150, 140),
 		item = false,
 	},
+	stairs = { model = "StairDoor", size = Vector3.new(4, 8, 0.4), color = Color3.fromRGB(70, 76, 82), item = false },
+	breakers = {
+		model = "BreakerPanel",
+		size = Vector3.new(4, 6, 0.8),
+		color = Color3.fromRGB(120, 124, 120),
+		item = false,
+	},
+	hammer = {
+		model = "Sledgehammer",
+		size = Vector3.new(2.6, 0.3, 0.5),
+		color = Color3.fromRGB(90, 60, 40),
+		item = true,
+	},
+	plaster = { model = "", size = Vector3.new(0.4, 0.4, 0.4), color = Color3.new(1, 1, 1), item = false },
+	sealed = { model = "", size = Vector3.new(0.4, 0.4, 0.4), color = Color3.new(1, 1, 1), item = false },
 	tape = { model = "VHSTape", size = Vector3.new(0.9, 0.2, 0.55), color = Color3.fromRGB(20, 20, 22), item = true },
 	vcr = { model = "VCR", size = Vector3.new(2, 0.5, 1.5), color = Color3.fromRGB(30, 30, 32), item = false },
 	collect = { model = "VHSTape", size = Vector3.new(0.9, 0.2, 0.55), color = Color3.fromRGB(20, 20, 22), item = true },
@@ -388,7 +451,7 @@ local function buildSpot(parent: Folder, spot: typeof(Config.Spots[1]))
 		end
 		clone.Name = "Model"
 		clone.Parent = m
-	else
+	elseif look.model ~= "" then
 		local p =
 			part(m, "StandIn", base * CFrame.new(0, look.size.Y / 2, 0), look.size, look.color, Enum.Material.Metal)
 		if look.item then
@@ -779,7 +842,7 @@ end
 
 function World.spawnCFrame(): CFrame
 	local root = World.root :: Model
-	local spawn = root:FindFirstChild("Spawn") :: BasePart
+	local spawn = root:FindFirstChild(C.spawn_marker) :: BasePart
 	return spawn.CFrame + Vector3.new(0, 3, 0)
 end
 

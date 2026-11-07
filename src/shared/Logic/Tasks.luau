@@ -16,11 +16,12 @@ export type Def = {
 	effect: { string },
 	pay: number,
 	hold: number,
+	nights: { number }?, -- only these nights (empty: every night)
 }
 
 export type Task = {
 	id: string, -- unique in the night: "scan:R2", "generator"
-	kind: string,
+	kind: string, -- "scan" | "fetch" | "film" (stand in the target's room with the camcorder raised for hold s)
 	label: string,
 	item: string?, -- fetch: the item to carry
 	pickup: string?, -- fetch: the spot where the item lies
@@ -31,11 +32,20 @@ export type Task = {
 	done: boolean,
 }
 
-function Tasks.build(defs: { Def }, spotLabel: (string) -> string, scanCount: number, seed: number): { Task }
+function Tasks.build(
+	defs: { Def },
+	spotLabel: (string) -> string,
+	scanCount: number,
+	seed: number,
+	night: number?
+): { Task }
 	local rng = Rng.new(seed)
 	local out: { Task } = {}
 	for _, def in defs do
-		if def.kind == "scan" then
+		if night and def.nights and #def.nights > 0 and not table.find(def.nights, night) then
+			continue
+		end
+		if def.kind == "scan" and #def.target > 1 then
 			local spots = rng.shuffle(def.target)
 			for k = 1, math.min(scanCount, #spots) do
 				local spot = spots[k]
@@ -50,6 +60,18 @@ function Tasks.build(defs: { Def }, spotLabel: (string) -> string, scanCount: nu
 					done = false,
 				})
 			end
+		elseif def.kind ~= "fetch" then
+			-- a single scan (the breakers) or a film task: its own target
+			table.insert(out, {
+				id = def.id,
+				kind = def.kind,
+				label = def.label,
+				target = def.target[1],
+				effect = def.effect,
+				pay = def.pay,
+				hold = def.hold,
+				done = false,
+			})
 		else
 			table.insert(out, {
 				id = def.id,

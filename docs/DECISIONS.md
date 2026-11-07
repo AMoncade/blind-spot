@@ -57,3 +57,11 @@ L'Invisible voyage par l'ombre (règle 4), mais le plan veut aussi qu'il « se m
 ## Nos sons sont synthétisés (6 novembre 2026)
 
 Aucun outil ne téléverse de l'audio ; les sons sont donc faits par code (`tools/audio/make_sounds.py`), à nous sans licence à suivre, et Adrien les importe dans Studio. Freesound CC0 reste possible pour les remplacer.
+
+## Les étages côte à côte dans une seule grille (7 novembre 2026)
+
+Les quatre niveaux du chapitre 1 sont posés côte à côte le long de x (P1 à -190, P2 à 160, P3 à 0, P4 à 330), pas empilés. Une seule grille les couvre ; les cases entre les dalles sont bloquées, donc chaque étage est une île : l'Invisible ne marche jamais d'un étage à l'autre, il prend l'escalier hors de vue (`unseen_floor_delay`). Les caméras, les rayons et les chemins restent en 2D, sans rien changer à `Logic/Watch` ni à `Logic/Shadow`. On passe d'un étage à l'autre par la porte de l'escalier (une téléportation devant la porte d'arrivée).
+
+## Les portes coupe-feu et le plâtre changent la grille (7 novembre 2026)
+
+Un bloc de la carte peut changer d'état pendant une nuit (`Watch.DYNAMIC` : `firedoor` ouvert par défaut, `plaster` plein par défaut). Le serveur recalcule la grille sur place et seulement les champs des caméras proches ; les clients font pareil à partir de l'attribut `Solid` de la boîte. Une porte fermée protège d'un côté mais aveugle les caméras de l'autre : c'est un choix pour le joueur, pas une cachette sûre.

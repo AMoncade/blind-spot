@@ -20,6 +20,8 @@ local UnseenService = require(script.Parent:WaitForChild("UnseenService"))
 local CamcorderService = require(script.Parent:WaitForChild("CamcorderService"))
 local Data = require(Server:WaitForChild("Core"):WaitForChild("Data"))
 local TaskService = require(script.Parent:WaitForChild("TaskService"))
+local DoorService = require(script.Parent:WaitForChild("DoorService"))
+local StairsService = require(script.Parent:WaitForChild("StairsService"))
 local CoopService = require(script.Parent:WaitForChild("CoopService"))
 local StoryService = require(script.Parent:WaitForChild("StoryService"))
 
@@ -158,6 +160,7 @@ function endNight(outcome: string)
 	PowerDirector.stop()
 	local n, total, taskPay = TaskService.summary()
 	TaskService.clear()
+	DoorService.reset()
 	CoopService.reset()
 	StoryService.finish(outcome)
 	-- every guard stands up again in the booth for the report
@@ -241,7 +244,8 @@ function NightService.launch(guards: { Player }, night: number?): boolean
 	running = true
 	shift += 1
 	local seed = os.time()
-	TaskService.reset(seed, def.extraScans + extraGuards * C.coop_scan_per_guard, def.cables, def.length)
+	DoorService.reset()
+	TaskService.reset(seed, def.extraScans + extraGuards * C.coop_scan_per_guard, def.cables, def.length, nightNumber)
 	solo = #guards <= 1
 	lives = C.solo_lives
 	for k, player in guards do
@@ -262,6 +266,12 @@ function NightService.init()
 	UnseenService.onKill = NightService.kill
 	UnseenService.isPlaying = NightService.isPlaying
 	TaskService.isPlaying = NightService.isPlaying
+	DoorService.isPlaying = NightService.isPlaying
+	StairsService.isPlaying = NightService.isPlaying
+	-- a task done: the radio answers the ones it has a line for (night 5: the plaster, the sealed room)
+	TaskService.onDone = function(taskId: string)
+		StoryService.trigger(taskId)
+	end
 	CoopService.isPlaying = NightService.isPlaying
 	StoryService.guards = function(): { Player }
 		local out = {}
