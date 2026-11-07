@@ -28,6 +28,7 @@ local TaskService = {}
 TaskService.isPlaying = nil :: ((player: Player) -> boolean)?
 TaskService.onCut = nil :: (() -> ())? -- the radio's first_cut line (NightService wires it)
 TaskService.onDone = nil :: ((taskId: string) -> ())? -- a task done: the radio may answer (NightService wires it)
+TaskService.onNew = nil :: ((taskId: string) -> ())? -- a task shows up: the radio may announce it (NightService)
 
 local list: { Tasks.Task } = {}
 -- the cut lines (plan section 3, night 4: "les câbles de caméras arrachés"): when each is cut, and the spots added
@@ -37,7 +38,18 @@ local dynamic: { [string]: any } = {} -- spot id -> its row (x, y, z, ...), for 
 local carrying: { [Player]: string } = {} -- player -> task id of the item they hold
 local prompts: { [string]: ProximityPrompt } = {} -- spot id -> its prompt
 local filming: { [string]: number } = {} -- film task id -> seconds filmed so far
+local shown: { [string]: boolean } = {} -- the tasks already on the clipboard tonight
 local dirty = true
+
+-- seconds into the night (0 between nights)
+local function now(): number
+	local t = PowerDirector.now()
+	return t or 0
+end
+
+local function released(t: Tasks.Task): boolean
+	return Tasks.released(t, now())
+end
 
 local function playing(player: Player): boolean
 	return TaskService.isPlaying ~= nil and TaskService.isPlaying(player)
@@ -86,7 +98,7 @@ local function refreshPrompts()
 		prompt.Enabled = false
 	end
 	for _, t in list do
-		if t.done then
+		if t.done or not released(t) then
 			continue
 		end
 		local target = prompts[t.target]
@@ -111,13 +123,13 @@ local function refreshPrompts()
 	end
 	for _, t in list do
 		if t.kind == "fetch" and t.pickup then
-			showItem(t.pickup, not t.done and holder(t.id) == nil)
+			showItem(t.pickup, not t.done and released(t) and holder(t.id) == nil)
 		end
 	end
 end
 
 local function applyEffects()
-	local cams, lights = Tasks.broken(list)
+	local cams, lights = Tasks.broken(list, now())
 	PowerDirector.setBroken(cams)
 	return cams, lights
 end
@@ -127,7 +139,7 @@ local function spotRow(id: string): any
 end
 
 local function payload(): any
-	local cams, lights = Tasks.broken(list)
+	local cams, lights = Tasks.broken(list, now())
 	local held = {}
 	for player, id in carrying do
 		local t = taskById(id)
@@ -137,6 +149,9 @@ local function payload(): any
 	end
 	local out = {}
 	for _, t in list do
+		if not released(t) then
+			continue
+		end
 		local target = spotRow(t.target)
 		local pickup = t.pickup and spotRow(t.pickup)
 		local h = holder(t.id)
@@ -174,6 +189,7 @@ end
 function TaskService.reset(seed: number, extraScans: number, cables: number?, length: number?, night: number?)
 	table.clear(carrying)
 	table.clear(filming)
+	table.clear(shown)
 	clearDynamic()
 	-- the night's cut lines, spread over it
 	cutRng = Rng.new(seed + 77)
@@ -185,7 +201,12 @@ function TaskService.reset(seed: number, extraScans: number, cables: number?, le
 	table.sort(cuts)
 	list = Tasks.build(Config.Tasks, function(id)
 		return Config.spotById[id].label
-	end, C.scan_count + extraScans, seed, night)
+	end, C.scan_count + extraScans, seed, night, (length or 0) / (C.night_clock_end - C.night_clock_start))
+	for _, t in list do
+		if t.at <= 0 then
+			shown[t.id] = true
+		end
+	end
 	changed()
 end
 
@@ -193,6 +214,7 @@ end
 function TaskService.clear()
 	table.clear(carrying)
 	table.clear(filming)
+	table.clear(shown)
 	clearDynamic()
 	list = {}
 	changed()
@@ -237,7 +259,7 @@ end
 
 -- The Unseen cuts a camera's line: the camera dies, a junction box under it waits to be spliced (a task).
 local function cutLine()
-	local cams, _ = Tasks.broken(list)
+	local cams, _ = Tasks.broken(list, now())
 	local candidates = {}
 	for id in string.gmatch(C.cuttable_cameras, "[^;]+") do
 		if not cams[id] and not dynamic["Line_" .. id] then
@@ -268,8 +290,10 @@ local function cutLine()
 		effect = { "cam:" .. id },
 		pay = C.pay_splice,
 		hold = C.splice_hold,
+		at = now(),
 		done = false,
 	})
+	shown["splice:" .. id] = true
 	for _, player in Players:GetPlayers() do
 		if playing(player) then
 			notify(player, "CAM " .. string.sub(id, 2) .. " LINE CUT")
@@ -306,7 +330,7 @@ end
 -- camcorder raised fills it; the room is out of every camera, so it is the most dangerous minute of the night
 local function filmStep(dt: number)
 	for _, t in list do
-		if t.done or t.kind ~= "film" then
+		if t.done or t.kind ~= "film" or not released(t) then
 			continue
 		end
 		local spot = spotRow(t.target)
@@ -341,7 +365,7 @@ local function onTriggered(spotId: string, player: Player)
 		return
 	end
 	for _, t in list do
-		if t.done then
+		if t.done or not released(t) then
 			continue
 		end
 		if t.kind == "scan" and t.target == spotId then
@@ -405,6 +429,27 @@ function TaskService.start()
 	while true do
 		local dt = task.wait(C.task_broadcast)
 		filmStep(dt)
+		-- the round comes through the night: a task shows up at its hour (its effect starts with it)
+		local fresh = {}
+		for _, task in list do
+			if not shown[task.id] and released(task) then
+				shown[task.id] = true
+				table.insert(fresh, task)
+			end
+		end
+		if #fresh > 0 then
+			for _, task in fresh do
+				for _, player in Players:GetPlayers() do
+					if playing(player) then
+						notify(player, "NEW TASK: " .. string.upper(task.label))
+					end
+				end
+				if TaskService.onNew then
+					TaskService.onNew(task.id)
+				end
+			end
+			changed()
+		end
 		local t, _, tl = PowerDirector.now()
 		if tl and #cuts > 0 and t >= cuts[1] then
 			table.remove(cuts, 1)

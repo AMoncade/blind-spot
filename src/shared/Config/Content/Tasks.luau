@@ -23,6 +23,7 @@ return {
 		pay = 30,
 		hold = 1,
 		nights = {},
+		hours = { 0, 2, 4, 5 },
 	},
 	{
 		id = "generator",
@@ -43,6 +44,7 @@ return {
 		pay = 90,
 		hold = 3,
 		nights = {},
+		hours = { 0 },
 	},
 	{
 		id = "fuse",
@@ -61,6 +63,7 @@ return {
 		pay = 60,
 		hold = 2,
 		nights = {},
+		hours = { 1 },
 	},
 	{
 		id = "tape",
@@ -79,6 +82,7 @@ return {
 		pay = 60,
 		hold = 1.5,
 		nights = {},
+		hours = { 3.5 },
 	},
 	{
 		id = "breakers",
@@ -101,6 +105,7 @@ return {
 		pay = 80,
 		hold = 4,
 		nights = {},
+		hours = { 2.5 },
 	},
 	{
 		id = "plaster",
@@ -119,6 +124,7 @@ return {
 		pay = 100,
 		hold = 3,
 		nights = { 5 },
+		hours = { 4 },
 	},
 	{
 		id = "sealed",
@@ -133,5 +139,6 @@ return {
 		pay = 150,
 		hold = 8,
 		nights = { 5 },
+		hours = { 4 },
 	},
 }

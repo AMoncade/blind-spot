@@ -136,6 +136,9 @@ function spec.killOnlyInABlindSpot()
 	ok(not Hunt.canKill(1, true, 1, C), "filmed")
 	ok(not Hunt.canKill(1, false, C.unwatched_grace / 2, C), "inside the grace")
 	ok(not Hunt.canKill(C.unseen_contact + 0.1, false, 5, C), "out of reach")
+	ok(Hunt.canKill(1, false, 1, C, "hunt") and Hunt.canKill(1, false, 1, C, "approach"), "after someone")
+	ok(not Hunt.canKill(1, false, 1, C, "prowl"), "prowling in LIVE he touches no one")
+	ok(not Hunt.canKill(1, false, 1, C, "retreat"), "nor during the director's break")
 end
 
 function spec.hushComesBeforeReach()

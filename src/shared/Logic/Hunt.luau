@@ -97,8 +97,14 @@ function Hunt.exposure(
 	return level, marked
 end
 
--- Can he touch this player? Only in a blind spot (the player off camera for the whole grace), within reach.
-function Hunt.canKill(distance: number, filmed: boolean, offTime: number, C: any): boolean
+-- Can he touch this player? Only in a blind spot (the player off camera for the whole grace), within reach, and only
+-- when he is after someone (approach or hunt): prowling in LIVE he doesn't touch anyone (a marked guard turns his
+-- prowl into a hunt), and he takes no one during the director's break. Simulator, Nov 7: on night 1, bots died
+-- walking into his blind corner during their round; a guard who stumbles on him in LIVE sees him vanish instead.
+function Hunt.canKill(distance: number, filmed: boolean, offTime: number, C: any, mode: Mode?): boolean
+	if mode == "prowl" or mode == "retreat" then
+		return false
+	end
 	return not filmed and offTime >= C.unwatched_grace and distance <= C.unseen_contact
 end
 

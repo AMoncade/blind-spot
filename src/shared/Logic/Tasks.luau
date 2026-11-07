@@ -1,7 +1,9 @@
 --!strict
 -- The night's task list (plan section 3, "La ronde": 4 to 6 tasks drawn from the place's list). Built once per night
 -- from Config.Tasks and a seed: scan_count checkpoints to scan, then every fetch task (take an item at one of its
--- pickup spots, use it at its target). A task's effect (a dead camera, a dark zone) lasts until it is done. Pure.
+-- pickup spots, use it at its target). The round comes through the night ("le cycle du courant tourne pendant toute la
+-- ronde"): each task shows up at its hour (tasks.csv, hours; the checkpoints spread over theirs), and its effect (a
+-- dead camera, a dark zone) starts then and lasts until it is done. Pure.
 local Rng = require(if script then script.Parent:WaitForChild("Rng") else "./Rng")
 
 local Tasks = {}
@@ -17,6 +19,7 @@ export type Def = {
 	pay: number,
 	hold: number,
 	nights: { number }?, -- only these nights (empty: every night)
+	hours: { number }?, -- the night hour it shows up (scan: one per checkpoint, in turn); empty: at the start
 }
 
 export type Task = {
@@ -29,16 +32,27 @@ export type Task = {
 	effect: { string },
 	pay: number,
 	hold: number,
+	at: number, -- seconds into the night when it shows up on the clipboard
 	done: boolean,
 }
+
+local function hourOf(def: Def, k: number): number
+	local hours = def.hours
+	if not hours or #hours == 0 then
+		return 0
+	end
+	return hours[(k - 1) % #hours + 1]
+end
 
 function Tasks.build(
 	defs: { Def },
 	spotLabel: (string) -> string,
 	scanCount: number,
 	seed: number,
-	night: number?
+	night: number?,
+	hourLength: number? -- seconds per night hour (nil: every task at the start)
 ): { Task }
+	local hourSeconds = hourLength or 0
 	local rng = Rng.new(seed)
 	local out: { Task } = {}
 	for _, def in defs do
@@ -57,6 +71,7 @@ function Tasks.build(
 					effect = def.effect,
 					pay = def.pay,
 					hold = def.hold,
+					at = hourOf(def, k) * hourSeconds,
 					done = false,
 				})
 			end
@@ -70,6 +85,7 @@ function Tasks.build(
 				effect = def.effect,
 				pay = def.pay,
 				hold = def.hold,
+				at = hourOf(def, 1) * hourSeconds,
 				done = false,
 			})
 		else
@@ -83,6 +99,7 @@ function Tasks.build(
 				effect = def.effect,
 				pay = def.pay,
 				hold = def.hold,
+				at = hourOf(def, 1) * hourSeconds,
 				done = false,
 			})
 		end
@@ -90,12 +107,17 @@ function Tasks.build(
 	return out
 end
 
--- The effects still in force (tasks not done): dead cameras and dark light zones.
-function Tasks.broken(list: { Task }): ({ [string]: boolean }, { [string]: boolean })
+-- Has this task shown up yet, `now` seconds into the night? (nil: yes)
+function Tasks.released(t: Task, now: number?): boolean
+	return now == nil or t.at <= now
+end
+
+-- The effects in force `now` (tasks shown up and not done; nil: every task not done): dead cameras, dark light zones.
+function Tasks.broken(list: { Task }, now: number?): ({ [string]: boolean }, { [string]: boolean })
 	local cams: { [string]: boolean } = {}
 	local lights: { [string]: boolean } = {}
 	for _, t in list do
-		if not t.done then
+		if not t.done and Tasks.released(t, now) then
 			for _, e in t.effect do
 				local kind, id = string.match(e, "^(%w+):(.+)$")
 				if kind == "cam" then

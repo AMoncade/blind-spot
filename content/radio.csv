@@ -23,3 +23,15 @@ any7,0,cleared,0,That's six. Good work. Go home.,
 n4c,4,half,6,That wasn't me on the radio a minute ago. I wasn't talking.,night 4: the radio speaks when it shouldn't (plan section 6)
 n5c,5,plaster,0,Guard. Stop. Don't go in there. That room is not on any camera.,
 n5d,5,sealed,0,What did you film? ... Bring the tape up. Bring it up to me.,
+new1,0,new:fuse,1,Camera 07 just blew a fuse. Spares are in the locker at the post.,a task shows up (tasks.csv hours)
+new2,0,new:breakers,1,We lost P4. Everything down there is dark. The breaker panel is in the electrical room.,
+new3,0,new:tape,1,One of the tapes is missing. Somebody left it out on P3. Bring it back to the VCR.,
+new4,5,new:plaster,2,Guard... there is a wall on P4 that wasn't there yesterday. Take the hammer from the bench.,night 5
+n2c,2,half,5,If a light stutters right above you don't stand under it. Find a red one.,
+n3c,3,last_hour,0,Five o'clock. The blackouts last longer now. Plan your way from camera to camera.,
+n4d,4,first_cut,1,A line went dead. The box is under that camera. Splice it before the next blackout.,
+n4e,4,last_hour,0,Five o'clock. I count more dead cameras than I sent you to fix.,
+n5e,5,half,3,Three o'clock. Guard... I can see you on cam two. Who is that behind you?,
+n6b,6,half,0,[static] ...stay... on... camera...,the hard night: the radio only breaks through
+n6c,6,last_hour,0,[static] ...it knows the cameras now...,
+any8,0,first_floor,1,Mind the stairwell. Down there the cameras are older.,

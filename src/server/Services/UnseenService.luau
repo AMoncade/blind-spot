@@ -370,6 +370,11 @@ local function tick(dt: number)
 		vanish()
 		return
 	end
+	-- prowling, a guard walks right up to him (his blind corner): he isn't there any more (no kill in LIVE)
+	if mode == "prowl" and minPlayerDistance(x, z) < C.unseen_corner_distance then
+		vanish()
+		return
+	end
 	if mode == "prowl" and relief <= 0 and os.clock() >= nextSighting then
 		nextSighting = os.clock() + rng.int(C.sighting_min, C.sighting_max)
 		trySighting(list)
@@ -495,7 +500,7 @@ local function tick(dt: number)
 	-- rule 5: contact in a blind spot
 	for _, s in list do
 		local d = math.sqrt((s.root.Position.X - x) ^ 2 + (s.root.Position.Z - z) ^ 2)
-		if Hunt.canKill(d, s.filmed, offTime[s.player] or 0, C) then
+		if Hunt.canKill(d, s.filmed, offTime[s.player] or 0, C, mode) then
 			if UnseenService.onKill then
 				UnseenService.onKill(s.player)
 			end

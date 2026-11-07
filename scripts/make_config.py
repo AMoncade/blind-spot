@@ -146,6 +146,9 @@ def build():
                           "x": num(r["x"]) + dx, "y": num(r["y"]), "z": num(r["z"]), "yaw": num(r["yaw"])})
     mods["Spots"] = ("spots*.csv", spots)
 
+    mods["Signals"] = ("signals.csv", [
+        {"id": r["id"], "text": r["text"], "kind": r["kind"], "color": r["color"]} for r in rows("signals.csv")])
+
     mods["Stairs"] = ("stairs.csv", [
         {"spot": r["spot"], "floor": r["floor"], "up": r["up"], "down": r["down"]} for r in rows("stairs.csv")])
 
@@ -155,7 +158,7 @@ def build():
     mods["Tasks"] = ("tasks.csv", [
         {"id": r["id"], "kind": r["kind"], "label": r["label"], "item": r["item"], "pickup": ids(r["pickup"]),
          "target": ids(r["target"]), "effect": ids(r["effect"]), "pay": num(r["pay"]), "hold": num(r["hold"]),
-         "nights": [int(x) for x in ids(r["nights"])]}
+         "nights": [int(x) for x in ids(r["nights"])], "hours": [num(x) for x in ids(r["hours"])]}
         for r in rows("tasks.csv")])
 
     signs = []
@@ -189,7 +192,7 @@ def build():
     mods["Shop"] = ("shop.csv", [
         {"id": r["id"], "name": r["name"], "kind": r["kind"], "price": num(r["price"]),
          "product": int(r["robux_product"]), "art": r["art"], "frame": r["frame"], "rec": r["rec"], "text": r["text"],
-         "blurb": r["blurb"]}
+         "blurb": r["blurb"], "unlock": r["unlock"]}
         for r in rows("shop.csv")])
 
     mods["Daily"] = ("daily.csv", [

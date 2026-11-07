@@ -20,6 +20,7 @@ unseen_speed_approach,9,studs per second in FLICKER
 unseen_speed_hunt,12.5,studs per second in BLACKOUT
 unseen_speed_retreat,10,studs per second while the director gives the players a break
 unseen_keep_distance_live,16,in LIVE he stays at least this far from every player
+unseen_corner_distance,7,in LIVE a guard who gets this close to him (his blind corner) sees him vanish: he touches no one while prowling
 unseen_hold_distance_flicker,9,in FLICKER he stops this far from the most exposed player
 unseen_hush_lead,1.5,the sound dies this many seconds before he is in reach (plan section 4)
 unseen_return_min_distance,18,after vanishing he comes back at least this far from every player
@@ -147,11 +148,14 @@ rec_glow_brightness,1.6,
 scan_count,2,checkpoints to scan each night
 pickup_hold,0.6,seconds to pick an item up
 task_broadcast,0.5,seconds between task list checks sent to the guards
-zone_live_alpha,0.9,safe zone floor glow transparency in LIVE (filmed floor)
+zone_live_alpha,0.86,safe zone floor glow transparency in LIVE (filmed floor)
 zone_dark_alpha,0.78,safe zone floor glow transparency of the cameras that hold in FLICKER and BLACKOUT
 zone_color,#bfe6ff,safe zone glow in LIVE
 zone_hold_color,#ff3b30,safe zone glow of the holdout cameras
 zone_height,0.06,how high the safe zone glow sits over the floor
+zone_edge_width,0.35,studs: the bright line along the edge of a safe zone (where the camera stops seeing you)
+zone_edge_alpha,0.45,its transparency in LIVE
+zone_edge_dark_alpha,0.15,its transparency for the cameras that hold (FLICKER and BLACKOUT)
 p3_floor_color,#4f5254,P3 floor concrete
 p3_ceiling_color,#3d4043,P3 ceiling
 p3_wall_color,#8f8d88,P3 walls above the band
@@ -212,3 +216,13 @@ unseen_start_floor,P3,the floor he starts a night on
 unseen_start_x,50,and where on it (local x and z): its far east end
 unseen_start_z,0,
 spawn_marker,P1_Spawn,the map block where a guard starts a night and wakes up (World.spawnCFrame)
+signal_seconds,7,how long a coop signal's marker stays up
+signal_range,80,studs: the farthest a guard can put an OVER HERE marker (where they look)
+signal_cooldown,1.2,seconds between two signals from one guard
+signal_feed,3,lines in the signal feed under the watch
+vm_lamp_brightness,0.7,the camcorder's work lamp (its colour is the equipped lamp: every lamp is as strong)
+vm_lamp_range,14,
+vm_lamp_angle,55,
+vest_scale,1.02;1;1.04,the uniform jacket over the torso: a little more than the torso's own scale (x y z)
+vest_center,0.85,studs from the jacket model's bottom to the torso's centre (tools/blender/floor_props.py)
+group_id,689591627,the game's Roblox group (Kestrel & Vane Security): its members get the un_kv uniform

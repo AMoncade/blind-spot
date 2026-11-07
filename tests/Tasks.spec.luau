@@ -57,6 +57,33 @@ function spec.theFinaleIsOnlyOnNightFive()
 	ok(has(3, "breakers") and has(5, "breakers"), "the P4 breakers every night")
 end
 
+function spec.theRoundComesThroughTheNight()
+	local def = Config.nightByNumber[3]
+	local hour = def.length / (C.night_clock_end - C.night_clock_start)
+	local list = Tasks.build(Config.Tasks, label, C.scan_count + 1, 4, 3, hour)
+	local first, last = math.huge, 0
+	for _, t in list do
+		first = math.min(first, t.at)
+		last = math.max(last, t.at)
+		ok(t.at >= 0 and t.at < def.length, t.id .. " shows up during the night")
+	end
+	eq(first, 0, "the first tasks are there at midnight")
+	ok(last >= def.length / 2, "the last ones come in the second half of the night")
+	-- an effect starts when its task shows up: the P4 breakers trip at their hour
+	local breakers
+	for _, t in list do
+		if t.id == "breakers" then
+			breakers = t
+		end
+	end
+	ok(breakers and breakers.at > 0, "the breakers come later")
+	local cams = Tasks.broken(list, 0)
+	ok(not cams.C61, "P4 is lit before the breakers trip")
+	cams = Tasks.broken(list, breakers.at)
+	ok(cams.C61, "P4 goes dark when they trip")
+	ok(not Tasks.released(breakers, breakers.at - 1) and Tasks.released(breakers, breakers.at), "released at its hour")
+end
+
 function spec.labelsAreFilled()
 	local list = Tasks.build(Config.Tasks, label, C.scan_count, 3, 3)
 	for _, t in list do
