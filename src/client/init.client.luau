@@ -28,6 +28,7 @@ end
 Settings.start()
 start("FirstPerson")
 start("Camcorder")
+start("Viewmodel", true)
 start("Atmosphere", true)
 start("CameraHeads", true)
 start("SafeZones", true)

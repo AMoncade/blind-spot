@@ -192,4 +192,11 @@ return {
 	vignette_max = 0.12,
 	vignette_off = 0.7,
 	fp_camera_forward = 0.6,
+	vm_idle = { 0.66, -0.6, -1.6, 8, -10, 0 },
+	vm_raised = { 0, -0.12, -0.75, 0, 0, 0 },
+	vm_raise_seconds = 0.18,
+	vm_sway = 2.5,
+	vm_bob = 0.035,
+	vm_fill_brightness = 1.2,
+	vm_fill_range = 4,
 }

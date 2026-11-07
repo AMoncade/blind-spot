@@ -190,3 +190,10 @@ exposure_safe,0.4,a marked guard is safe again once the bar is back over this
 vignette_max,0.12,edge darkness when the signal bar is empty (0 black 1 clear)
 vignette_off,0.7,edge darkness as soon as the guard leaves every field
 fp_camera_forward,0.6,first person: the eyes sit this far ahead of the head's centre (a look down shows the legs)
+vm_idle,0.66;-0.6;-1.6;8;-10;0,first person: the camcorder's rest pose under the camera (x y z in studs then pitch yaw roll in degrees)
+vm_raised,0;-0.12;-0.75;0;0;0,first person: the camcorder at the eye
+vm_raise_seconds,0.18,time to bring the camcorder up or down
+vm_sway,2.5,how far the hands lag behind a turn
+vm_bob,0.035,how much the hands bob with the walk
+vm_fill_brightness,1.2,a dim light near the hands so they read in the dark (client only, no shadow)
+vm_fill_range,4,
