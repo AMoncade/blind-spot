@@ -253,4 +253,32 @@ return {
 		delay = 1,
 		text = "Mind the stairwell. Down there the cameras are older.",
 	},
+	{
+		id = "n2d",
+		night = 2,
+		trigger = "start",
+		delay = 18,
+		text = "Heads up. One of the cameras is out tonight. Maintenance says Monday.",
+	},
+	{
+		id = "n3d",
+		night = 3,
+		trigger = "start",
+		delay = 18,
+		text = "Three cameras are dead on the lower levels. You'll have to cross the dark.",
+	},
+	{
+		id = "n4f",
+		night = 4,
+		trigger = "start",
+		delay = 18,
+		text = "Five cameras down before the night even started. Somebody is busy.",
+	},
+	{
+		id = "n5f",
+		night = 5,
+		trigger = "start",
+		delay = 22,
+		text = "Most of the cameras are gone. Move fast between the ones that work.",
+	},
 }

@@ -35,3 +35,7 @@ n5e,5,half,3,Three o'clock. Guard... I can see you on cam two. Who is that behin
 n6b,6,half,0,[static] ...stay... on... camera...,the hard night: the radio only breaks through
 n6c,6,last_hour,0,[static] ...it knows the cameras now...,
 any8,0,first_floor,1,Mind the stairwell. Down there the cameras are older.,
+n2d,2,start,18,Heads up. One of the cameras is out tonight. Maintenance says Monday.,the night's dead cameras (nights.csv dead_cams)
+n3d,3,start,18,Three cameras are dead on the lower levels. You'll have to cross the dark.,
+n4f,4,start,18,Five cameras down before the night even started. Somebody is busy.,
+n5f,5,start,22,Most of the cameras are gone. Move fast between the ones that work.,

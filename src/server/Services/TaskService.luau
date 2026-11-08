@@ -39,6 +39,9 @@ local carrying: { [Player]: string } = {} -- player -> task id of the item they 
 local prompts: { [string]: ProximityPrompt } = {} -- spot id -> its prompt
 local filming: { [string]: number } = {} -- film task id -> seconds filmed so far
 local shown: { [string]: boolean } = {} -- the tasks already on the clipboard tonight
+-- the cameras dead all night (nights.csv dead_cams, Adrien 7 Nov: later nights have big zones with no camera, even
+-- with the power on, that the round makes you cross)
+local deadCams: { [string]: boolean } = {}
 local dirty = true
 
 -- seconds into the night (0 between nights)
@@ -128,8 +131,17 @@ local function refreshPrompts()
 	end
 end
 
-local function applyEffects()
+-- what is broken now: the tasks' effects that are in force, plus the night's dead cameras
+local function brokenNow(): ({ [string]: boolean }, { [string]: boolean })
 	local cams, lights = Tasks.broken(list, now())
+	for id in deadCams do
+		cams[id] = true
+	end
+	return cams, lights
+end
+
+local function applyEffects()
+	local cams, lights = brokenNow()
 	PowerDirector.setBroken(cams)
 	return cams, lights
 end
@@ -139,7 +151,7 @@ local function spotRow(id: string): any
 end
 
 local function payload(): any
-	local cams, lights = Tasks.broken(list, now())
+	local cams, lights = brokenNow()
 	local held = {}
 	for player, id in carrying do
 		local t = taskById(id)
@@ -190,7 +202,32 @@ function TaskService.reset(seed: number, extraScans: number, cables: number?, le
 	table.clear(carrying)
 	table.clear(filming)
 	table.clear(shown)
+	table.clear(deadCams)
 	clearDynamic()
+	-- the night's dead cameras: never the always-on ones (the post), never one a task already kills
+	local def = night and Config.nightByNumber[night]
+	if def and def.deadCams > 0 then
+		local taken: { [string]: boolean } = {}
+		for _, d in Config.Tasks do
+			for _, e in d.effect do
+				local id = string.match(e, "^cam:(.+)$")
+				if id then
+					taken[id] = true
+				end
+			end
+		end
+		local candidates = {}
+		for _, cam in Config.Cameras do
+			if not cam.always and not taken[cam.id] then
+				table.insert(candidates, cam.id)
+			end
+		end
+		table.sort(candidates)
+		local shuffled = Rng.new(seed + 311).shuffle(candidates)
+		for k = 1, math.min(def.deadCams, #shuffled) do
+			deadCams[shuffled[k]] = true
+		end
+	end
 	-- the night's cut lines, spread over it
 	cutRng = Rng.new(seed + 77)
 	local n = cables or 0
@@ -215,6 +252,7 @@ function TaskService.clear()
 	table.clear(carrying)
 	table.clear(filming)
 	table.clear(shown)
+	table.clear(deadCams)
 	clearDynamic()
 	list = {}
 	changed()
@@ -259,7 +297,7 @@ end
 
 -- The Unseen cuts a camera's line: the camera dies, a junction box under it waits to be spliced (a task).
 local function cutLine()
-	local cams, _ = Tasks.broken(list, now())
+	local cams, _ = brokenNow()
 	local candidates = {}
 	for id in string.gmatch(C.cuttable_cameras, "[^;]+") do
 		if not cams[id] and not dynamic["Line_" .. id] then

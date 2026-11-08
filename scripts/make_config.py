@@ -94,7 +94,7 @@ def build():
          "falseAlarmEvery": num(r["false_alarm_every"]), "holdoutsMin": int(r["holdouts_min"]),
          "holdoutsMax": int(r["holdouts_max"]), "name": r["name"], "unseenSpeed": num(r["unseen_speed"]),
          "extraScans": int(r["extra_scans"]), "cables": int(r["cables"]), "intro": r["intro"],
-         "reward": num(r["reward"])}
+         "reward": num(r["reward"]), "deadCams": int(r["dead_cams"])}
         for r in rows("nights.csv")])
 
     floors = rows("floors.csv")
@@ -197,7 +197,7 @@ def build():
     mods["Shop"] = ("shop.csv", [
         {"id": r["id"], "name": r["name"], "kind": r["kind"], "price": num(r["price"]),
          "product": int(r["robux_product"]), "art": r["art"], "frame": r["frame"], "rec": r["rec"], "text": r["text"],
-         "blurb": r["blurb"], "unlock": r["unlock"]}
+         "blurb": r["blurb"], "unlock": r["unlock"], "amount": num(r["amount"]) if r["amount"] else 0}
         for r in rows("shop.csv")])
 
     mods["Daily"] = ("daily.csv", [
