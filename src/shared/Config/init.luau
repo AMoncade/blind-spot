@@ -30,6 +30,7 @@ Config.Stairs = Content.Stairs
 Config.Signals = Content.Signals
 Config.Chapters = Content.Chapters
 Config.Upgrades = Content.Upgrades
+Config.Modes = Content.Modes
 Config.ShopStations = Content.ShopStations
 
 Config.spotById = {} :: { [string]: typeof(Content.Spots[1]) }
@@ -70,6 +71,11 @@ end
 Config.signalById = {} :: { [string]: typeof(Content.Signals[1]) }
 for _, signal in Content.Signals do
 	Config.signalById[signal.id] = signal
+end
+
+Config.modeById = {} :: { [string]: typeof(Content.Modes[1]) }
+for _, mode in Content.Modes do
+	Config.modeById[mode.id] = mode
 end
 
 Config.upgradeById = {} :: { [string]: typeof(Content.Upgrades[1]) }

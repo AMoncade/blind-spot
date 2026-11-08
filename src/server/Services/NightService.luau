@@ -18,6 +18,7 @@ local Analytics = require(Server:WaitForChild("Core"):WaitForChild("Analytics"))
 local Actions = require(Server:WaitForChild("Core"):WaitForChild("Actions"))
 local PowerDirector = require(script.Parent:WaitForChild("PowerDirector"))
 local UnseenService = require(script.Parent:WaitForChild("UnseenService"))
+local WatchService = require(script.Parent:WaitForChild("WatchService"))
 local CamcorderService = require(script.Parent:WaitForChild("CamcorderService"))
 local Data = require(Server:WaitForChild("Core"):WaitForChild("Data"))
 local TaskService = require(script.Parent:WaitForChild("TaskService"))
@@ -269,7 +270,11 @@ end
 
 -- A lift arrived at the P3 with these guards: the shift starts. Returns false when one is already running.
 -- setup: the lives and the reward the lift's guards chose in the lobby (Logic/Difficulty); nil: the defaults
-function NightService.launch(guards: { Player }, night: number?, setup: { lives: number, multiplier: number }?): boolean
+function NightService.launch(
+	guards: { Player },
+	night: number?,
+	setup: { lives: number, multiplier: number, mode: string? }?
+): boolean
 	if running then
 		return false
 	end
@@ -278,6 +283,13 @@ function NightService.launch(guards: { Player }, night: number?, setup: { lives:
 	-- more guards: more checkpoints and a faster Unseen (plan section 3, "Coop de 1 à 4")
 	local extraGuards = math.max(#guards - 1, 0)
 	UnseenService.speedScale = def.unseenSpeed * (1 + extraGuards * C.coop_speed_per_guard)
+	-- the mode (content/modes.csv; Adrien, 8 Nov: "c'est relativement pas challengeant ... un mode facile, moins de
+	-- caméras"): dead cameras on top of the night's, shorter camera fields, a faster bar, darker tubes, his smashes
+	local mode = Config.modeById[setup and setup.mode or C.mode_default] or Config.modeById[C.mode_default]
+	UnseenService.drainScale = mode.drain
+	UnseenService.smashes = mode.smashes + math.floor((nightNumber - 1) / 2)
+	workspace:SetAttribute("Mode", mode.id)
+	workspace:SetAttribute("CamRange", mode.camRange)
 	table.clear(playing)
 	table.clear(dead)
 	table.clear(down)
@@ -288,7 +300,16 @@ function NightService.launch(guards: { Player }, night: number?, setup: { lives:
 	shift += 1
 	local seed = os.time()
 	DoorService.reset()
-	TaskService.reset(seed, def.extraScans + extraGuards * C.coop_scan_per_guard, def.cables, def.length, nightNumber)
+	-- the cameras' fields at the mode's range (computed once per range, then cached)
+	WatchService.setRangeScale(mode.camRange)
+	TaskService.reset(
+		seed,
+		def.extraScans + extraGuards * C.coop_scan_per_guard,
+		def.cables,
+		def.length,
+		nightNumber,
+		mode.deadCams
+	)
 	solo = #guards <= 1
 	lives = if setup then setup.lives else C.shift_lives
 	maxLives = lives

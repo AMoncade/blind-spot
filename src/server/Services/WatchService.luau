@@ -24,6 +24,8 @@ WatchService.version = 0 -- bumps every time the filmed set changes
 WatchService.changed = Instance.new("BindableEvent") -- fires after every change
 
 local active: { string } = {}
+local rangeScale = 1 -- the shift's mode shortens every camera's field (content/modes.csv, cam_range)
+local cached: { [number]: { [string]: Watch.Set } } = {} -- the fields at each range already computed
 local camcorders: { [Player]: Watch.Set } = {}
 local extras: { [string]: Watch.Set } = {} -- other fields for a while: a burning flare (SkillService)
 local filmed: Watch.Set = {}
@@ -100,11 +102,44 @@ function WatchService.setAimOffset(id: string, offset: number)
 	end
 	aims[id] = if offset ~= 0 then offset else nil
 	WatchService.fields[id] =
-		Watch.coverage(WatchService.level, Watch.cameraView(cam, offset), C.sample_heights, C.sample_inset)
+		Watch.coverage(WatchService.level, Watch.cameraView(cam, offset, rangeScale), C.sample_heights, C.sample_inset)
 	local root = workspace:FindFirstChild("P3")
 	local model = root and root:FindFirstChild("Cameras") and (root :: any).Cameras:FindFirstChild(id)
 	if model then
 		model:SetAttribute("AimOffset", offset)
+	end
+	rebuild()
+end
+
+-- The shift's mode: every fixed camera sees `scale` times as far (computed once per scale, yielding, then cached)
+function WatchService.setRangeScale(scale: number)
+	if scale == rangeScale then
+		return
+	end
+	rangeScale = scale
+	local fields = cached[scale]
+	if not fields then
+		fields = {}
+		for _, cam in Config.Cameras do
+			fields[cam.id] = Watch.coverage(
+				WatchService.level,
+				Watch.cameraView(cam, nil, scale),
+				C.sample_heights,
+				C.sample_inset,
+				function()
+					task.wait()
+				end
+			)
+		end
+		cached[scale] = fields
+	end
+	for id, f in fields do
+		WatchService.fields[id] = f
+	end
+	for id, offset in aims do
+		local cam = Config.cameraById[id]
+		WatchService.fields[id] =
+			Watch.coverage(WatchService.level, Watch.cameraView(cam, offset, scale), C.sample_heights, C.sample_inset)
 	end
 	rebuild()
 end
@@ -191,6 +226,7 @@ function WatchService.start()
 			end
 		)
 	end
+	cached[1] = table.clone(WatchService.fields)
 	WatchService.ready = true
 	rebuild()
 	print(`[WatchService] {#Config.Cameras} camera fields in {math.floor((os.clock() - t0) * 1000)} ms`)

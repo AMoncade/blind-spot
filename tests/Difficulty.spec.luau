@@ -47,4 +47,20 @@ function spec.harderPaysMore()
 	ok(calm ~= name, "different names")
 end
 
+function spec.theModeSetsTheNight()
+	local M = Config.modeById
+	eq((Difficulty.clean({}, 1, C, M) :: Difficulty.Setup).mode, C.mode_default, "no mode: the default")
+	eq((Difficulty.clean({ mode = "nightmare" }, 1, C, M) :: Difficulty.Setup).mode, C.mode_default, "unknown mode")
+	eq((Difficulty.clean({ mode = "hard" }, 1, C, M) :: Difficulty.Setup).mode, "hard", "a known mode")
+	local function pay(mode: string): number
+		return Difficulty.payMultiplier({ night = 1, guards = 1, lives = 3, mode = mode }, Config.nightByNumber, C, M)
+	end
+	ok(pay("easy") < pay("normal") and pay("normal") < pay("hard"), "a harder mode pays more")
+	-- and it is harder: fewer cameras, shorter fields, a faster bar, more dead tubes, more smashed cameras
+	ok(M.easy.deadCams <= M.normal.deadCams and M.normal.deadCams < M.hard.deadCams, "more dead cameras")
+	ok(M.easy.camRange >= M.normal.camRange and M.normal.camRange > M.hard.camRange, "shorter fields")
+	ok(M.easy.drain < M.normal.drain and M.normal.drain < M.hard.drain, "a faster bar")
+	ok(M.easy.darkTubes < M.normal.darkTubes and M.normal.darkTubes < M.hard.darkTubes, "more dead tubes")
+end
+
 return spec

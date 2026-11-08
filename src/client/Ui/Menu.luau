@@ -83,7 +83,7 @@ end
 
 -- Adrien, 7 Nov: before a night, choose the chapter, the map, the night, how many guards and how many lives; the
 -- screen shows how hard it is and what it pays (Logic/Difficulty, the same numbers the server uses at 6 AM).
-local setup = { night = 1, guards = 1, lives = 3, chapter = 1 }
+local setup = { night = 1, guards = 1, lives = 3, chapter = 1, mode = Config.C.mode_default }
 
 local function buildShift(gui: ScreenGui)
 	local root, body, close = Kit.window(gui, "Setup", "NEW SHIFT")
@@ -180,7 +180,7 @@ local function buildShift(gui: ScreenGui)
 	})
 	Kit.new("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = side })
 	local function row(order: number, title: string): Frame
-		local r = Kit.plate(side, { Name = title, Size = UDim2.new(1, 0, 0, 50), LayoutOrder = order })
+		local r = Kit.plate(side, { Name = title, Size = UDim2.new(1, 0, 0, 46), LayoutOrder = order })
 		Kit.text(r, title, {
 			FontFace = FONT.title,
 			TextColor3 = COLOR.dim,
@@ -194,10 +194,43 @@ local function buildShift(gui: ScreenGui)
 			Name = "Options",
 			AnchorPoint = Vector2.new(1, 0.5),
 			Position = UDim2.new(1, -4, 0.5, 0),
-			Size = UDim2.new(0.7, 0, 0, 44),
+			Size = UDim2.new(0.7, 0, 0, 40),
 			Parent = r,
 		}) :: Frame
 		return options
+	end
+
+	-- MODE: EASY · NORMAL · HARD (content/modes.csv): fewer cameras, darker, a faster bar, more pay
+	do
+		local options = row(0, "MODE")
+		Kit.new("UIListLayout", {
+			FillDirection = Enum.FillDirection.Horizontal,
+			HorizontalAlignment = Enum.HorizontalAlignment.Right,
+			Padding = UDim.new(0, 6),
+			Parent = options,
+		})
+		local labels = {}
+		for k, mode in Config.Modes do
+			local b, l = Kit.button(options, ART.DarkButton, mode.name, {
+				Name = "Mode" .. mode.name,
+				Size = UDim2.new(1 / #Config.Modes, -6, 1, 0),
+				LayoutOrder = k,
+				TextSize = 18,
+			})
+			b.Activated:Connect(function()
+				setup.mode = mode.id
+				for _, fn in refreshers do
+					fn()
+				end
+			end)
+			labels[mode.id] = l
+		end
+		local colors = { easy = COLOR.green, normal = COLOR.brass, hard = COLOR.red }
+		table.insert(refreshers, function()
+			for id, l in labels do
+				l.TextColor3 = if setup.mode == id then (colors :: any)[id] or COLOR.green else COLOR.dim
+			end
+		end)
 	end
 
 	-- NIGHT: < 3 · BLACKOUT >
@@ -274,7 +307,7 @@ local function buildShift(gui: ScreenGui)
 	pick(3, "LIVES", "lives", livesValues)
 
 	-- the difficulty and what it pays
-	local diff = Kit.plate(side, { Name = "Difficulty", Size = UDim2.new(1, 0, 0, 40), LayoutOrder = 4 })
+	local diff = Kit.plate(side, { Name = "Difficulty", Size = UDim2.new(1, 0, 0, 36), LayoutOrder = 4 })
 	local diffText = Kit.text(diff, "", {
 		Name = "Text",
 		FontFace = FONT.title,
@@ -297,7 +330,7 @@ local function buildShift(gui: ScreenGui)
 
 	local start, startLabel = Kit.button(side, ART.PlayButton, "START", {
 		Name = "Start",
-		Size = UDim2.new(1, 0, 0, 52),
+		Size = UDim2.new(1, 0, 0, 48),
 		LayoutOrder = 5,
 		TextSize = 30,
 	})
@@ -307,7 +340,7 @@ local function buildShift(gui: ScreenGui)
 			return
 		end
 		open(nil)
-		Net.send("Play", { night = setup.night, guards = setup.guards, lives = setup.lives })
+		Net.send("Play", { night = setup.night, guards = setup.guards, lives = setup.lives, mode = setup.mode })
 	end)
 
 	table.insert(refreshers, function()
@@ -327,7 +360,7 @@ local function buildShift(gui: ScreenGui)
 		lock.Visible = chapter.locked
 		local def = Config.nightByNumber[setup.night]
 		nightLabel.Text = `{setup.night}  ·  {def.name}`
-		local mult = Difficulty.payMultiplier(setup, Config.nightByNumber, C)
+		local mult = Difficulty.payMultiplier(setup, Config.nightByNumber, C, Config.modeById)
 		local name, step = Difficulty.label(mult, C)
 		diffText.Text = name .. "  " .. string.rep("■", step) .. string.rep("□", 5 - step)
 		diffText.TextColor3 = if step >= 4 then COLOR.red elseif step >= 2 then COLOR.brass else COLOR.ink

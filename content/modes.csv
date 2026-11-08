@@ -1,0 +1,4 @@
+id,name,dead_cams,cam_range,drain,dark_tubes,smashes,pay,blurb,note
+easy,EASY,0,1,0.8,0.15,1,0.7,"More cameras, a slower bar. A first shift.",what the game was before 8 Nov (Adrien: keep an easy mode)
+normal,NORMAL,2,0.8,1,0.35,2,1,"Fewer cameras, deeper shadows.","the default: dead cameras on top of the night's, shorter camera fields, a third of the tubes dead"
+hard,HARD,4,0.65,1.2,0.55,4,1.5,"Few cameras, deep shadows. He breaks the rest.","for guards with upgrades"

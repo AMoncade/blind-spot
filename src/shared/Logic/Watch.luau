@@ -111,9 +111,19 @@ end
 
 -- a fixed camera's view from its config row (it aims at its target), turned by yawOffset radians when a watcher
 -- turns it (plan section 3, the dead guard at the security booth)
-function Watch.cameraView(cam: CameraDef, yawOffset: number?): Look.View
+-- rangeScale: the shift's mode shortens every field (content/modes.csv)
+function Watch.cameraView(cam: CameraDef, yawOffset: number?, rangeScale: number?): Look.View
 	local yaw, pitch = Look.toward(cam.x, cam.y, cam.z, cam.tx, cam.ty, cam.tz)
-	return Look.view(cam.x, cam.y, cam.z, yaw + (yawOffset or 0), pitch, cam.hfov, cam.vfov, cam.range)
+	return Look.view(
+		cam.x,
+		cam.y,
+		cam.z,
+		yaw + (yawOffset or 0),
+		pitch,
+		cam.hfov,
+		cam.vfov,
+		cam.range * (rangeScale or 1)
+	)
 end
 
 local function sees(level: Level, view: Look.View, px: number, py: number, pz: number): boolean

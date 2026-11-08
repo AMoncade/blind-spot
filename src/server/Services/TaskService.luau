@@ -212,7 +212,14 @@ local function clearDynamic()
 	table.clear(cuts)
 end
 
-function TaskService.reset(seed: number, extraScans: number, cables: number?, length: number?, night: number?)
+function TaskService.reset(
+	seed: number,
+	extraScans: number,
+	cables: number?,
+	length: number?,
+	night: number?,
+	extraDead: number?
+)
 	table.clear(carrying)
 	table.clear(filming)
 	table.clear(shown)
@@ -220,7 +227,8 @@ function TaskService.reset(seed: number, extraScans: number, cables: number?, le
 	clearDynamic()
 	-- the night's dead cameras: never the always-on ones (the post), never one a task already kills
 	local def = night and Config.nightByNumber[night]
-	if def and def.deadCams > 0 then
+	local deadCount = (if def then def.deadCams else 0) + (extraDead or 0)
+	if deadCount > 0 then
 		local taken: { [string]: boolean } = {}
 		for _, d in Config.Tasks do
 			for _, e in d.effect do
@@ -238,7 +246,7 @@ function TaskService.reset(seed: number, extraScans: number, cables: number?, le
 		end
 		table.sort(candidates)
 		local shuffled = Rng.new(seed + 311).shuffle(candidates)
-		for k = 1, math.min(def.deadCams, #shuffled) do
+		for k = 1, math.min(deadCount, #shuffled) do
 			deadCams[shuffled[k]] = true
 		end
 	end

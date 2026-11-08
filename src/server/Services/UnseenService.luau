@@ -37,6 +37,8 @@ local UnseenService = {}
 -- NightService sets these (it owns deaths and the night)
 UnseenService.onKill = nil :: ((player: Player) -> ())?
 UnseenService.speedScale = 1 -- the night's difficulty and the number of guards: the bars drain faster, he jumps sooner
+UnseenService.drainScale = 1 -- the shift's mode: the bars drain this many times faster (content/modes.csv)
+UnseenService.smashes = 0 -- cameras he may still smash tonight (the mode and the night)
 UnseenService.isPlaying = nil :: ((player: Player) -> boolean)? -- on shift and not in a death
 
 local g = WatchService.grid
@@ -78,8 +80,15 @@ local function statuses(dt: number, phase: string): { Status }
 			offTime[player] = if isFilmed then 0 else (offTime[player] or 0) + dt
 			-- the night's difficulty times the guard's SIGNAL upgrade (level 1: the base speed, fast)
 			local nerve = Upgrades.value(Config.upgradeById.signal, Upgrades.level(Data.get(player), "signal"))
-			exposure[player] =
-				Hunt.exposure(exposure[player] or 1, false, isFilmed, phase, dt, C, UnseenService.speedScale * nerve)
+			exposure[player] = Hunt.exposure(
+				exposure[player] or 1,
+				false,
+				isFilmed,
+				phase,
+				dt,
+				C,
+				UnseenService.speedScale * nerve * UnseenService.drainScale
+			)
 			table.insert(out, { player = player, root = root, filmed = isFilmed })
 		else
 			offTime[player] = 0

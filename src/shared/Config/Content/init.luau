@@ -14,6 +14,7 @@ return {
 	LobbyProps = require(if script then script:WaitForChild("LobbyProps") else "@self/LobbyProps"),
 	Logbook = require(if script then script:WaitForChild("Logbook") else "@self/Logbook"),
 	Map = require(if script then script:WaitForChild("Map") else "@self/Map"),
+	Modes = require(if script then script:WaitForChild("Modes") else "@self/Modes"),
 	Nights = require(if script then script:WaitForChild("Nights") else "@self/Nights"),
 	Radio = require(if script then script:WaitForChild("Radio") else "@self/Radio"),
 	Shop = require(if script then script:WaitForChild("Shop") else "@self/Shop"),

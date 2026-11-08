@@ -27,6 +27,10 @@ local fields: { [string]: Watch.Set } = {}
 local folder: Folder
 local lastKey = ""
 local aims: { [string]: number } = {} -- a watcher's turn of a camera
+local function scale(): number
+	local v = workspace:GetAttribute("CamRange")
+	return if type(v) == "number" then v else 1
+end
 local states: { [string]: boolean } = {} -- the fire doors and the plaster (Watch.DYNAMIC), from their attribute Solid
 
 -- Greedy rectangles over a cell set: few parts instead of one per cell.
@@ -198,10 +202,17 @@ function SafeZones.start()
 	folder = Instance.new("Folder")
 	folder.Name = "SafeZones"
 	folder.Parent = workspace
-	for _, cam in Config.Cameras do
-		fields[cam.id] = Watch.coverage(level, Watch.cameraView(cam), C.sample_heights, C.sample_inset)
-		task.wait()
+	local function computeAll()
+		for _, cam in Config.Cameras do
+			fields[cam.id] =
+				Watch.coverage(level, Watch.cameraView(cam, aims[cam.id], scale()), C.sample_heights, C.sample_inset)
+			task.wait()
+		end
+		lastKey = ""
 	end
+	computeAll()
+	-- the shift's mode shortens the fields (as on the server)
+	workspace:GetAttributeChangedSignal("CamRange"):Connect(computeAll)
 	-- a watcher turned a camera: its field moves
 	local root = workspace:WaitForChild("P3"):WaitForChild("Cameras")
 	for _, cam in Config.Cameras do
@@ -210,8 +221,12 @@ function SafeZones.start()
 			model:GetAttributeChangedSignal("AimOffset"):Connect(function()
 				local offset = model:GetAttribute("AimOffset") or 0
 				aims[cam.id] = offset :: number
-				fields[cam.id] =
-					Watch.coverage(level, Watch.cameraView(cam, offset :: number), C.sample_heights, C.sample_inset)
+				fields[cam.id] = Watch.coverage(
+					level,
+					Watch.cameraView(cam, offset :: number, scale()),
+					C.sample_heights,
+					C.sample_inset
+				)
 				lastKey = ""
 			end)
 		end
@@ -243,8 +258,12 @@ function SafeZones.start()
 			for _, cam in Config.Cameras do
 				local d = math.sqrt((cam.x - b.x) ^ 2 + (cam.z - b.z) ^ 2)
 				if d <= cam.range + math.max(b.sx, b.sz) then
-					fields[cam.id] =
-						Watch.coverage(level, Watch.cameraView(cam, aims[cam.id]), C.sample_heights, C.sample_inset)
+					fields[cam.id] = Watch.coverage(
+						level,
+						Watch.cameraView(cam, aims[cam.id], scale()),
+						C.sample_heights,
+						C.sample_inset
+					)
 				end
 			end
 			lastKey = ""

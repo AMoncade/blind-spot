@@ -86,8 +86,8 @@ bloom_intensity,0.4,Bloom Intensity
 bloom_size,24,Bloom Size
 bloom_threshold,1.6,Bloom Threshold
 tube_color,#dcefff,fluorescent tube light colour
-tube_brightness,1.6,SurfaceLight brightness of a tube
-tube_range,16,SurfaceLight range of a tube
+tube_brightness,1.1,SurfaceLight brightness of a tube
+tube_range,13,SurfaceLight range of a tube
 tube_angle,120,SurfaceLight angle of a tube
 post_color,#ffb36b,amber light of the security booth
 post_brightness,1.2,booth PointLight brightness
@@ -133,14 +133,14 @@ lobby_glass_transparency,0.8,
 lobby_ambient,#2a2723,lobby: a low base light (dim and unsettling but readable at any graphics level)
 lobby_outdoor,#1f2329,
 lobby_exposure,0,
-p3_live_ambient,#2a3336,P3 in LIVE: cold base light under the tubes
-p3_live_outdoor,#1e2528,
+p3_live_ambient,#1b2124,P3 in LIVE: cold base light under the tubes
+p3_live_outdoor,#14191b,
 p3_live_exposure,0,
-p3_flicker_ambient,#1e2629,P3 in FLICKER
-p3_flicker_outdoor,#151b1d,
+p3_flicker_ambient,#151b1d,P3 in FLICKER
+p3_flicker_outdoor,#0f1314,
 p3_flicker_exposure,-0.1,
-p3_blackout_ambient,#0f1315,P3 in BLACKOUT: dark but never black (plan section 2)
-p3_blackout_outdoor,#0b0e10,
+p3_blackout_ambient,#0b0e10,P3 in BLACKOUT: dark but never black (plan section 2)
+p3_blackout_outdoor,#08090a,
 p3_blackout_exposure,-0.2,
 grade_ease_seconds,0.8,how fast the base light follows a phase change
 pay_shift,100,pay for finishing a shift (reaching 6 AM)
@@ -286,3 +286,4 @@ catch_mouth_stretch,0.9,how much taller the grin gets when it opens
 catch_chatter,0.012,studs the needles chatter
 catch_reach_rise,1,studs his eyes sit above the guard's in the hands shot (his hands are far ahead and lower)
 clockout_radius,8,studs from the post's sign-in book where a guard clocks the team out once the round is done
+mode_default,normal,the shift's mode when none is chosen (content/modes.csv)

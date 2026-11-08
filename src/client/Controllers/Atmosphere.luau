@@ -235,8 +235,15 @@ local function update(dt: number)
 
 	local darkZones: { [string]: boolean } = (State.tasks and State.tasks.brokenLights) or {}
 	local deadCams: { [string]: boolean } = (State.tasks and State.tasks.brokenCams) or {}
+	-- the shift's mode: a share of the tubes is dead all night (the same ones for everyone: the night's seed)
+	local mode = Config.modeById[workspace:GetAttribute("Mode") or C.mode_default]
+	local darkShare = if mode and State.shift then mode.darkTubes else 0
 	for _, tube in tubes do
 		local level = 1
+		if darkShare > 0 and noise(seed + 7, tube.hash % 1009, 3) < darkShare then
+			setTube(tube, 0)
+			continue
+		end
 		-- BLACKOUT, or a zone whose generator isn't running yet: dark
 		if phase == "BLACKOUT" or (darkZones[tube.zone] and State.shift) then
 			level = 0

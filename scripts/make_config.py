@@ -160,6 +160,11 @@ def build():
         {"id": r["id"], "upgrade": r["upgrade"], "x": num(r["x"]), "y": num(r["y"]), "z": num(r["z"])}
         for r in rows("shop_stations.csv")])
 
+    mods["Modes"] = ("modes.csv", [
+        {"id": r["id"], "name": r["name"], "deadCams": int(r["dead_cams"]), "camRange": num(r["cam_range"]),
+         "drain": num(r["drain"]), "darkTubes": num(r["dark_tubes"]), "smashes": int(r["smashes"]),
+         "pay": num(r["pay"]), "blurb": r["blurb"]} for r in rows("modes.csv")])
+
     mods["Chapters"] = ("chapters.csv", [
         {"id": r["id"], "name": r["name"], "map": r["map"], "mapNote": r["map_note"], "art": r["art"],
          "mapArt": r["map_art"], "locked": flag(r["locked"])} for r in rows("chapters.csv")])
