@@ -20,13 +20,13 @@ local Skills = {}
 
 type Button = { button: ImageButton, label: TextLabel, cover: Frame }
 
-local function skillButton(parent: Instance, name: string, art: string, y: number): Button
+local function skillButton(parent: Instance, name: string, art: string, x: number): Button
 	local b = Kit.new("ImageButton", {
 		Name = name,
 		Image = "",
 		AutoButtonColor = false,
 		AnchorPoint = Vector2.new(1, 1),
-		Position = UDim2.new(1, -112, 1, y),
+		Position = UDim2.new(1, x, 1, -140),
 		Size = UDim2.fromOffset(72, 80),
 		Parent = parent,
 	}) :: ImageButton
@@ -71,8 +71,9 @@ function Skills.start()
 		DisplayOrder = 3,
 		ScreenInsets = Enum.ScreenInsets.CoreUISafeInsets,
 	}) :: ScreenGui
-	local sprint = skillButton(screen, "SPRINT", Kit.ART.SkillSprint, -140)
-	local flare = skillButton(screen, "FLARE", Kit.ART.SkillFlare, -228)
+	-- one row with the camcorder (Camcorder.luau, x -18), above the jump button, under the clipboard (Adrien, 8 Nov)
+	local sprint = skillButton(screen, "SPRINT", Kit.ART.SkillSprint, -110)
+	local flare = skillButton(screen, "FLARE", Kit.ART.SkillFlare, -190)
 	screen.Parent = player:WaitForChild("PlayerGui")
 
 	local info: any = nil

@@ -155,6 +155,8 @@ function Tasks.fill(parts: Parts, data: any, myId: number)
 			free += 1
 		end
 	end
+	-- the sheet is as tall as its lines (Adrien, 8 Nov: a tall empty sheet ran into the buttons under it)
+	parts.root.Size = UDim2.fromOffset(250, 78 + (free - 1) * 18)
 	parts.count.Text = `{done}/{#list}`
 	local held = data and data.held and data.held[tostring(myId)]
 	parts.holding.Text = if held then "HOLDING: " .. string.upper(held) else "HANDS FREE"
