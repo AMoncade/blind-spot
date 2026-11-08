@@ -371,6 +371,39 @@ local function buildShift(gui: ScreenGui)
 	end)
 end
 
+-- K&V SUPPLY's two tabs (Adrien, 8 Nov: the cosmetics shop is a category of the lobby's shop, not a button of its
+-- own): UPGRADES (the window Upgrades) and COSMETICS (the window Shop); the one shown is lit
+local function supplyTabs(root: Frame, current: string)
+	local bar = Kit.new("Frame", {
+		Name = "Tabs",
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(1, -80, 0, 36),
+		Size = UDim2.fromOffset(268, 40),
+		Parent = root,
+	})
+	Kit.new("UIListLayout", {
+		FillDirection = Enum.FillDirection.Horizontal,
+		HorizontalAlignment = Enum.HorizontalAlignment.Right,
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		Padding = UDim.new(0, 8),
+		Parent = bar,
+	})
+	for k, tab in { { "Upgrades", "UPGRADES" }, { "Shop", "COSMETICS" } } do
+		local b, l = Kit.button(bar, ART.DarkButton, tab[2], {
+			Name = "Tab" .. tab[1],
+			Size = UDim2.fromOffset(130, 40),
+			LayoutOrder = k,
+			TextSize = 16,
+		})
+		l.TextColor3 = if tab[1] == current then COLOR.green else COLOR.dim
+		b.Activated:Connect(function()
+			if tab[1] ~= current then
+				open(tab[1])
+			end
+		end)
+	end
+end
+
 -- ---------------------------------------------------------------- K&V SUPPLY (the upgrades)
 
 -- Adrien, 8 Nov: the shop east of the hall. Its prompts open this screen (event OpenUpgrades); one row per upgrade
@@ -398,6 +431,7 @@ end
 local function buildUpgrades(gui: ScreenGui)
 	local root, body, close = Kit.window(gui, "Upgrades", "K&V SUPPLY")
 	windows.Upgrades = root
+	supplyTabs(root, "Upgrades")
 	close.Activated:Connect(function()
 		open(nil)
 	end)
@@ -495,12 +529,13 @@ end
 -- ---------------------------------------------------------------- SHOP
 
 local function buildShop(gui: ScreenGui)
-	local root, body, close = Kit.window(gui, "Shop", "SUPPLY ROOM")
+	local root, body, close = Kit.window(gui, "Shop", "K&V SUPPLY")
+	supplyTabs(root, "Shop")
 	windows.Shop = root
 	close.Activated:Connect(function()
 		open(nil)
 	end)
-	Kit.text(body, "VIEWFINDERS  ·  UNIFORMS  ·  LAMPS  ·  UPGRADES: K&V SUPPLY, EAST OF THE HALL", {
+	Kit.text(body, "COSMETICS  ·  VIEWFINDERS  ·  UNIFORMS  ·  LAMPS", {
 		FontFace = FONT.paper,
 		TextColor3 = COLOR.dim,
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -959,9 +994,6 @@ function Menu.build(gui: ScreenGui): (() -> (), GuiObject)
 		SortOrder = Enum.SortOrder.LayoutOrder,
 		Parent = rail,
 	})
-	railButton(rail, ART.ShopIcon, "SHOP", 1, function()
-		open("Shop")
-	end)
 	local dailyButton = railButton(rail, ART.DailyIcon, "DAILY", 2, function()
 		open("Daily")
 	end)
