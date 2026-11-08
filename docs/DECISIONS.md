@@ -89,3 +89,7 @@ Demande d'Adrien. Avant, il marchait par l'ombre et chassait pendant les blackou
 ## La préparation de partie et ses récompenses (7 novembre 2026)
 
 Avant chaque nuit : chapitre, carte, nuit, gardes, vies. La paie est multipliée par la difficulté (nuit, moins de vies, moins de gardes), calculée par le même module à l'écran et au serveur. Les vies sont partagées par l'équipe.
+
+## Des choix plutôt que de l'attente (8 novembre 2026)
+
+Adrien : « que ce soit pas juste toujours attendre ta barre qui se reset ». Trois leviers : (1) des caméras mortes dès le début des nuits avancées, donc des zones noires qu'on doit traverser ; (2) des compétences limitées qui sont des décisions sur le noir : le SPRINT pour traverser, la FUSÉE pour faire une île sûre là où il faut travailler (et pour un coéquipier), le caméscope à 5 s qu'on rallonge en achetant des batteries ; (3) des tâches qui se font dans les angles morts. Le caméscope reste un outil de groupe : ce qu'il filme protège les autres. Idées pour plus tard : un trépied qui pose une caméra pour une minute, un leurre sonore, une lampe qui fait baisser la barre moins vite mais qu'il voit de loin.

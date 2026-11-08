@@ -344,7 +344,7 @@ local function buildShop(gui: ScreenGui)
 	close.Activated:Connect(function()
 		open(nil)
 	end)
-	Kit.text(body, "VIEWFINDERS  ·  UNIFORMS  ·  LAMPS  ·  PAID FROM YOUR SHIFTS", {
+	Kit.text(body, "BATTERIES  ·  VIEWFINDERS  ·  UNIFORMS  ·  LAMPS  ·  PAID FROM YOUR SHIFTS", {
 		FontFace = FONT.paper,
 		TextColor3 = COLOR.dim,
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -387,7 +387,10 @@ local function buildShop(gui: ScreenGui)
 			Position = UDim2.new(0.5, 0, 0.5, -2),
 			AnchorPoint = Vector2.new(0.5, 0.5),
 		})
-		local cosmetic = item.kind == "viewfinder" or item.kind == "uniform" or item.kind == "lamp"
+		local cosmetic = item.kind == "viewfinder"
+			or item.kind == "uniform"
+			or item.kind == "lamp"
+			or item.kind == "battery"
 		if cosmetic then
 			for n, hex in (if item.kind == "lamp" then { item.frame } else { item.frame, item.rec }) do
 				Kit.new("Frame", {

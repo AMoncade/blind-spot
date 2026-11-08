@@ -24,6 +24,7 @@ local TaskService = require(script.Parent:WaitForChild("TaskService"))
 local DoorService = require(script.Parent:WaitForChild("DoorService"))
 local StairsService = require(script.Parent:WaitForChild("StairsService"))
 local SignalService = require(script.Parent:WaitForChild("SignalService"))
+local SkillService = require(script.Parent:WaitForChild("SkillService"))
 local CoopService = require(script.Parent:WaitForChild("CoopService"))
 local StoryService = require(script.Parent:WaitForChild("StoryService"))
 
@@ -184,6 +185,7 @@ function endNight(outcome: string)
 	local n, total, taskPay = TaskService.summary()
 	TaskService.clear()
 	DoorService.reset()
+	SkillService.clear()
 	CoopService.reset()
 	StoryService.finish(outcome)
 	-- every guard stands up again in the booth for the report
@@ -308,6 +310,7 @@ function NightService.launch(guards: { Player }, night: number?, setup: { lives:
 		Net.event():FireClient(player, "Shift", true)
 	end
 	CamcorderService.reset()
+	SkillService.reset(guards)
 	PowerDirector.startNight(nightNumber, seed)
 	StoryService.begin(nightNumber, seed)
 	sendSquad()
@@ -322,6 +325,7 @@ function NightService.init()
 	DoorService.isPlaying = NightService.isPlaying
 	StairsService.isPlaying = NightService.isPlaying
 	SignalService.onShift = NightService.onShift
+	SkillService.isPlaying = NightService.isPlaying
 	StairsService.onTake = function()
 		StoryService.trigger("first_floor") -- once a night: the first time a guard leaves their floor
 	end

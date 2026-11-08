@@ -34,3 +34,6 @@ Sounds (8 in game),audio,ProSoundEffects via the Roblox Creator Store (found wit
 UnseenLunge,mesh+texture,Adrien's model (Tripo conversion; the catch pose by tools/blender/unseen.py POSE=lunge),licence to confirm by Adrien (Tripo plan),,2026-11-07,ReplicatedStorage.ClientModels.UnseenLunge,the Unseen lunging (the catch)
 Tension music,audio,APMOfficial via the Roblox Creator Store (Negotiating With Darkness 30 Underscore Mix),Roblox-licensed music: free in any Roblox experience,,2026-11-07,rbxassetid://103589353379765,swells as the signal bar drops
 Shift setup cards (2),image,crops of Adrien's own thumbnail,Adrien's,,2026-11-07,rbxassetid://108008295756747 and rbxassetid://115414797157274,chapter 1 and the Halloway map
+Catch sounds (4),audio,ProSoundEffects and APM via the Roblox Creator Store,Roblox-licensed: free in any Roblox experience,,2026-11-08,see content/sounds.csv (catch_*),whoosh vocal shriek boom
+UI art (4th set),image,generated with Ropilot (same style as the UI art),generated for the game,,2026-11-08,see src/shared/Config/UiArt.luau,sprint flare and 4 camcorder batteries
+Flare,mesh,own (tools/blender/floor_props.py),own work,,2026-11-08,ServerStorage.LevelModels.Flare,the FLARE skill's road flare

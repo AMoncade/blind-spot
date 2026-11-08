@@ -28,7 +28,7 @@ unseen_broadcast,0.1,seconds between position updates to the clients
 camcorder_range,26,studs
 camcorder_hfov,55,degrees
 camcorder_vfov,40,degrees
-camcorder_battery,60,seconds of recording on a full battery (plan section 3)
+camcorder_battery,5,seconds of recording on the factory battery (the shop sells bigger ones: shop.csv kind battery)
 camcorder_recharge,0.5,seconds of battery won per second spent lowered under a fixed camera
 camcorder_rate,10,times per second the server computes a camcorder field
 camcorder_max_turn,540,degrees per second a camcorder may turn (anti cheat)
@@ -42,21 +42,21 @@ night_start_delay,6,seconds from the first spawn to the night start
 night_clock_start,0,hour shown when the night starts (midnight)
 night_clock_end,6,hour shown when the night ends
 night_restart_delay,12,seconds between the end of a night and the next one (phase 0 loop)
-death_seconds,3,the catch before the respawn (plan section 4; Controllers/Death)
-catch_turn,0.28,seconds for the view to snap around to him when he catches you
-catch_lunge,1.35,seconds into the catch when he lunges (before it: he stands over you and the view dolly zooms)
-catch_freeze,1.7,seconds into the catch when the image freezes and the tape tears
+death_seconds,3.4,the catch before the respawn (plan section 4; Controllers/Death)
+catch_turn,0.22,seconds for the view to whip around to him
+catch_lunge,1.55,seconds into the catch when he lunges (before it: the view pushes in on his face)
+catch_freeze,1.95,seconds into the catch when the image freezes and the tape tears
 catch_black,1,seconds of the fade to black and SIGNAL LOST after the freeze
-catch_distance,3.6,studs from the guard to his feet during the catch (his hands then reach right into the view)
+catch_distance,2.6,studs from the guard to his feet during the catch: close enough to fill the view
 catch_lunge_from,2,studs he jumps forward when he lunges
 catch_reach,1.7,studs from the guard's eye to the centre of his lunge pose at its end (his hands then fill the view)
 catch_aim_height,5.6,studs above the floor the view looks at while he lunges (between his hands and his face)
 catch_light_color,#b8c8d8,a dim cold light on him during the catch
-catch_light_brightness,0.8,
-catch_light_range,14,
+catch_light_brightness,3,the cold light under him during the catch
+catch_light_range,16,
 catch_max_distance,40,beyond this (or on another floor) he appears straight ahead of the guard
-catch_dolly,1.4,studs the view backs away during the dolly zoom
-catch_fov,48,field of view at the end of the dolly zoom (the room stretches behind him)
+catch_push,0.6,studs the view moves in on him while it narrows
+catch_fov,34,field of view at the end of the push-in (his face fills the screen)
 flicker_min_interval,0.34,never more than 3 flashes a second (WCAG 2.3.1)
 flicker_max_interval,0.9,longest gap between two flicker steps
 flicker_reduced_dim,0.35,with Reduce flashes the tubes dim to this instead of blinking
@@ -232,3 +232,23 @@ guards_reward,1.2;1.05;1;1,the pay multiplier for 1 2 3 or 4 guards (fewer guard
 difficulty_steps,1.2;1.5;1.95;2.6,pay multipliers where the difficulty goes up a step (5 steps: the names below)
 difficulty_names,CALM;UNEASY;TENSE;HARD;NIGHTMARE,the difficulty shown on the shift setup
 shift_lives,3,the lives a shift starts with when nobody chose (a guard walking into a lift)
+loading_min,1.6,seconds the loading screen shows at least (it never flashes by)
+loading_max,25,seconds it waits at most before it lets the game through
+catch_face_height,0.88,where his face is (a fraction of his height): the view looks at it
+catch_tint,#d8e2ff,the colour of the catch (cold)
+catch_contrast,0.25,
+catch_blur,18,the motion blur of the whip and the hit
+catch_rim_brightness,4,the red light behind his head
+catch_tremble,1.6,degrees the view trembles at most while he stares
+catch_hit_shake,5,degrees the view shakes when he lunges (fades in 0.4 s)
+catch_punch_fov,92,the view snaps this wide when he hits
+sprint_multiplier,1.7,SPRINT: the walk speed times this
+sprint_seconds,3,SPRINT: how long the burst lasts
+sprint_cooldown,18,SPRINT: seconds before it can go again
+flare_count,2,FLARE: flares a guard has each night
+flare_seconds,25,FLARE: how long a flare burns (and films)
+flare_radius,8,FLARE: studs of floor it lights and keeps safe
+flare_throw,4,FLARE: studs ahead of the guard it lands
+flare_color,#ff4a2e,FLARE: its red
+flare_brightness,3,
+flare_disc_alpha,0.82,FLARE: the safe disc on the floor (transparency)

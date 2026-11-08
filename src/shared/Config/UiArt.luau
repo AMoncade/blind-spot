@@ -30,6 +30,13 @@ return {
 	-- the shift setup's cards: crops of Adrien's own thumbnail (2026-11-07)
 	ChapterOne = "rbxassetid://108008295756747",
 	MapHalloway = "rbxassetid://115414797157274",
+	-- the skills and the camcorder batteries (2026-11-07, same style)
+	SkillSprint = "rbxassetid://107030626273257",
+	SkillFlare = "rbxassetid://75281169634829",
+	BatteryStd = "rbxassetid://126944483358853",
+	BatterySpare = "rbxassetid://102950014150945",
+	BatteryPro = "rbxassetid://99751975261511",
+	BatteryLong = "rbxassetid://82274510429865",
 	VipBadge = "rbxassetid://124901545765408",
 	Overtime = "rbxassetid://113476037194681",
 	PlayButton = {

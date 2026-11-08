@@ -52,7 +52,7 @@ local function applySettings(player: Player, settings: { [string]: any })
 end
 
 -- the cosmetic kinds a guard wears one of (content/shop.csv, kind): the profile field of the same name
-local COSMETIC = { viewfinder = true, uniform = true, lamp = true }
+local COSMETIC = { viewfinder = true, uniform = true, lamp = true, battery = true }
 
 MenuService.onEquip = nil :: ((player: Player) -> ())? -- a guard changed what they wear (UniformService)
 

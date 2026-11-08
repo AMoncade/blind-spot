@@ -21,6 +21,7 @@ export type Profile = {
 	viewfinder: string,
 	uniform: string,
 	lamp: string,
+	battery: string, -- the camcorder's battery (shop kind battery)
 	daily: { streak: number, lastDay: number },
 	codes: { [string]: boolean },
 	settings: { [string]: any },
@@ -32,10 +33,11 @@ export type Profile = {
 
 local TEMPLATE: Profile = {
 	pay = 0,
-	owned = { vf_classic = true, un_navy = true, lp_halogen = true },
+	owned = { vf_classic = true, un_navy = true, lp_halogen = true, bat_std = true },
 	viewfinder = "vf_classic",
 	uniform = "un_navy",
 	lamp = "lp_halogen",
+	battery = "bat_std",
 	daily = { streak = 0, lastDay = 0 },
 	codes = {},
 	settings = {},
@@ -95,6 +97,7 @@ local function snapshot(profile: Profile): { [string]: any }
 		viewfinder = profile.viewfinder,
 		uniform = profile.uniform,
 		lamp = profile.lamp,
+		battery = profile.battery,
 		settings = profile.settings,
 		nights = profile.nights,
 		bestNight = profile.bestNight,

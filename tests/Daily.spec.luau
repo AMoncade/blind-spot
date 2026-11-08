@@ -12,6 +12,12 @@ local function eq(a: any, b: any, what: string?)
 	end
 end
 
+local function ok(v: any, what: string)
+	if not v then
+		error(what, 2)
+	end
+end
+
 local spec = {}
 
 function spec.firstClaimIsDayOne()
@@ -51,7 +57,10 @@ function spec.shopConfigIsSane()
 	for _, item in Config.Shop do
 		eq(ids[item.id], nil, "unique id " .. item.id)
 		ids[item.id] = true
-		local kinds = { viewfinder = true, uniform = true, lamp = true, robux = true }
+		local kinds = { viewfinder = true, uniform = true, lamp = true, battery = true, robux = true }
+		if item.kind == "battery" then
+			assert(item.amount > 0, item.id .. ": a battery has seconds")
+		end
 		assert(kinds[item.kind], "kind " .. item.kind)
 		assert(item.unlock == "" or item.unlock == "group", "unlock " .. item.unlock)
 		Config.rgb(item.frame)
@@ -63,6 +72,10 @@ function spec.shopConfigIsSane()
 	eq(Config.shopById.un_navy.price, 0, "the night shift jacket is free")
 	eq(Config.shopById.lp_halogen.price, 0, "the halogen lamp is free")
 	eq(Config.shopById.un_kv.unlock, "group", "the company uniform comes with the group")
+	-- the factory battery is the short one (Adrien, 7 Nov: 5 s), the others are bought
+	eq(Config.shopById.bat_std.price, 0, "the factory battery is free")
+	eq(Config.shopById.bat_std.amount, Config.C.camcorder_battery, "it is the base battery")
+	ok(Config.shopById.bat_long.amount > Config.shopById.bat_spare.amount, "a better battery lasts longer")
 end
 
 return spec

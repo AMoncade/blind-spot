@@ -13,6 +13,7 @@ return {
 		text = "#ffffff",
 		blurb = "The camcorder as it left the shop.",
 		unlock = "",
+		amount = 0,
 	},
 	{
 		id = "vf_amber",
@@ -26,6 +27,7 @@ return {
 		text = "#ffd9a0",
 		blurb = "Warm like the street lamps.",
 		unlock = "",
+		amount = 0,
 	},
 	{
 		id = "vf_ice",
@@ -39,6 +41,7 @@ return {
 		text = "#d6f6ff",
 		blurb = "Blue as the P3 at 4 AM.",
 		unlock = "",
+		amount = 0,
 	},
 	{
 		id = "vf_mil",
@@ -52,6 +55,7 @@ return {
 		text = "#c8ffcf",
 		blurb = "Green phosphor. Military surplus.",
 		unlock = "",
+		amount = 0,
 	},
 	{
 		id = "vf_brass",
@@ -65,6 +69,63 @@ return {
 		text = "#f0d79a",
 		blurb = "Brass trim from before 1979.",
 		unlock = "",
+		amount = 0,
+	},
+	{
+		id = "bat_std",
+		name = "Factory Cell",
+		kind = "battery",
+		price = 0,
+		product = 0,
+		art = "BatteryStd",
+		frame = "#7dff8a",
+		rec = "#7dff8a",
+		text = "#ffffff",
+		blurb = "Five seconds of tape. Use them well.",
+		unlock = "",
+		amount = 5,
+	},
+	{
+		id = "bat_spare",
+		name = "Spare Cell",
+		kind = "battery",
+		price = 400,
+		product = 0,
+		art = "BatterySpare",
+		frame = "#7dff8a",
+		rec = "#7dff8a",
+		text = "#ffffff",
+		blurb = "Twelve seconds. A little room to look.",
+		unlock = "",
+		amount = 12,
+	},
+	{
+		id = "bat_pro",
+		name = "Pro Brick",
+		kind = "battery",
+		price = 1000,
+		product = 0,
+		art = "BatteryPro",
+		frame = "#7dff8a",
+		rec = "#7dff8a",
+		text = "#ffffff",
+		blurb = "Twenty-five seconds. Enough to cross a floor.",
+		unlock = "",
+		amount = 25,
+	},
+	{
+		id = "bat_long",
+		name = "Long-Life",
+		kind = "battery",
+		price = 2200,
+		product = 0,
+		art = "BatteryLong",
+		frame = "#7dff8a",
+		rec = "#7dff8a",
+		text = "#ffffff",
+		blurb = "Forty-five seconds. The old guard's pack.",
+		unlock = "",
+		amount = 45,
 	},
 	{
 		id = "un_navy",
@@ -78,6 +139,7 @@ return {
 		text = "#ffffff",
 		blurb = "The jacket they hand you on night one.",
 		unlock = "",
+		amount = 0,
 	},
 	{
 		id = "un_hivis",
@@ -91,6 +153,7 @@ return {
 		text = "#ffffff",
 		blurb = "Seen by every camera. And by everything else.",
 		unlock = "",
+		amount = 0,
 	},
 	{
 		id = "un_ranger",
@@ -104,6 +167,7 @@ return {
 		text = "#ffffff",
 		blurb = "Surplus from a park that closed at dusk.",
 		unlock = "",
+		amount = 0,
 	},
 	{
 		id = "un_oldguard",
@@ -117,6 +181,7 @@ return {
 		text = "#ffffff",
 		blurb = "Brown wool. Kestrel and Vane 1979.",
 		unlock = "",
+		amount = 0,
 	},
 	{
 		id = "un_ghost",
@@ -130,6 +195,7 @@ return {
 		text = "#ffffff",
 		blurb = "Black on black. For the long nights.",
 		unlock = "",
+		amount = 0,
 	},
 	{
 		id = "un_kv",
@@ -143,6 +209,7 @@ return {
 		text = "#ffffff",
 		blurb = "The company's own. For members of Kestrel & Vane Security.",
 		unlock = "group",
+		amount = 0,
 	},
 	{
 		id = "lp_halogen",
@@ -156,6 +223,7 @@ return {
 		text = "#ffffff",
 		blurb = "The camcorder's work lamp. Warm and weak.",
 		unlock = "",
+		amount = 0,
 	},
 	{
 		id = "lp_sodium",
@@ -169,6 +237,7 @@ return {
 		text = "#ffffff",
 		blurb = "Orange like the street outside.",
 		unlock = "",
+		amount = 0,
 	},
 	{
 		id = "lp_led",
@@ -182,6 +251,7 @@ return {
 		text = "#ffffff",
 		blurb = "Hard white. Every shadow sharp.",
 		unlock = "",
+		amount = 0,
 	},
 	{
 		id = "lp_red",
@@ -195,6 +265,7 @@ return {
 		text = "#ffffff",
 		blurb = "Red light. Your eyes stay used to the dark.",
 		unlock = "",
+		amount = 0,
 	},
 	{
 		id = "vip",
@@ -208,6 +279,7 @@ return {
 		text = "#ffffff",
 		blurb = "Exclusive uniform and private server controls.",
 		unlock = "",
+		amount = 0,
 	},
 	{
 		id = "payboost",
@@ -221,5 +293,6 @@ return {
 		text = "#ffffff",
 		blurb = "+25% pay every night.",
 		unlock = "",
+		amount = 0,
 	},
 }

@@ -402,7 +402,24 @@ def guard_vest():
     return coll
 
 
+def flare():
+    """A road flare lying on the floor (the FLARE skill: SkillService adds its red light, sparks and the safe disc):
+    a red paper tube with a white band, a black cap, and the burning tip named Tip (made Neon in the game).
+    Bounds x -0.7..0.72, y -0.13..0.13, z 0..0.26."""
+    coll = K.begin("Flare", OUT)
+    body = K.cylinder("Body", coll, (-0.55, 0, 0.13), (0.6, 0, 0.13), 0.12, segments=14)
+    K.flat(body, "flare_body", (0.62, 0.07, 0.05), roughness=0.7)
+    band = K.cylinder("Band", coll, (-0.1, 0, 0.13), (0.15, 0, 0.13), 0.125, segments=14)
+    K.flat(band, "flare_band", (0.9, 0.88, 0.82), roughness=0.6)
+    cap = K.cylinder("Cap", coll, (-0.7, 0, 0.13), (-0.53, 0, 0.13), 0.13, segments=14)
+    K.flat(cap, "flare_cap", (0.08, 0.08, 0.08), roughness=0.5)
+    tip = K.cylinder("Tip", coll, (0.58, 0, 0.13), (0.72, 0, 0.13), 0.1, segments=14)
+    K.flat(tip, "flare_tip", (1.0, 0.45, 0.35), roughness=0.3)
+    return coll
+
+
 BUILD = {
+    "Flare": flare,
     "GuardVest": guard_vest,
     "StairDoor": stair_door, "BreakerPanel": breaker_panel, "Sledgehammer": sledgehammer, "Crates": crates,
     "Boiler": boiler, "PlasterWall": plaster_wall, "FireDoor": fire_door, "Workbench": workbench, "Couch": couch,

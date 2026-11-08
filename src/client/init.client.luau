@@ -26,6 +26,7 @@ local function start(name: string, background: boolean?, container: Instance?)
 end
 
 Settings.start()
+start("Loading") -- first: it covers the screen while the rest loads
 start("FirstPerson")
 start("Camcorder")
 start("Viewmodel", true)
@@ -40,6 +41,7 @@ start("SoundDirector")
 start("Hud")
 start("Tasks")
 start("Signals")
+start("Skills")
 start("Lobby")
 start("Menu", false, Ui)
 State.start() -- last: the controllers are listening when the server answers Ready

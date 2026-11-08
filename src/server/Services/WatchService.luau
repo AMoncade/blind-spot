@@ -25,6 +25,7 @@ WatchService.changed = Instance.new("BindableEvent") -- fires after every change
 
 local active: { string } = {}
 local camcorders: { [Player]: Watch.Set } = {}
+local extras: { [string]: Watch.Set } = {} -- other fields for a while: a burning flare (SkillService)
 local filmed: Watch.Set = {}
 local lastSent: { [Player]: string } = {}
 
@@ -37,6 +38,9 @@ local function rebuild()
 		end
 	end
 	for _, s in camcorders do
+		table.insert(sets, s)
+	end
+	for _, s in extras do
 		table.insert(sets, s)
 	end
 	filmed = Watch.union(sets)
@@ -127,6 +131,12 @@ function WatchService.setCamcorder(player: Player, cells: Watch.Set?)
 		return
 	end
 	camcorders[player] = cells
+	rebuild()
+end
+
+-- a field that films for a while (a flare): set it, or nil to take it away
+function WatchService.setExtra(id: string, cells: Watch.Set?)
+	extras[id] = cells
 	rebuild()
 end
 
