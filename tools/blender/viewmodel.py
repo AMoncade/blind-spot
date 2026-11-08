@@ -2,7 +2,8 @@
 soignés du jeu"): a 1990s VHS camcorder held in two gloved hands, the uniform's navy sleeves running out of view.
 The lens points to -Y (forward); the client turns it to face the camera's look. Origin: the camcorder's centre.
 Separate objects: Body, Lens, Glass, Eyepiece, Handle, Mic, RecLight (the client blinks it), Trim (the client tints it
-with the equipped viewfinder's colour), Strap, HandR, HandL, SleeveR, SleeveL.
+with the equipped viewfinder's colour), Strap, HandR, HandL, SleeveR, SleeveL, and the flip-out screen: Lcd, LcdScreen,
+LcdHinge.
     exec(open(r"<repo>/tools/blender/viewmodel.py").read())
 """
 
@@ -93,6 +94,21 @@ sleeveL = K.join("SleeveL", [
 ])
 K.box_uv(sleeveL, tile=1.0)
 K.material(sleeveL, "vm_sleeve", fabric(211, (0.07, 0.09, 0.15)), roughness=0.9)
+
+# the flip-out LCD (Adrien, 8 Nov: "tu regardes vraiment comme dans la cam dans tes mains"): opened out on the side
+# away from the grip, its screen turned to the guard. Lcd is the bezel, LcdScreen the glass the client draws the
+# camcorder's picture over (Camcorder.luau projects its corners), LcdHinge holds it to the body.
+lcd = K.join("Lcd", [  # a hollow bezel: raised, the glass turns see-through and the picture is laid in the hole
+    K.box("lcdTop", coll, -0.86, -0.24, -0.13, -0.05, 0.27, 0.31, bevel=0.015),
+    K.box("lcdBottom", coll, -0.86, -0.24, -0.13, -0.05, -0.09, -0.05, bevel=0.015),
+    K.box("lcdOut", coll, -0.86, -0.82, -0.13, -0.05, -0.09, 0.31, bevel=0.015),
+    K.box("lcdIn", coll, -0.28, -0.24, -0.13, -0.05, -0.09, 0.31, bevel=0.015),
+])
+K.flat(lcd, "vm_lcd", (0.09, 0.09, 0.1), roughness=0.5, metallic=0.2)
+screen = K.box("LcdScreen", coll, -0.83, -0.27, -0.1, -0.08, -0.06, 0.28, bevel=0.0)
+K.flat(screen, "vm_lcd_screen", (0.02, 0.03, 0.03), roughness=0.15)
+hinge = K.box("LcdHinge", coll, -0.26, -0.2, -0.14, -0.04, 0.05, 0.17, bevel=0.015)
+K.flat(hinge, "vm_lcd_hinge", (0.2, 0.2, 0.21), roughness=0.4, metallic=0.6)
 
 print({o.name: [round(v, 2) for v in o.dimensions] for o in coll.objects})
 

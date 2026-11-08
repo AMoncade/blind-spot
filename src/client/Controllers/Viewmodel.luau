@@ -1,9 +1,11 @@
 --!strict
 -- The hands and the camcorder in first person (plan section 7: the most polished objects of the game, always on
 -- screen during a shift). The Blender model (tools/blender/viewmodel.py, ReplicatedStorage.ClientModels.Viewmodel)
--- follows the camera, low on the right; it sways when the view turns, bobs with the walk, and comes up to the eye when
--- the camcorder is raised, where the viewfinder (Camcorder.luau) takes over. Its trim wears the equipped viewfinder's
--- colour. Hidden in the lobby, in a death and while watching the cameras.
+-- follows the camera, low on the right; it sways when the view turns and bobs with the walk. Raised (Adrien, 8 Nov: "tu
+-- regardes vraiment comme dans la cam dans tes mains"), the hands bring it up in front of the face with its flip-out
+-- screen turned to the guard: the camcorder's picture is drawn on that screen (Camcorder.luau projects its corners;
+-- the model's attribute Raise says how far up it is). Its trim wears the equipped viewfinder's colour. Hidden in the
+-- lobby, in a death and while watching the cameras.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -35,6 +37,7 @@ function Viewmodel.start()
 	end
 	local model = template:Clone()
 	local trim = model:FindFirstChild("Trim", true)
+	local lcd = model:FindFirstChild("LcdScreen", true) :: BasePart?
 	-- a dim fill so the hands read in the dark garage (no shadow, a few studs)
 	local fill = Instance.new("PointLight")
 	fill.Brightness = C.vm_fill_brightness
@@ -80,10 +83,16 @@ function Viewmodel.start()
 	RunService:BindToRenderStep("BlindSpotViewmodel", Enum.RenderPriority.Camera.Value + 3, function(dt: number)
 		local camera = workspace.CurrentCamera
 		local show = State.shift and not State.dead and not State.down and player.Character ~= nil
-		-- up to the eye while filming; hidden once there (the viewfinder fills the view)
+		-- up in front of the face while filming, its screen turned to the guard
 		local target = if Camcorder.raised then 1 else 0
 		t += math.clamp(target - t, -dt / C.vm_raise_seconds, dt / C.vm_raise_seconds)
-		if not show or (Camcorder.raised and t >= 0.99) then
+		model:SetAttribute("Raise", t)
+		if lcd then
+			-- once it is up the glass clears: through the bezel's hole is the garage, which Camcorder.luau turns
+			-- into the camcorder's picture
+			lcd.LocalTransparencyModifier = if t > C.lcd_clear_at then 1 else 0
+		end
+		if not show then
 			if model.Parent then
 				model.Parent = nil
 			end
@@ -104,6 +113,8 @@ function Viewmodel.start()
 		local ease = math.min(1, dt * 8)
 		swayX -= swayX * ease
 		swayY -= swayY * ease
+		-- held up to the face, the hands are steadier (the picture on the screen must stay readable)
+		local steady = 1 - t * C.vm_raised_steady
 		-- the walk's bob, scaled by the head bob setting
 		local character = player.Character
 		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -115,7 +126,12 @@ function Viewmodel.start()
 		local bob = CFrame.new(math.cos(walked * 0.9) * amount, math.abs(math.sin(walked * 0.9)) * amount, 0)
 		local at = idle:Lerp(raised, t * t * (3 - 2 * t))
 		model:SetPrimaryPartCFrame(
-			camera.CFrame * at * bob * CFrame.new(swayX, swayY, 0) * CFrame.Angles(swayY, swayX, 0) * FLIP
+			camera.CFrame
+				* at
+				* bob
+				* CFrame.new(swayX * steady, swayY * steady, 0)
+				* CFrame.Angles(swayY * steady, swayX * steady, 0)
+				* FLIP
 		)
 	end)
 end

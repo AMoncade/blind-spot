@@ -1,7 +1,10 @@
 --!strict
 -- The camcorder (plan section 3, CamcorderController): raise it with F, the gamepad's R2 or the on-screen button.
--- Raised, the screen is its viewfinder: infrared night vision, REC, the tape clock and the battery. The client only
--- sends "raised, looking this way" 10 times a second; the server films, and runs the battery.
+-- Raised, the hands hold it up in front of the face (Viewmodel.luau) and its flip-out screen shows the picture:
+-- infrared night vision, REC, the tape clock and the battery, drawn exactly over the screen's corners every frame
+-- (Adrien, 8 Nov: "tu regardes vraiment comme dans la cam dans tes mains"); around it, the dark garage, the camcorder
+-- and the hands. Without the Viewmodel model, the picture fills the screen. The client only sends "raised, looking
+-- this way" 10 times a second; the server films, and runs the battery.
 -- The price: through the screen the Unseen is never visible (UnseenView hides him while Camcorder.raised).
 local ContextActionService = game:GetService("ContextActionService")
 local UserInputService = game:GetService("UserInputService")
@@ -25,6 +28,8 @@ local Camcorder = {}
 Camcorder.raised = false
 
 local gui: ScreenGui
+local lcd: CanvasGroup -- the camcorder's picture, laid over its flip-out screen
+local surround: { Frame } = {} -- the garage around the screen, darker (the eyes are on the screen)
 local recLabel: TextLabel
 local clockLabel: TextLabel
 local batteryFill: Frame
@@ -81,13 +86,70 @@ local function buildGui()
 	gui.ResetOnSpawn = false
 	gui.DisplayOrder = 5
 	gui.Enabled = false
-	for _, a in { { 0, 0 }, { 1, 0 }, { 0, 1 }, { 1, 1 } } do
-		corner(gui, a[1], a[2])
+	-- around the screen the garage is darker: the eyes are on the picture
+	for k = 1, 4 do
+		local f = Instance.new("Frame")
+		f.Name = "Surround" .. k
+		f.BorderSizePixel = 0
+		f.BackgroundColor3 = Color3.new(0, 0, 0)
+		f.BackgroundTransparency = 1
+		f.Visible = false
+		f.Parent = gui
+		surround[k] = f
 	end
-	recLabel = label(gui, "Rec", "● REC", UDim2.new(0.06, 0, 0.08, 0), Vector2.new(0, 0))
+	-- the picture: a green, grainy night-vision screen (it sits over the flip-out screen of the camcorder in the hands)
+	lcd = Instance.new("CanvasGroup")
+	lcd.Name = "Screen"
+	lcd.BackgroundTransparency = 1
+	lcd.BorderSizePixel = 0
+	lcd.Size = UDim2.fromScale(1, 1)
+	lcd.Parent = gui
+	local tint = Instance.new("Frame")
+	tint.Name = "Tint"
+	tint.BorderSizePixel = 0
+	tint.BackgroundColor3 = rgb(C.nv_tint)
+	tint.BackgroundTransparency = C.lcd_tint_alpha
+	tint.Size = UDim2.fromScale(1, 1)
+	tint.ZIndex = 0
+	tint.Parent = lcd
+	-- the screen's own light: it lifts the dark garage behind it (an LCD glows), brighter in the middle
+	local glow = Instance.new("Frame")
+	glow.Name = "Glow"
+	glow.BorderSizePixel = 0
+	glow.BackgroundColor3 = rgb(C.nv_tint)
+	glow.BackgroundTransparency = C.lcd_glow_alpha
+	glow.Size = UDim2.fromScale(1, 1)
+	glow.ZIndex = 0
+	glow.Parent = lcd
+	local falloff = Instance.new("UIGradient")
+	falloff.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.7),
+		NumberSequenceKeypoint.new(0.5, 0),
+		NumberSequenceKeypoint.new(1, 0.7),
+	})
+	falloff.Rotation = 90
+	falloff.Parent = glow
+	for k = 1, C.lcd_scanlines do
+		local line = Instance.new("Frame")
+		line.Name = "Scan" .. k
+		line.BorderSizePixel = 0
+		line.BackgroundColor3 = Color3.new(0, 0, 0)
+		line.BackgroundTransparency = 0.8
+		line.Position = UDim2.fromScale(0, (k - 0.5) / C.lcd_scanlines)
+		line.Size = UDim2.new(1, 0, 0, 1)
+		line.ZIndex = 1
+		line.Parent = lcd
+	end
+	local round = Instance.new("UICorner")
+	round.CornerRadius = UDim.new(0, 4)
+	round.Parent = lcd
+	for _, a in { { 0, 0 }, { 1, 0 }, { 0, 1 }, { 1, 1 } } do
+		corner(lcd, a[1], a[2])
+	end
+	recLabel = label(lcd, "Rec", "● REC", UDim2.new(0.06, 0, 0.08, 0), Vector2.new(0, 0))
 	recLabel.TextColor3 = rgb(C.rec_color)
-	clockLabel = label(gui, "Clock", "00:00", UDim2.new(0.06, 0, 0.92, 0), Vector2.new(0, 1))
-	emptyLabel = label(gui, "Empty", "BATTERY EMPTY", UDim2.new(0.5, 0, 0.5, 0), Vector2.new(0.5, 0.5))
+	clockLabel = label(lcd, "Clock", "00:00", UDim2.new(0.06, 0, 0.92, 0), Vector2.new(0, 1))
+	emptyLabel = label(lcd, "Empty", "BATTERY EMPTY", UDim2.new(0.5, 0, 0.5, 0), Vector2.new(0.5, 0.5))
 	emptyLabel.TextXAlignment = Enum.TextXAlignment.Center
 	emptyLabel.Visible = false
 	local battery = Instance.new("Frame")
@@ -105,7 +167,7 @@ local function buildGui()
 	batteryFill.BackgroundColor3 = Color3.new(1, 1, 1)
 	batteryFill.Size = UDim2.new(1, 0, 1, 0)
 	batteryFill.Parent = battery
-	battery.Parent = gui
+	battery.Parent = lcd
 	-- the VHS trace where he just vanished (plan section 4, his signs)
 	trace = Instance.new("Frame")
 	trace.Name = "Trace"
@@ -114,7 +176,7 @@ local function buildGui()
 	trace.BackgroundTransparency = 0.5
 	trace.Size = UDim2.new(1.1, 0, 0, 5)
 	trace.Visible = false
-	trace.Parent = gui
+	trace.Parent = lcd
 	gui.Parent = player:WaitForChild("PlayerGui")
 
 	grade = Instance.new("ColorCorrectionEffect")
@@ -181,7 +243,8 @@ local function setRaised(raised: boolean)
 	if raised then
 		baseExposure = Lighting:GetAttribute("BaseExposure") or Lighting.ExposureCompensation
 		Lighting:SetAttribute("CamcorderRaised", true)
-		Lighting.ExposureCompensation = baseExposure + C.nv_exposure
+		-- the eyes adapt a little to the screen's glow; the full night vision is on the screen itself
+		Lighting.ExposureCompensation = baseExposure + C.nv_exposure * C.lcd_exposure_share
 		sendIn = 0
 	else
 		Lighting:SetAttribute("CamcorderRaised", nil)
@@ -279,6 +342,67 @@ function Camcorder.start()
 		end
 	end)
 
+	-- the picture follows the flip-out screen of the camcorder in the hands, every frame (after the Viewmodel moves it)
+	RunService:BindToRenderStep("BlindSpotCamcorderScreen", Enum.RenderPriority.Camera.Value + 4, function()
+		if not Camcorder.raised then
+			return
+		end
+		local camera = workspace.CurrentCamera
+		local model = camera:FindFirstChild("Viewmodel")
+		local screen = model and model:FindFirstChild("LcdScreen", true)
+		local placed = false
+		if screen and screen:IsA("BasePart") then
+			local half = screen.Size / 2
+			local x0, y0, x1, y1 = math.huge, math.huge, -math.huge, -math.huge
+			placed = true
+			for _, c in { Vector3.new(-1, -1, 0), Vector3.new(1, -1, 0), Vector3.new(-1, 1, 0), Vector3.new(1, 1, 0) } do
+				local p = camera:WorldToViewportPoint(screen.CFrame:PointToWorldSpace(half * c))
+				if p.Z <= 0 then
+					placed = false
+					break
+				end
+				x0, y0, x1, y1 = math.min(x0, p.X), math.min(y0, p.Y), math.max(x1, p.X), math.max(y1, p.Y)
+			end
+			if placed then
+				-- whole pixels, so the screen and the dark around it meet without a seam
+				x0, y0, x1, y1 = math.floor(x0), math.floor(y0), math.ceil(x1), math.ceil(y1)
+				lcd.Position = UDim2.fromOffset(x0, y0)
+				lcd.Size = UDim2.fromOffset(x1 - x0, y1 - y0)
+				-- it comes on as the hands bring it up (the glass clears at lcd_clear_at)
+				local up = (model :: Instance):GetAttribute("Raise")
+				local on =
+					math.clamp(if type(up) == "number" then (up - C.lcd_clear_at) / (1 - C.lcd_clear_at) else 1, 0, 1)
+				lcd.GroupTransparency = 1 - on
+				-- the garage around it, darker: above, below, left, right
+				local view = camera.ViewportSize
+				local rects = {
+					{ 0, 0, view.X, y0 },
+					{ 0, y1, view.X, view.Y - y1 },
+					{ 0, y0, x0, y1 - y0 },
+					{ x1, y0, view.X - x1, y1 - y0 },
+				}
+				for k, r in rects do
+					local f = surround[k]
+					f.Visible = true
+					f.Position = UDim2.fromOffset(r[1], r[2])
+					f.Size = UDim2.fromOffset(math.max(r[3], 0), math.max(r[4], 0))
+					f.BackgroundTransparency = 1 - (1 - C.lcd_surround_alpha) * on
+				end
+			end
+		end
+		if not placed then
+			-- no camcorder in the hands: the picture fills the screen, the old way
+			lcd.Position = UDim2.new()
+			lcd.Size = UDim2.fromScale(1, 1)
+			lcd.GroupTransparency = 0
+			for _, f in surround do
+				f.Visible = false
+			end
+		end
+		-- the full-screen night vision only without the screen in the hands
+		grade.Enabled = not placed
+	end)
+
 	State.on("Battery", function(battery: number, _max: number, serverRaised: boolean)
 		if Camcorder.raised and not serverRaised and battery <= 0 then
 			setRaised(false)
@@ -334,7 +458,7 @@ function Camcorder.start()
 			local left = traceUntil - os.clock()
 			trace.Visible = left > 0
 			trace.BackgroundTransparency = 1 - math.clamp(left / 1.2, 0, 1) * 0.6
-			trace.Position = UDim2.new(-0.05, math.random(-6, 6), 0, traceY)
+			trace.Position = UDim2.new(-0.05, math.random(-6, 6), 0, traceY - lcd.Position.Y.Offset)
 		end
 		sendIn -= dt
 		if sendIn <= 0 then

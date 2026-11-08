@@ -17,7 +17,7 @@ VCR,mesh+texture,own (tools/blender/level_props.py),own work,,2026-11-06,,
 UI art (2 sets),image,generated with Ropilot (style: 1990s night security office),generated for the game,,2026-11-06,see src/shared/Config/UiArt.luau,
 Sounds (8),audio,own (tools/audio/make_sounds.py: synthesised),own work,,2026-11-06,set in content/sounds.csv after import,hum vent drone drip motor clack static tear
 TapesIcon,image,generated with Ropilot (same style as the UI art),generated for the game,,2026-11-06,rbxassetid://122036744672501,
-Viewmodel,mesh+texture,own (tools/blender/viewmodel.py; textures drawn in code),own work,,2026-11-07,ReplicatedStorage.ClientModels.Viewmodel,the hands and the camcorder in first person
+Viewmodel,mesh+texture,own (tools/blender/viewmodel.py; textures drawn in code),own work,,2026-11-07,ReplicatedStorage.ClientModels.Viewmodel,the hands and the camcorder in first person (2026-11-08: flip-out screen, a hollow bezel and its glass)
 StairDoor,mesh+texture,own (tools/blender/floor_props.py; textures drawn in code),own work,,2026-11-07,ServerStorage.LevelModels.StairDoor,stairwell door with its STAIRS sign
 BreakerPanel,mesh+texture,own (tools/blender/floor_props.py; textures drawn in code),own work,,2026-11-07,ServerStorage.LevelModels.BreakerPanel,P4 main breakers
 Sledgehammer,mesh+texture,own (tools/blender/floor_props.py; textures drawn in code),own work,,2026-11-07,ServerStorage.LevelModels.Sledgehammer,night 5 item

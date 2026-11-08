@@ -197,8 +197,8 @@ vignette_max,0.12,edge darkness when the signal bar is empty (0 black 1 clear)
 vignette_off,0.7,edge darkness as soon as the guard leaves every field
 fp_camera_forward,0.6,first person: the eyes sit this far ahead of the head's centre (a look down shows the legs)
 vm_idle,0.66;-0.6;-1.6;8;-10;0,first person: the camcorder's rest pose under the camera (x y z in studs then pitch yaw roll in degrees)
-vm_raised,0;-0.12;-0.75;0;0;0,first person: the camcorder at the eye
-vm_raise_seconds,0.18,time to bring the camcorder up or down
+vm_raised,0.55;-0.17;-0.41;0;0;0,first person: the camcorder held up in front of the face, its flip-out screen centred a little low (the picture is drawn on it)
+vm_raise_seconds,0.28,time to bring the camcorder up or down
 vm_sway,2.5,how far the hands lag behind a turn
 vm_bob,0.035,how much the hands bob with the walk
 vm_fill_brightness,1.2,a dim light near the hands so they read in the dark (client only, no shadow)
@@ -253,3 +253,10 @@ threat_beat_min,0.8,the red edge's heartbeats a second when the threat starts
 threat_beat_max,1.8,and when the bar is empty (well under 3 flashes a second)
 threat_creep,0.18,how far the black edges creep in when the bar is empty (gradient offset)
 threat_shake,1.4,degrees the view shakes at most when the bar is empty (Reduce Flashes: a third)
+lcd_tint_alpha,0.6,the camcorder's screen: how see-through its green night-vision tint is
+lcd_scanlines,24,the camcorder's screen: its scan lines
+lcd_exposure_share,0.45,how much of the night-vision exposure the eyes get while looking at the screen in the hands
+lcd_glow_alpha,0.82,the camcorder's screen: its own green glow lifting the dark behind it (1 none)
+lcd_surround_alpha,0.4,the garage around the camcorder's screen while filming: how see-through the dark over it is
+lcd_clear_at,0.55,how far up the camcorder is (0 to 1) when its glass clears and the picture comes on
+vm_raised_steady,0.7,how much steadier the hands are with the camcorder held up (0 as loose as at rest)
