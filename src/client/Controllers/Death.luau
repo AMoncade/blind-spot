@@ -1,14 +1,16 @@
 --!strict
 -- The catch (plan section 4, "La mort" : « L'image se fige, la bande VHS déraille, une main entre dans le cadre, noir.
--- Pas de sang, pas de gore. »), on the client, timed by the catch_* constants inside death_seconds:
---   the view snaps around to where he is (catch_turn);
---   he stands right there, too tall, his head bent over you; the view does a slow dolly zoom (the garage stretches
---     behind him, he doesn't move) and trembles a little;
---   at catch_lunge he lunges, both long arms out (his second Blender pose), and a hand comes into the frame;
---   the image freezes and loses its colour, the tape tears (bars that slide, never a flash), SIGNAL LOST, black;
+-- Pas de sang, pas de gore. »; Adrien, 7 Nov: "faut qu'on voie le truc en gros, puis ça shake, plus épique"), on the
+-- client, timed by the catch_* constants inside death_seconds:
+--   the view whips around to him (a motion blur, a whoosh);
+--   he is right there, huge, lit from below and rimmed in red; the view pushes in on his face and narrows until it
+--     fills the screen, trembling more and more, his voice low;
+--   at catch_lunge he lunges, both long arms out (his second Blender pose), his hands fill the frame: a shriek and a
+--     deep boom, the view punches out and shakes hard, one red pulse;
+--   the image freezes in black and white, the tape tears, SIGNAL LOST, black;
 --   the server wakes the guard at the post after death_seconds (or makes them a watcher in co-op).
--- Reduce Flashes: no tremble. His models: ReplicatedStorage.ClientModels.Unseen and UnseenLunge (without them, the
--- tape tear alone).
+-- No blood. Reduce Flashes: no red pulse, a small tremble. His models: ReplicatedStorage.ClientModels.Unseen and
+-- UnseenLunge (without them, the rest alone).
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -22,6 +24,7 @@ local State = require(Client:WaitForChild("State"))
 local Settings = require(Client:WaitForChild("Settings"))
 local Kit = require(Client:WaitForChild("Ui"):WaitForChild("Kit"))
 local FirstPerson = require(script.Parent:WaitForChild("FirstPerson"))
+local SoundDirector = require(script.Parent:WaitForChild("SoundDirector"))
 
 local C = Config.C
 local player = Players.LocalPlayer
@@ -32,6 +35,7 @@ local gui: ScreenGui
 local black: Frame
 local lost: TextLabel
 local bars: { Frame } = {}
+local pulse: Frame
 local catchId = 0
 
 local function build()
@@ -52,6 +56,14 @@ local function build()
 		bar.Parent = gui
 		table.insert(bars, bar)
 	end
+	pulse = Instance.new("Frame")
+	pulse.Name = "Pulse"
+	pulse.BorderSizePixel = 0
+	pulse.BackgroundColor3 = Color3.fromRGB(Config.rgb(C.rec_color))
+	pulse.Size = UDim2.new(1, 0, 1, 0)
+	pulse.BackgroundTransparency = 1
+	pulse.ZIndex = 4
+	pulse.Parent = gui
 	black = Instance.new("Frame")
 	black.Name = "Black"
 	black.BorderSizePixel = 0
@@ -123,6 +135,7 @@ local function catch(seconds: number, ux: number?, uz: number?)
 	camera.CameraType = Enum.CameraType.Scriptable
 	gui.Enabled = true
 	black.BackgroundTransparency = 1
+	pulse.BackgroundTransparency = 1
 	lost.TextTransparency = 1
 	for _, bar in bars do
 		bar.Visible = false
@@ -142,35 +155,54 @@ local function catch(seconds: number, ux: number?, uz: number?)
 	end
 	local floor = C.floor_y
 	local feet = Vector3.new(eye.X, floor, eye.Z) + dir * C.catch_distance
-	local head = feet + Vector3.new(0, C.unseen_height * 0.86, 0) - dir * 0.6
+	local face = feet + Vector3.new(0, C.unseen_height * C.catch_face_height, 0) - dir * 0.5
 	local stand, standOffset = model("Unseen")
 	local lunge, lungeOffset = model("UnseenLunge")
 	if stand and standOffset then
 		place(stand, standOffset, feet, eye, 0)
 		stand.Parent = camera
 	end
-	-- the room loses its colour once the image freezes
+
+	-- the look of it: colder and harder, a blur for the whip and the hit
 	local grade = Instance.new("ColorCorrectionEffect")
 	grade.Name = "Catch"
+	grade.TintColor = Color3.fromRGB(Config.rgb(C.catch_tint))
+	grade.Contrast = C.catch_contrast
+	grade.Saturation = -0.35
 	grade.Parent = Lighting
-	-- a dim cold light on him, so he reads in the dark garage
-	local glow = Instance.new("PointLight")
-	glow.Color = Color3.fromRGB(Config.rgb(C.catch_light_color))
-	glow.Brightness = C.catch_light_brightness
-	glow.Range = C.catch_light_range
-	glow.Shadows = false
+	local blur = Instance.new("BlurEffect")
+	blur.Name = "CatchBlur"
+	blur.Size = C.catch_blur
+	blur.Parent = Lighting
+	-- lit from below (a cold key from the guard's chest) and rimmed in red from behind his head
 	local holder = Instance.new("Attachment")
 	holder.Name = "CatchLight"
-	holder.WorldPosition = eye + Vector3.new(0, 1, 0)
+	holder.WorldPosition = eye - Vector3.new(0, 1, 0) + dir * 0.6
 	holder.Parent = workspace.Terrain
-	glow.Parent = holder
+	local key = Instance.new("PointLight")
+	key.Color = Color3.fromRGB(Config.rgb(C.catch_light_color))
+	key.Brightness = C.catch_light_brightness
+	key.Range = C.catch_light_range
+	key.Shadows = false
+	key.Parent = holder
+	local rimAt = Instance.new("Attachment")
+	rimAt.Name = "CatchRim"
+	rimAt.WorldPosition = face + dir * 1.8 + Vector3.new(0, 1.2, 0)
+	rimAt.Parent = workspace.Terrain
+	local rim = Instance.new("PointLight")
+	rim.Color = Color3.fromRGB(Config.rgb(C.rec_color))
+	rim.Brightness = C.catch_rim_brightness
+	rim.Range = C.catch_light_range
+	rim.Shadows = false
+	rim.Parent = rimAt
 
-	local turned = CFrame.lookAt(eye, head)
-	local backAway = -dir * C.catch_dolly
 	local calm = Settings.get("ReduceFlashes") == true
+	local turned = CFrame.lookAt(eye, face)
+	local push = dir * C.catch_push
 	local t0 = os.clock()
-	local lunged = false
-	local frozen = false
+	local stared, lunged, frozen = false, false, false
+	local hitAt = 0
+	SoundDirector.play("catch_whoosh")
 	local conn: RBXScriptConnection
 	conn = RunService.RenderStepped:Connect(function()
 		if catchId ~= id then
@@ -179,21 +211,31 @@ local function catch(seconds: number, ux: number?, uz: number?)
 		end
 		local t = os.clock() - t0
 		if t < C.catch_turn then
-			-- the view snaps around to him
-			camera.CFrame = start:Lerp(turned, ease(t / C.catch_turn))
+			-- the view whips around to him, blurred
+			local a = ease(t / C.catch_turn)
+			camera.CFrame = start:Lerp(turned, a)
+			blur.Size = C.catch_blur * (1 - a)
 		elseif t < C.catch_lunge then
-			-- he stands there; the dolly zoom: back away while narrowing the view, he keeps his size
+			-- he is right there: push in on his face, narrow the view until he fills it, tremble more and more
+			if not stared then
+				stared = true
+				blur.Size = 0
+				SoundDirector.play("catch_vocal")
+			end
 			local a = ease((t - C.catch_turn) / (C.catch_lunge - C.catch_turn))
-			local from = eye + backAway * a
-			local shake = if calm
-				then CFrame.identity
-				else CFrame.Angles(math.rad(math.noise(t * 7, 1) * 0.8), math.rad(math.noise(t * 7, 2) * 0.8), 0)
-			camera.CFrame = CFrame.lookAt(from, head) * shake
+			local amount = (if calm then 0.25 else 1) * C.catch_tremble * a
+			local shake = CFrame.Angles(
+				math.rad(math.noise(t * 14, 1) * amount),
+				math.rad(math.noise(t * 14, 2) * amount),
+				math.rad(math.noise(t * 9, 3) * amount * 0.5)
+			)
+			camera.CFrame = CFrame.lookAt(eye + push * a, face) * shake
 			camera.FieldOfView = fov0 + (C.catch_fov - fov0) * a
 		elseif t < C.catch_freeze then
-			-- he lunges: the second pose, his hands come right into the frame
+			-- he lunges: his hands fill the frame, a shriek and a boom, the view punches out and shakes hard
 			if not lunged then
 				lunged = true
+				hitAt = t
 				if stand then
 					stand:Destroy()
 					stand = nil
@@ -201,20 +243,37 @@ local function catch(seconds: number, ux: number?, uz: number?)
 				if lunge and lungeOffset then
 					lunge.Parent = camera
 				end
-				camera.FieldOfView = fov0
+				SoundDirector.play("catch_shriek")
+				SoundDirector.play("catch_boom")
+				blur.Size = C.catch_blur * 1.3
+				if not calm then
+					pulse.BackgroundTransparency = 0.45 -- one red pulse (well under 3 flashes a second)
+					TweenService:Create(pulse, TweenInfo.new(0.45), { BackgroundTransparency = 1 }):Play()
+				end
+				TweenService:Create(blur, TweenInfo.new(0.35), { Size = 4 }):Play()
 			end
 			local a = ease((t - C.catch_lunge) / (C.catch_freeze - C.catch_lunge))
-			-- he ends with his hands a hand's breadth from the view (catch_reach: his bounds' centre from the eye)
 			local reach = Vector3.new(eye.X, floor, eye.Z) + dir * (C.catch_reach + C.catch_lunge_from)
 			if lunge and lungeOffset then
 				place(lunge, lungeOffset, reach, eye, C.catch_lunge_from * a)
 			end
+			-- the punch: the view snaps wide then settles; a hard shake that fades
+			local since = t - hitAt
+			camera.FieldOfView = C.catch_punch_fov + (fov0 - C.catch_punch_fov) * math.min(1, since / 0.25)
+			local hard = (if calm then 0.3 else 1) * C.catch_hit_shake * math.max(0, 1 - since / 0.4)
+			local shake = CFrame.Angles(
+				math.rad((math.random() * 2 - 1) * hard),
+				math.rad((math.random() * 2 - 1) * hard),
+				math.rad((math.random() * 2 - 1) * hard * 0.6)
+			)
 			local aim = Vector3.new(eye.X, floor + C.catch_aim_height, eye.Z) + dir * C.catch_reach
-			camera.CFrame = CFrame.lookAt(eye + backAway, aim)
+			camera.CFrame = CFrame.lookAt(eye - dir * 0.8, aim) * shake
 		elseif not frozen then
-			-- the image freezes, the colour goes, the tape tears
+			-- the image freezes in black and white, the tape tears
 			frozen = true
-			TweenService:Create(grade, TweenInfo.new(0.25), { Saturation = -1, Contrast = 0.35 }):Play()
+			SoundDirector.play("tear")
+			blur.Size = 0
+			TweenService:Create(grade, TweenInfo.new(0.2), { Saturation = -1, Contrast = 0.55 }):Play()
 			task.spawn(tear, seconds - C.catch_freeze, id)
 			TweenService:Create(black, TweenInfo.new(C.catch_black, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
 				BackgroundTransparency = 0,
@@ -239,7 +298,9 @@ local function catch(seconds: number, ux: number?, uz: number?)
 			lunge:Destroy()
 		end
 		grade:Destroy()
+		blur:Destroy()
 		holder:Destroy()
+		rimAt:Destroy()
 		camera.FieldOfView = fov0
 	end)
 end

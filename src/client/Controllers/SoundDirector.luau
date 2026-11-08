@@ -116,6 +116,11 @@ local function build()
 	root.Parent = SoundService
 end
 
+-- a cue by its id in content/sounds.csv (the catch times its own: whoosh, voice, shriek, boom, tear)
+function SoundDirector.play(id: string)
+	play(id)
+end
+
 function SoundDirector.start()
 	build()
 	local gui = Kit.new("ScreenGui", {
@@ -200,14 +205,7 @@ function SoundDirector.start()
 	State.on("Radio", function()
 		play("static")
 	end)
-	State.on("Death", function()
-		-- the tear comes with his lunge (Controllers/Death), after a moment of silence
-		task.delay(C.catch_lunge, function()
-			if State.dead then
-				play("tear")
-			end
-		end)
-	end)
+	-- the catch's sounds are timed by the catch itself (Controllers/Death: SoundDirector.play)
 end
 
 return SoundDirector
