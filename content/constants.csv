@@ -264,3 +264,7 @@ lobby_lamps_dead,Lamp3;Lamp21,lobby ceiling panels that are dead
 lobby_lamps_dim,Lamp1;Lamp23;ShopLamp1;ShopLamp3,lobby ceiling panels that are weak and drop out now and then
 lobby_lamp_dim,0.35,how bright a weak lobby panel is
 lobby_lamp_dropout,0.22,how often a weak lobby panel drops out (share of flicker_min_interval slots)
+shift_loading_min,2.4,the descent's loading screen: at least this long after the arrival (no flash)
+shift_loading_max,15,the descent's loading screen: at most this long (it never blocks the night)
+descent_fade_out,0.9,the descent's loading screen: seconds to fade out onto the garage
+descent_photo_alpha,0.75,the descent's loading screen: how faint the garage's photo is behind the tape

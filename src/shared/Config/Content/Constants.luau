@@ -266,4 +266,8 @@ return {
 	lobby_lamps_dim = "Lamp1;Lamp23;ShopLamp1;ShopLamp3",
 	lobby_lamp_dim = 0.35,
 	lobby_lamp_dropout = 0.22,
+	shift_loading_min = 2.4,
+	shift_loading_max = 15,
+	descent_fade_out = 0.9,
+	descent_photo_alpha = 0.75,
 }

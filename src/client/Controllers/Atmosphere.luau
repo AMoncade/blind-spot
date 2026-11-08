@@ -274,6 +274,12 @@ local function update(dt: number)
 	end
 end
 
+-- the base light jumps to the phase's at once (the descent's loading screen calls it before it lifts)
+function Atmosphere.snap()
+	current = nil
+	update(0)
+end
+
 function Atmosphere.start()
 	GRADES.lobby = grade("lobby")
 	GRADES.live = grade("p3_live")

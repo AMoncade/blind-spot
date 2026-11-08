@@ -15,6 +15,7 @@ local Net = require(Shared:WaitForChild("Net"))
 local Timeline = require(Shared:WaitForChild("Logic"):WaitForChild("Timeline"))
 local Client = script.Parent.Parent
 local State = require(Client:WaitForChild("State"))
+local Loading = require(script.Parent:WaitForChild("Loading"))
 local Settings = require(Client:WaitForChild("Settings"))
 local Kit = require(Client:WaitForChild("Ui"):WaitForChild("Kit"))
 
@@ -395,7 +396,10 @@ function Hud.start()
 	end
 	State.on("Night", function(night: any)
 		if night and State.shift then
-			nightTitle(night.night)
+			-- once the descent's loading screen has lifted, so the guard reads it
+			Loading.whenClear(function()
+				nightTitle(night.night)
+			end)
 		end
 	end)
 	State.on("Shift", function(onShift: boolean)

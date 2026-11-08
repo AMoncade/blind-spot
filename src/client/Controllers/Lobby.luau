@@ -1,12 +1,11 @@
 --!strict
 -- The lobby on the client: the lift panel while the guard stands in a service lift (who is in, when the doors close,
--- START to go now, LEAVE to step out), and the fade to black while the lift goes down. The server decides who is in a
--- lift and when it leaves (server Services/LobbyService); this only shows it and sends the two intentions.
+-- START to go now, LEAVE to step out); the ride down is the descent's loading screen (Loading.luau). The server decides
+-- who is in a lift and when it leaves (server Services/LobbyService); this only shows it and sends the two intentions.
 -- Style: the game's UI kit (Ui/Kit: worn steel art, brass, Oswald), 48 px touch targets.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Net = require(Shared:WaitForChild("Net"))
@@ -123,22 +122,7 @@ function Lobby.start()
 	local startButton = button(panel, "Start", "START", true, UDim2.new(0, 14, 1, -12))
 	local leaveButton = button(panel, "Leave", "LEAVE", false, UDim2.new(0.5, 7, 1, -12))
 
-	local black = Instance.new("Frame")
-	black.Name = "Fade"
-	black.BackgroundColor3 = Color3.new(0, 0, 0)
-	black.BackgroundTransparency = 1
-	black.BorderSizePixel = 0
-	black.Size = UDim2.new(1, 0, 1, 0)
-	black.Visible = false
-	local fadeGui = Instance.new("ScreenGui")
-	fadeGui.Name = "LiftFade"
-	fadeGui.IgnoreGuiInset = true
-	fadeGui.ResetOnSpawn = false
-	fadeGui.DisplayOrder = 30
-	black.Parent = fadeGui
-
 	gui.Parent = player:WaitForChild("PlayerGui")
-	fadeGui.Parent = player:WaitForChild("PlayerGui")
 
 	local current: any = nil
 	startButton.Activated:Connect(function()
@@ -164,24 +148,9 @@ function Lobby.start()
 			up.Visible = info.owner
 		end
 	end)
-	State.on("LiftDown", function(seconds: number)
-		black.Visible = true
-		black.BackgroundTransparency = 1
-		TweenService:Create(black, TweenInfo.new(math.max(seconds - 0.4, 0.2)), { BackgroundTransparency = 0 }):Play()
-	end)
-	State.on("Shift", function(onShift: boolean)
+	-- the ride down and the arrival: the descent's loading screen (Loading.luau)
+	State.on("Shift", function()
 		panel.Visible = false
-		if black.Visible then
-			-- the lift arrived (or the shift ended): fade back in
-			local tween = TweenService:Create(black, TweenInfo.new(0.9), { BackgroundTransparency = 1 })
-			tween.Completed:Connect(function()
-				black.Visible = false
-			end)
-			tween:Play()
-		end
-		if not onShift then
-			black.Visible = false
-		end
 	end)
 
 	RunService.RenderStepped:Connect(function()
