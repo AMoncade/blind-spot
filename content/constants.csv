@@ -43,11 +43,10 @@ night_clock_end,6,hour shown when the night ends
 night_restart_delay,12,seconds between the end of a night and the next one (phase 0 loop)
 death_seconds,6.3,the catch's cutscene before the respawn (plan section 4; Controllers/Death)
 catch_turn,0.3,seconds for the view to whip around to his face
-catch_freeze,4.75,seconds into the catch when the image freezes and the tape tears
-catch_black,1,seconds of the fade to black and SIGNAL LOST after the freeze
+catch_freeze,3.55,seconds into the catch when the image freezes (the kill screen)
 catch_distance,2.6,studs from the guard to his feet during the catch: close enough to fill the view
-catch_light_color,#b8c8d8,a dim cold light on him during the catch
-catch_light_brightness,3,the cold light under him during the catch
+catch_light_color,#4fd8c8,the cold tube light above him in the catch (the picture's teal)
+catch_light_brightness,3.5,
 catch_light_range,16,
 catch_max_distance,40,beyond this (or on another floor) he appears straight ahead of the guard
 catch_push,0.6,studs the view moves in on him while it narrows
@@ -229,8 +228,8 @@ difficulty_names,CALM;UNEASY;TENSE;HARD;NIGHTMARE,the difficulty shown on the sh
 shift_lives,3,the lives a shift starts with when nobody chose (a guard walking into a lift)
 loading_min,1.6,seconds the loading screen shows at least (it never flashes by)
 loading_max,25,seconds it waits at most before it lets the game through
-catch_tint,#d8e2ff,the colour of the catch (cold)
-catch_contrast,0.25,
+catch_tint,#d2f0ea,the colour of the catch (cold teal)
+catch_contrast,0.3,
 catch_blur,18,the motion blur of the whip and the hit
 catch_rim_brightness,4,the red light behind his head
 catch_tremble,1.6,degrees the view trembles at most while he stares
@@ -267,24 +266,17 @@ camcorder_empty_hold,0.7,seconds the dead camcorder screen (BATTERY EMPTY) stays
 camcorder_empty_fade,0.3,seconds for the camcorder's picture to die when the battery runs out
 unseen_touch_distance,2.2,studs: a guard who reaches him (walking or sprinting into him) is caught whatever their bar
 unseen_flee_share,0.5,a guard nearer than this share of the distance their bar puts him at finds him gone (he jumps further away)
-catch_eyes,0.8,seconds into the catch when the hollows of his eyes darken in and his eyes start to push out
-catch_emerge,0.5,seconds for each part of his face to come out (the eyes, then the grin)
-catch_mouth,1.45,seconds into the catch when the grin tears open across his face (then the jaw drops)
-catch_reach,2.9,seconds into the catch when the tape skips to him leaning in with both hands reaching
-catch_grab,4.3,seconds into the catch when he grabs (the hands rush past the lens)
-catch_rush,0.3,seconds of the grab's rush toward the lens
+catch_reach,2.2,seconds into the catch when the tape skips to him bent down, both hands reaching
+catch_grab,3.2,seconds into the catch when he grabs (the hands rush at the lens)
+catch_rush,0.35,seconds of the grab's rush toward the lens
 catch_skip,0.16,seconds of the tape skip before the hands
 catch_face_distance,2,studs from the guard's eyes to his at the start of the catch (his face at their eyes)
 catch_face_rise,0.15,studs his eyes sit above the guard's
-catch_reach_from,5,studs to his eyes when the hands shot starts
-catch_reach_to,4.3,studs to his eyes just before he grabs
-catch_grab_to,2.6,studs to his eyes at the end of the grab (his hands just past the lens)
-catch_reach_fov,62,field of view of the hands shot (wide enough to see both hands)
-catch_eye_depth,0.12,studs his eyes start inside his head before they push out
-catch_jaw,0.06,studs his jaw drops when the grin opens
-catch_mouth_stretch,0.9,how much taller the grin gets when it opens
-catch_chatter,0.012,studs the needles chatter
-catch_reach_rise,1,studs his eyes sit above the guard's in the hands shot (his hands are far ahead and lower)
+catch_reach_from,5.6,studs to his eyes when the hands shot starts
+catch_reach_to,5,studs to his eyes just before he grabs
+catch_grab_to,4.2,studs to his face when the image freezes (his hands huge on both sides of his head)
+catch_reach_fov,58,field of view of the hands shot (wide enough to see both hands)
+catch_reach_rise,0.6,studs his eyes sit above the guard's in the hands shot (his hands are far ahead and lower)
 clockout_radius,8,studs from the post's sign-in book where a guard clocks the team out once the round is done
 mode_default,normal,the shift's mode when none is chosen (content/modes.csv)
 smash_first,35;60,seconds into the night before his first try at breaking a camera (min;max)
@@ -297,3 +289,16 @@ smash_max,40,studs: and at most this far
 smash_front,0.55,how much in front of the guard the camera must be (cosine of the angle)
 smash_reach,5,studs from the camera he may stand
 smash_hear,70,studs: a guard this near a camera he breaks hears it
+retry_window,20,seconds the kill screen of a lost night waits for RETRY or LOBBY before everyone goes up
+catch_saturation,-0.1,colour of the catch
+catch_tilt,20,degrees his head tilts while the view pushes in (the picture)
+catch_aim_up,0.05,how much the view looks up in the hands shot (his head high in the frame)
+catch_freeze_fov,54,field of view of the frozen kill image
+catch_screen,3.85,seconds into the catch when SIGNAL LOST comes in
+kill_fade,0.45,seconds for the kill screen to come in
+kill_black,0.5,seconds of the fade to black before the post (a life left)
+kill_scanlines,80,the kill screen's tape lines
+kill_dark_edge,0.15,how dark the kill screen's edges get (0 black)
+kill_red_edge,0.55,how red the kill screen's edges get (0 full red)
+catch_pitch,-24,degrees he leans back around his face in the hands shot (his hands come up beside his head)
+catch_reach_tilt,8,degrees his head and hands tilt in the hands shot

@@ -47,6 +47,9 @@ local running = false
 local shift = 0 -- counts shifts, so a late return to the lobby never touches the next one
 local nightNumber = C.night_test
 local startedAt = 0 -- os.clock() at the shift's start (analytics: the night's length)
+local lastSetup: { lives: number, multiplier: number, mode: string? }? = nil -- the shift's setup (RETRY plays it again)
+-- a lost night waits for its guards' choice on the kill screen (Adrien, 8 Nov: RETRY or LOBBY): who is still waiting
+local waiting: { [Player]: boolean } = {}
 
 local function rootOf(player: Player): BasePart?
 	local character = player.Character
@@ -141,7 +144,14 @@ function NightService.kill(player: Player)
 	lives = math.max(0, lives - 1)
 	-- where he is: the catch turns the guard's view to him (Controllers/Death)
 	local _, ux, uz = UnseenService.position()
-	Net.event():FireClient(player, "Death", C.death_seconds, ux, uz)
+	local others = 0
+	for p in playing do
+		if p ~= player and not down[p] and not dead[p] then
+			others += 1
+		end
+	end
+	local final = lives <= 0 and (solo or others == 0)
+	Net.event():FireClient(player, "Death", C.death_seconds, ux, uz, final, lives)
 	StoryService.trigger("death")
 	sendSquad()
 	local thisShift = shift
@@ -253,18 +263,26 @@ function endNight(outcome: string)
 	end
 	print(`[NightService] night {nightNumber} ended ({outcome}): {n}/{total} tasks, {deaths} deaths`)
 	local ended = shift
-	task.delay(C.lobby_return_delay, function()
+	table.clear(waiting)
+	if outcome == "lost" then
+		for _, player in guards do
+			waiting[player] = true
+		end
+	end
+	task.delay(if outcome == "lost" then C.retry_window else C.lobby_return_delay, function()
+		if shift ~= ended then
+			return -- RETRY started the night again
+		end
 		-- back up to the lobby
 		for _, player in guards do
-			if player.Parent then
+			if player.Parent and (outcome ~= "lost" or waiting[player]) then
 				moveTo(player, World.lobbyCFrame())
 				Net.event():FireClient(player, "Shift", false)
 			end
 		end
-		if shift == ended then
-			table.clear(playing)
-			table.clear(dead)
-		end
+		table.clear(waiting)
+		table.clear(playing)
+		table.clear(dead)
 	end)
 end
 
@@ -313,6 +331,8 @@ function NightService.launch(
 	)
 	solo = #guards <= 1
 	lives = if setup then setup.lives else C.shift_lives
+	lastSetup = setup
+	table.clear(waiting)
 	maxLives = lives
 	payMultiplier = if setup then setup.multiplier else 1
 	startedAt = os.clock()
@@ -400,6 +420,32 @@ function NightService.init()
 		sendSquad()
 	end
 
+	-- the kill screen of a lost night: RETRY plays the same night again with the guards still waiting; LOBBY goes up now
+	Actions.on("Retry", function(player: Player)
+		if running or not waiting[player] then
+			return
+		end
+		local guards = {}
+		for p in waiting do
+			if p.Parent then
+				table.insert(guards, p)
+			end
+		end
+		table.clear(waiting)
+		local night = nightNumber
+		if #guards > 0 then
+			NightService.launch(guards, night, lastSetup)
+		end
+	end)
+	Actions.on("ToLobby", function(player: Player)
+		if running or not waiting[player] then
+			return
+		end
+		waiting[player] = nil
+		playing[player] = nil
+		moveTo(player, World.lobbyCFrame())
+		Net.event():FireClient(player, "Shift", false)
+	end)
 	Actions.on("Ready", function(player: Player)
 		PowerDirector.broadcast(player)
 		TaskService.send(player)

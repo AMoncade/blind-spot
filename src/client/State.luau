@@ -92,6 +92,7 @@ function State.start()
 			State.profileAt = os.time()
 		elseif name == "Shift" then
 			State.shift = ...
+			State.dead = false -- a new shift (RETRY) or the lobby: no longer caught
 			if not State.shift then
 				State.down = false
 			end

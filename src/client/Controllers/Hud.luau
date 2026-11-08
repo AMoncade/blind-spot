@@ -16,6 +16,7 @@ local Timeline = require(Shared:WaitForChild("Logic"):WaitForChild("Timeline"))
 local Client = script.Parent.Parent
 local State = require(Client:WaitForChild("State"))
 local Loading = require(script.Parent:WaitForChild("Loading"))
+local Death = require(script.Parent:WaitForChild("Death"))
 local Settings = require(Client:WaitForChild("Settings"))
 local Kit = require(Client:WaitForChild("Ui"):WaitForChild("Kit"))
 
@@ -419,6 +420,10 @@ function Hud.start()
 		parts.caption.Visible = false
 	end)
 	State.on("NightEnd", function(summary: any)
+		-- a lost night: the kill screen asks RETRY or LOBBY; the report stays away (Controllers/Death)
+		if summary and summary.outcome == "lost" and Death.final then
+			return
+		end
 		Hud.fillReport(parts, summary)
 		Kit.show(parts.report, true)
 	end)

@@ -4,12 +4,12 @@ along the body. Scaled to unseen_height (8.5 studs), feet on the ground, the ski
 reads as a silhouette. Imported as ReplicatedStorage.ClientModels.Unseen (Controllers/UnseenView). POSE = "lunge"
 builds the catch pose instead (Controllers/Death: bent forward, knees bent, both arms reaching out, head craned and
 tilted), at the same scale, as the collection UnseenLunge (ClientModels.UnseenLunge, no longer used).
-In play he has no face: he stays a mystery (Adrien, 8 Nov). Only the kill shows one ("des yeux lui sortent, une bouche
-qu'on voit s'ouvrir"), on two models: POSE = "catch" is the standing pose with the face (ClientModels.UnseenCatch), POSE
-= "reach" bends him down to the guard's eyes, his long arms reaching forward around their head (ClientModels.
-UnseenReach). The face is cast onto the head with rays from the front: two deep slanted sockets, a pale pinpoint eye in
-each (Eyes), a grin far too wide (Mouth) and two rows of needle teeth (TeethTop, TeethBottom); the client makes them
-come out and open (Controllers/Death). FACE = True puts it on any pose (kept for later levels: docs/UNSEEN.md). No blood.
+In chapter 1 he has no face at all, in play and in the kill (Adrien, 8 Nov: "faceless pour le chap 1"); the kill's
+second shot is POSE = "reach": bent down to the guard, his long arms reaching forward around their head
+(ClientModels.UnseenReach). His face is kept for later levels (docs/UNSEEN.md): POSE = "catch" builds the standing pose
+with it, FACE = True puts it on any pose. It is cast onto the head with rays from the front: two deep slanted sockets,
+a pale pinpoint eye in each (Eyes), a grin far too wide (Mouth), two rows of needle teeth (TeethTop, TeethBottom).
+No blood.
 Run in Blender:
     FBX = r"<path to the .fbx>"; POSE = "stand"; exec(open(r"<repo>/tools/blender/unseen.py").read())
 """
@@ -25,8 +25,9 @@ SRC = FBX if "FBX" in dir() else os.path.expanduser(r"~\Downloads\unseen.fbx")  
 HEIGHT = 8.5  # content/constants.csv: unseen_height (of the standing pose; the lunge keeps its scale)
 WANT = POSE if "POSE" in dir() else "stand"  # noqa: F821
 NAME = {"stand": "Unseen", "catch": "UnseenCatch", "lunge": "UnseenLunge", "reach": "UnseenReach"}[WANT]
-# the face only on the kill's models (Adrien, 8 Nov: "de base le Unseen doit être mystérieux"); FACE = True forces it
-WITH_FACE = FACE if "FACE" in dir() else WANT in ("catch", "reach")  # noqa: F821
+# no face in chapter 1, not even in the kill (Adrien, 8 Nov: "on va le garder faceless pour le chap 1"); the face is
+# kept for later levels: POSE = "catch" builds it on the standing pose, FACE = True puts it on any pose
+WITH_FACE = FACE if "FACE" in dir() else WANT == "catch"  # noqa: F821
 OUT = OUT_DIR if "OUT_DIR" in dir() else os.path.join(os.path.expanduser("~"), "Documents", "Ropilot", "Blender")  # noqa: F821
 
 old = bpy.data.collections.get(NAME)
