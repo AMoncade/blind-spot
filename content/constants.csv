@@ -285,3 +285,4 @@ catch_jaw,0.06,studs his jaw drops when the grin opens
 catch_mouth_stretch,0.9,how much taller the grin gets when it opens
 catch_chatter,0.012,studs the needles chatter
 catch_reach_rise,1,studs his eyes sit above the guard's in the hands shot (his hands are far ahead and lower)
+clockout_radius,8,studs from the post's sign-in book where a guard clocks the team out once the round is done

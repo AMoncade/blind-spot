@@ -335,6 +335,11 @@ function NightService.init()
 	-- a task done: the radio answers the ones it has a line for (night 5: the plaster, the sealed room)
 	TaskService.onDone = function(taskId: string)
 		StoryService.trigger(taskId)
+		if TaskService.allDone() then
+			for player in playing do
+				Net.event():FireClient(player, "Notice", "ROUND DONE · CLOCK OUT AT THE POST (P1)", true)
+			end
+		end
 	end
 	TaskService.onNew = function(taskId: string)
 		StoryService.trigger("new:" .. taskId)
@@ -412,6 +417,20 @@ function NightService.start()
 				endNight("lost")
 			elseif tl and t >= tl.length then
 				endNight(if TaskService.allDone() then "cleared" else "unfinished")
+			elseif TaskService.allDone() then
+				-- the round is done: a guard back at the post clocks the team out (Adrien, 8 Nov: after the last task
+				-- there was nothing left to do)
+				local post = Config.spotById.SignIn
+				for player in playing do
+					local root = rootOf(player)
+					if root and post and not dead[player] and not down[player] then
+						local d = Vector3.new(post.x - root.Position.X, 0, post.z - root.Position.Z).Magnitude
+						if d <= C.clockout_radius then
+							endNight("cleared")
+							break
+						end
+					end
+				end
 			end
 		end
 	end

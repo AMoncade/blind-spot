@@ -8,6 +8,7 @@ local RunService = game:GetService("RunService")
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
+local Timeline = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Logic"):WaitForChild("Timeline"))
 local Client = script.Parent.Parent
 local State = require(Client:WaitForChild("State"))
 local Kit = require(Client:WaitForChild("Ui"):WaitForChild("Kit"))
@@ -20,6 +21,7 @@ local player = Players.LocalPlayer
 local Tasks = {}
 
 local STUD_METRES = 0.28 -- plan section 7: 1 stud is about 0.28 m
+local C = Config.C
 local LINES = 10
 
 export type Parts = { root: Frame, count: TextLabel, holding: TextLabel, lines: { TextLabel }, sheet: Frame }
@@ -155,6 +157,31 @@ function Tasks.fill(parts: Parts, data: any, myId: number)
 			free += 1
 		end
 	end
+	-- Adrien, 8 Nov: "après la dernière tâche, tu sais plus quoi faire". The round done: clock out at the post. Between
+	-- two tasks: when the next one comes.
+	local open = 0
+	for _, t in list do
+		if not t.done then
+			open += 1
+		end
+	end
+	if free <= LINES and data and data.clockOut then
+		local l = parts.lines[free]
+		l.Text = "[ ] Clock out at the security post  · P1"
+		l.TextColor3 = COLOR.red
+		l.Visible = true
+		free += 1
+	elseif free <= LINES and data and data.nextAt and open == 0 and State.night then
+		local h, m = Timeline.clock(State.night, data.nextAt, C.night_clock_start, C.night_clock_end)
+		local l = parts.lines[free]
+		l.Text = string.format("Next task around %d:%02d AM. Stay on camera.", (h - 1) % 12 + 1, m)
+		l.TextColor3 = Color3.fromRGB(120, 112, 98)
+		l.Visible = true
+		free += 1
+	end
+	for k = free, LINES do
+		parts.lines[k].Visible = false
+	end
 	-- the sheet is as tall as its lines (Adrien, 8 Nov: a tall empty sheet ran into the buttons under it)
 	parts.root.Size = UDim2.fromOffset(250, 78 + (free - 1) * 18)
 	parts.count.Text = `{done}/{#list}`
@@ -166,6 +193,8 @@ end
 -- ---------------------------------------------------------------- world markers
 
 local markers: { [string]: BillboardGui } = {}
+-- the floors the round goes to now, the first one first (the route marker leads there from another floor)
+local roundFloors: { string } = {}
 
 local function marker(key: string, text: string): BillboardGui
 	local b = markers[key]
@@ -240,6 +269,12 @@ end
 
 local function refreshMarkers(data: any, myId: number)
 	local wanted: { [string]: boolean } = {}
+	table.clear(roundFloors)
+	local function goes(floor: string)
+		if not table.find(roundFloors, floor) then
+			table.insert(roundFloors, floor)
+		end
+	end
 	if State.shift and not State.down then
 		for _, b in State.badges or {} do
 			local key, text, pos
@@ -283,10 +318,24 @@ local function refreshMarkers(data: any, myId: number)
 					b.Adornee = anchor
 					b:SetAttribute("Floor", (Config.floorAt(pos[1])))
 					wanted[key] = true
+					goes((Config.floorAt(pos[1])))
 				end
 			end
 		end
+		-- the round done: clock out at the post
+		local post = Config.spotById.SignIn
+		if data.clockOut and post then
+			local anchor = spotAnchor({ post.x, post.y, post.z })
+			if anchor then
+				local b = marker("clockout", "CLOCK OUT")
+				b.Adornee = anchor
+				b:SetAttribute("Floor", post.floor)
+				wanted.clockout = true
+				goes(post.floor)
+			end
+		end
 	end
+	wanted.route = markers.route ~= nil and #roundFloors > 0
 	for key, b in markers do
 		if not wanted[key] then
 			b:Destroy()
@@ -323,6 +372,46 @@ function Tasks.start()
 		local root = character and character:FindFirstChild("HumanoidRootPart")
 		-- a marker shows on its own floor only (the floors lie side by side in the world)
 		local here = if root and root:IsA("BasePart") then (Config.floorAt(root.Position.X)) else nil
+		-- nothing to do on this floor: a marker on its stairwell door, toward the round's next floor (Adrien, 8 Nov:
+		-- "guide mieux le joueur vers le P2 au début")
+		local onHere = false
+		for key, b in markers do
+			if key ~= "route" and b:GetAttribute("Floor") == here then
+				onHere = true
+			end
+		end
+		local goal = roundFloors[1]
+		if here and goal and not onHere and State.shift then
+			local door: any = nil
+			for spot, row in Config.stairsBySpot do
+				if row.floor == here then
+					door = Config.spotById[spot]
+				end
+			end
+			local anchor = door and spotAnchor({ door.x, door.y, door.z })
+			if anchor then
+				local depth = function(id: string): number
+					for k, f in Config.Floors do
+						if f.id == id then
+							return k
+						end
+					end
+					return 0
+				end
+				local text = (if depth(goal) > depth(here) then "STAIRS DOWN TO " else "STAIRS UP TO ") .. goal
+				local route = markers.route
+				if route and (route:FindFirstChild("Label") :: TextLabel).Text ~= text then
+					route:Destroy()
+					markers.route = nil
+				end
+				local b = marker("route", text)
+				b.Adornee = anchor
+				b:SetAttribute("Floor", here)
+			end
+		elseif markers.route then
+			markers.route:Destroy()
+			markers.route = nil
+		end
 		for _, b in markers do
 			b.Enabled = State.shift and not State.dead and not State.down and b:GetAttribute("Floor") == here
 			local adornee = b.Adornee

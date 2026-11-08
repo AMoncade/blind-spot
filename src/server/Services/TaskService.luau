@@ -179,7 +179,21 @@ local function payload(): any
 			pickup = if pickup then { pickup.x, pickup.y, pickup.z } else nil,
 		})
 	end
-	return { tasks = out, held = held, brokenCams = cams, brokenLights = lights }
+	-- the round done (clock out at the post), or when the next task shows up
+	local nextAt: number? = nil
+	for _, t in list do
+		if not t.done and not released(t) then
+			nextAt = math.min(nextAt or math.huge, t.at)
+		end
+	end
+	return {
+		tasks = out,
+		held = held,
+		brokenCams = cams,
+		brokenLights = lights,
+		clockOut = TaskService.allDone(),
+		nextAt = nextAt,
+	}
 end
 
 local function changed()

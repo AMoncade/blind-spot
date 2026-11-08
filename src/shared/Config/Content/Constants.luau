@@ -287,4 +287,5 @@ return {
 	catch_mouth_stretch = 0.9,
 	catch_chatter = 0.012,
 	catch_reach_rise = 1,
+	clockout_radius = 8,
 }
