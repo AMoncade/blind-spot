@@ -165,3 +165,16 @@ Demande d'Adrien : sentir la menace sur les côtés de l'écran quand la barre b
 ## 2026-11-08 : regarder dans le caméscope qu'on tient
 
 Demande d'Adrien : quand on clique pour filmer, on doit vraiment regarder dans le caméscope qu'on a dans les mains, pas passer à un écran plein. Le caméscope a maintenant un **écran rabattable** (un cadre creux et sa vitre, `tools/blender/viewmodel.py`). Levé, les mains l'amènent devant le visage (0,28 s, plus stables qu'au repos) avec l'écran tourné vers le garde ; la vitre s'efface et l'image du caméscope est posée exactement dans le cadre, recalculée à chaque image (`Controllers/Camcorder`, `Controllers/Viewmodel`) : vision de nuit verte qui brille un peu, lignes de balayage, REC, l'heure, la batterie, les coins du viseur, la trace quand il disparaît. Autour, le garage s'assombrit (les yeux sont sur l'écran) et on voit le caméscope et les mains. Sans le modèle, l'ancien viseur plein écran revient. Testé en playtest : l'image suit l'écran du caméscope à moins de 2 pixels, aussi en tournant ; tout revient en baissant le caméscope.
+
+## 2026-11-08 : lobby inquiétant, descente, première personne, la prise en scène
+
+Demandes d'Adrien, toutes faites et testées en playtest :
+- **Le lobby tamisé** : lumière de base basse, panneaux pâles ; deux morts, quatre faibles qui lâchent par moments (jamais plus de 3 flashs par seconde, une lueur fixe avec Reduce Flashes) (`Controllers/Atmosphere`, `lobby_*`).
+- **Le magasin** : une seule invite, au comptoir (les présentoirs restent en décor). Les icônes SPRINT, FUSÉE et CAMCORDER, coupées au bord, redessinées entières.
+- **L'ascenseur ouvre l'écran NEW SHIFT** comme PLAY (une fois par visite) ; START prend cet ascenseur.
+- **La descente** : un écran de bande inquiétant (les étages qui défilent, le garage à peine visible, une phrase) couvre l'ascenseur et l'arrivée jusqu'à ce que le niveau soit chargé et éclairé ; la lumière de la nuit est posée d'un coup avant qu'il se lève (3,3 s au test) ; le titre de la nuit attend.
+- **L'interface de droite** : la feuille de ronde aussi haute que ses lignes ; FUSÉE, SPRINT et le caméscope sur une rangée en bas à droite ; plus de chevauchement.
+- **La première personne** : tout le corps du garde caché à ses yeux pendant un quart.
+- **On ne fonce plus sur l'Invisible** : trop près pour ta barre, il disparaît et réapparaît plus loin ; l'atteindre quand même, c'est être pris (`Hunt.flees`, `Hunt.touches`).
+- **La batterie vide** : l'image du caméscope meurt (BATTERY EMPTY) puis les mains le baissent ; l'image suit l'écran en descendant, la lumière revient en douceur.
+- **La prise, une scène de 6 s** (`Controllers/Death`) : sa tête lisse juste devant tes yeux, les orbites qui se creusent, les yeux qui en sortent et s'allument, un sourire en aiguilles qui se déchire et s'ouvre ; la bande saute : il est penché, ses deux longues mains ouvertes qui viennent autour de ta tête ; il saisit ; SIGNAL LOST. En jeu il reste sans visage (`docs/UNSEEN.md`) ; deux modèles Blender (`UnseenCatch`, `UnseenReach`, `tools/blender/unseen.py`), le visage gardé dans `assets/models/unseen_face.obj` pour des niveaux futurs.
