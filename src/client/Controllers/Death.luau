@@ -1,16 +1,13 @@
 --!strict
 -- The catch (plan section 4, "La mort" : « L'image se fige, la bande VHS déraille, une main entre dans le cadre, noir.
--- Pas de sang, pas de gore. »; Adrien, 7 Nov: "faut qu'on voie le truc en gros, puis ça shake, plus épique"), on the
--- client, timed by the catch_* constants inside death_seconds:
---   the view whips around to him (a motion blur, a whoosh);
---   he is right there, huge, lit from below and rimmed in red; the view pushes in on his face and narrows until it
---     fills the screen, trembling more and more, his voice low;
---   at catch_lunge he lunges, both long arms out (his second Blender pose), his hands fill the frame: a shriek and a
---     deep boom, the view punches out and shakes hard, one red pulse;
---   the image freezes in black and white, the tape tears, SIGNAL LOST, black;
---   the server wakes the guard at the post after death_seconds (or makes them a watcher in co-op).
--- No blood. Reduce Flashes: no red pulse, a small tremble. His models: ReplicatedStorage.ClientModels.Unseen and
--- UnseenLunge (without them, the rest alone).
+-- Pas de sang, pas de gore. »), on the client: a short cutscene (Adrien, 8 Nov: "qu'on ait vraiment la face du
+-- monstre dans l'écran, puis ses mains, presque une cutscene de plusieurs secondes"). In play he has no face (he stays
+-- a mystery); only here does it come out of his blank head: the eyes push out of their hollows, a grin tears open and
+-- the jaw drops. Then he reaches for the guard with both hands, grabs, and the tape dies. Timed by the catch_*
+-- constants inside death_seconds (see catch below); the server wakes the guard at the post after death_seconds (or
+-- makes them a watcher in co-op). No blood. Reduce Flashes: no red pulse, small shakes. His models:
+-- ReplicatedStorage.ClientModels.UnseenCatch and UnseenReach (Blender, tools/blender/unseen.py; without them the
+-- faceless Unseen, or the rest alone).
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -87,29 +84,84 @@ local function build()
 	gui.Parent = player:WaitForChild("PlayerGui")
 end
 
--- a client copy of one of his models, and where its PrimaryPart sits from the bottom centre of its bounds
-local function model(name: string): (Model?, CFrame?)
+-- One of his kill models (ClientModels.UnseenCatch, UnseenReach): a client copy, its face parts and where they sit
+-- from its PrimaryPart, and where his eyes are (the shots are framed on them). Without the face parts, the body alone.
+type Kill = {
+	model: Model,
+	primary: BasePart,
+	eyes: Vector3,
+	parts: { [string]: BasePart },
+	offsets: { [string]: CFrame },
+	sizes: { [string]: Vector3 },
+}
+
+local function killModel(name: string, fallback: string?): Kill?
 	local folder = ReplicatedStorage:FindFirstChild("ClientModels")
-	local template = folder and folder:FindFirstChild(name)
+	local template = folder and (folder:FindFirstChild(name) or (fallback and folder:FindFirstChild(fallback)))
 	if not (template and template:IsA("Model") and template.PrimaryPart) then
-		return nil, nil
+		return nil
 	end
 	local m = template:Clone()
-	local cf, size = m:GetBoundingBox()
-	return m, (cf * CFrame.new(0, -size.Y / 2, 0)):ToObjectSpace((m.PrimaryPart :: BasePart).CFrame)
+	local primary = m.PrimaryPart :: BasePart
+	local parts, offsets, sizes = {}, {}, {}
+	for _, d in m:GetChildren() do
+		if d:IsA("BasePart") and d ~= primary then
+			parts[d.Name] = d
+			offsets[d.Name] = primary.CFrame:ToObjectSpace(d.CFrame)
+			sizes[d.Name] = d.Size
+		end
+	end
+	local eyes = parts.Eyes
+	local at = if eyes
+		then primary.CFrame:PointToObjectSpace(eyes.Position)
+		else primary.CFrame:PointToObjectSpace(primary.Position + Vector3.new(0, primary.Size.Y * 0.4, 0))
+	return { model = m, primary = primary, eyes = at, parts = parts, offsets = offsets, sizes = sizes }
 end
 
--- his model standing at `feet` (on the floor), facing the point `toward`, pushed `forward` studs along his facing
-local function place(m: Model, offset: CFrame, feet: Vector3, toward: Vector3, forward: number)
-	local flat = Vector3.new(toward.X, feet.Y, toward.Z)
-	local base = CFrame.lookAt(feet, flat) * CFrame.new(0, 0, -forward)
-	-- the models face their +z, a CFrame looks along its -z: half a turn
-	m:SetPrimaryPartCFrame(base * CFrame.Angles(0, math.pi, 0) * offset)
+-- he faces the guard (his models face their +z), his eyes at `target`
+local function byEyes(k: Kill, target: Vector3, dir: Vector3): CFrame
+	local turn = CFrame.lookAt(Vector3.zero, dir) -- -z along dir: his +z back toward the guard
+	return CFrame.new(target - turn:VectorToWorldSpace(k.eyes)) * turn
+end
+
+-- His face coming out of the blank head (Adrien, 8 Nov: "des yeux lui sortent, une bouche, on la voit s'ouvrir"):
+-- sockets 0..1 the hollows darken in; eyes 0..1 they push out of them and then glow; mouth 0..1 the grin tears open
+-- from the middle; open 0..1 the jaw drops and the needles chatter.
+local function pose(k: Kill, cf: CFrame, sockets: number, eyes: number, mouth: number, open: number, t: number)
+	k.primary.CFrame = cf
+	local p = k.parts
+	for name, part in p do
+		local base = cf * k.offsets[name]
+		if name == "Sockets" then
+			part.CFrame = base
+			part.Transparency = 1 - sockets
+		elseif name == "Eyes" then
+			part.CFrame = base * CFrame.new(0, 0, -C.catch_eye_depth * (1 - eyes))
+			part.Transparency = if eyes > 0 then math.max(0, 1 - eyes * 3) else 1
+			part.Material = if eyes >= 0.7 then Enum.Material.Neon else Enum.Material.SmoothPlastic
+		elseif name == "Mouth" then
+			part.CFrame = base * CFrame.new(0, -C.catch_jaw * 0.45 * open, 0)
+			part.Size = k.sizes.Mouth * Vector3.new(math.max(mouth, 0.02), 1 + C.catch_mouth_stretch * open, 1)
+			part.Transparency = if mouth > 0 then 0 else 1
+		elseif name == "TeethTop" or name == "TeethBottom" then
+			local chatter = if open > 0.4 then math.sin(t * 34) * C.catch_chatter * open else 0
+			local dy = if name == "TeethTop" then C.catch_jaw * 0.15 * open else -(C.catch_jaw * open + chatter)
+			part.CFrame = base * CFrame.new(0, dy, 0)
+			part.Size = k.sizes[name] * Vector3.new(math.max(mouth, 0.02), 1, 1)
+			part.Transparency = if mouth > 0.2 then 0 else 1
+		else
+			part.CFrame = base
+		end
+	end
 end
 
 local function ease(a: number): number
 	a = math.clamp(a, 0, 1)
 	return a * a * (3 - 2 * a)
+end
+
+local function between(t: number, from: number, length: number): number
+	return math.clamp((t - from) / math.max(length, 0.01), 0, 1)
 end
 
 local function tear(seconds: number, id: number)
@@ -127,6 +179,29 @@ local function tear(seconds: number, id: number)
 	end
 end
 
+-- the tape skips for a moment (the cut to his reach): bars across, then gone
+local function skip(id: number)
+	for k, bar in bars do
+		bar.Visible = true
+		bar.Position = UDim2.new(-0.1 + math.random() * 0.06, 0, (k * 0.17 + math.random() * 0.1) % 1, 0)
+	end
+	task.delay(C.catch_skip, function()
+		if catchId == id then
+			for _, bar in bars do
+				bar.Visible = false
+			end
+		end
+	end)
+end
+
+-- The catch, a short cutscene timed by the catch_* constants inside death_seconds:
+--   the view whips around: his blank face, right there at the guard's eyes, lit from below and rimmed in red;
+--   the view pushes in; the hollows of his eyes darken in, two pale eyes push out of them and glow (catch_eyes);
+--   a grin tears open across his face, the jaw drops, the needles chatter, his voice (catch_mouth);
+--   the tape skips: he is leaning in, both long hands reaching around the guard's head, closer (catch_reach);
+--   he grabs: the hands rush past the lens, a shriek and a boom, the view punches out and shakes, one red pulse
+--     (catch_grab);
+--   the image freezes in black and white, the tape tears, SIGNAL LOST, black (catch_freeze).
 local function catch(seconds: number, ux: number?, uz: number?)
 	catchId += 1
 	local id = catchId
@@ -153,14 +228,15 @@ local function catch(seconds: number, ux: number?, uz: number?)
 			dir = to.Unit
 		end
 	end
-	local floor = C.floor_y
-	local feet = Vector3.new(eye.X, floor, eye.Z) + dir * C.catch_distance
-	local face = feet + Vector3.new(0, C.unseen_height * C.catch_face_height, 0) - dir * 0.5
-	local stand, standOffset = model("Unseen")
-	local lunge, lungeOffset = model("UnseenLunge")
-	if stand and standOffset then
-		place(stand, standOffset, feet, eye, 0)
-		stand.Parent = camera
+	local up = Vector3.new(0, 1, 0)
+	local stand = killModel("UnseenCatch", "Unseen")
+	local reach = killModel("UnseenReach")
+	local function faceAt(distance: number): Vector3
+		return eye + dir * distance + up * C.catch_face_rise
+	end
+	if stand then
+		pose(stand, byEyes(stand, faceAt(C.catch_face_distance), dir), 0, 0, 0, 0, 0)
+		stand.model.Parent = camera
 	end
 
 	-- the look of it: colder and harder, a blur for the whip and the hit
@@ -177,7 +253,7 @@ local function catch(seconds: number, ux: number?, uz: number?)
 	-- lit from below (a cold key from the guard's chest) and rimmed in red from behind his head
 	local holder = Instance.new("Attachment")
 	holder.Name = "CatchLight"
-	holder.WorldPosition = eye - Vector3.new(0, 1, 0) + dir * 0.6
+	holder.WorldPosition = eye - up + dir * 0.6
 	holder.Parent = workspace.Terrain
 	local key = Instance.new("PointLight")
 	key.Color = Color3.fromRGB(Config.rgb(C.catch_light_color))
@@ -187,7 +263,6 @@ local function catch(seconds: number, ux: number?, uz: number?)
 	key.Parent = holder
 	local rimAt = Instance.new("Attachment")
 	rimAt.Name = "CatchRim"
-	rimAt.WorldPosition = face + dir * 1.8 + Vector3.new(0, 1.2, 0)
 	rimAt.Parent = workspace.Terrain
 	local rim = Instance.new("PointLight")
 	rim.Color = Color3.fromRGB(Config.rgb(C.rec_color))
@@ -197,11 +272,9 @@ local function catch(seconds: number, ux: number?, uz: number?)
 	rim.Parent = rimAt
 
 	local calm = Settings.get("ReduceFlashes") == true
-	local turned = CFrame.lookAt(eye, face)
-	local push = dir * C.catch_push
 	local t0 = os.clock()
-	local stared, lunged, frozen = false, false, false
-	local hitAt = 0
+	local seenEyes, seenMouth, reached, grabbed, frozen = false, false, false, false, false
+	local grabAt = 0
 	SoundDirector.play("catch_whoosh")
 	local conn: RBXScriptConnection
 	conn = RunService.RenderStepped:Connect(function()
@@ -210,64 +283,104 @@ local function catch(seconds: number, ux: number?, uz: number?)
 			return
 		end
 		local t = os.clock() - t0
-		if t < C.catch_turn then
-			-- the view whips around to him, blurred
-			local a = ease(t / C.catch_turn)
-			camera.CFrame = start:Lerp(turned, a)
-			blur.Size = C.catch_blur * (1 - a)
-		elseif t < C.catch_lunge then
-			-- he is right there: push in on his face, narrow the view until he fills it, tremble more and more
-			if not stared then
-				stared = true
-				blur.Size = 0
+		if t < C.catch_reach then
+			-- his face: the whip, then the push-in while the eyes come out and the grin opens
+			local push = ease(between(t, C.catch_turn, C.catch_reach - C.catch_turn))
+			local distance = C.catch_face_distance - C.catch_push * push
+			local face = faceAt(distance)
+			local sockets = ease(between(t, C.catch_eyes, C.catch_emerge * 0.6))
+			local eyes = ease(between(t, C.catch_eyes + C.catch_emerge * 0.35, C.catch_emerge))
+			local mouth = ease(between(t, C.catch_mouth, C.catch_emerge))
+			local open =
+				ease(between(t, C.catch_mouth + C.catch_emerge, C.catch_reach - C.catch_mouth - C.catch_emerge))
+			if stand then
+				pose(stand, byEyes(stand, face, dir), sockets, eyes, mouth, open, t)
+			end
+			rimAt.WorldPosition = face + dir * 1.8 + up * 1.2
+			if not seenEyes and t >= C.catch_eyes + C.catch_emerge * 0.35 then
+				seenEyes = true
 				SoundDirector.play("catch_vocal")
 			end
-			local a = ease((t - C.catch_turn) / (C.catch_lunge - C.catch_turn))
-			local amount = (if calm then 0.25 else 1) * C.catch_tremble * a
-			local shake = CFrame.Angles(
-				math.rad(math.noise(t * 14, 1) * amount),
-				math.rad(math.noise(t * 14, 2) * amount),
-				math.rad(math.noise(t * 9, 3) * amount * 0.5)
-			)
-			camera.CFrame = CFrame.lookAt(eye + push * a, face) * shake
-			camera.FieldOfView = fov0 + (C.catch_fov - fov0) * a
-		elseif t < C.catch_freeze then
-			-- he lunges: his hands fill the frame, a shriek and a boom, the view punches out and shakes hard
-			if not lunged then
-				lunged = true
-				hitAt = t
+			if not seenMouth and t >= C.catch_mouth then
+				seenMouth = true
+				SoundDirector.play("catch_whoosh")
+			end
+			local shake = CFrame.identity
+			if t >= C.catch_turn then
+				local amount = (if calm then 0.25 else 1) * C.catch_tremble * (0.3 + 0.7 * push)
+				shake = CFrame.Angles(
+					math.rad(math.noise(t * 14, 1) * amount),
+					math.rad(math.noise(t * 14, 2) * amount),
+					math.rad(math.noise(t * 9, 3) * amount * 0.5)
+				)
+			end
+			local turned = CFrame.lookAt(eye, face)
+			local a = ease(between(t, 0, C.catch_turn))
+			camera.CFrame = start:Lerp(turned, a) * shake
+			blur.Size = C.catch_blur * (1 - a)
+			camera.FieldOfView = fov0 + (C.catch_fov - fov0) * push
+		elseif t < C.catch_grab then
+			-- the tape skips: he leans in, both hands reaching around the guard's head, closer and closer
+			if not reached then
+				reached = true
+				skip(id)
+				blur.Size = C.catch_blur * 0.8
+				TweenService:Create(blur, TweenInfo.new(0.3), { Size = 0 }):Play()
 				if stand then
-					stand:Destroy()
+					stand.model:Destroy()
 					stand = nil
 				end
-				if lunge and lungeOffset then
-					lunge.Parent = camera
+				if reach then
+					reach.model.Parent = camera
 				end
+				SoundDirector.play("catch_vocal")
+			end
+			local a = ease(between(t, C.catch_reach, C.catch_grab - C.catch_reach))
+			local distance = C.catch_reach_from + (C.catch_reach_to - C.catch_reach_from) * a
+			-- his face a little above the guard's: his hands (far ahead of it, lower) come at them in the frame
+			local face = eye + dir * distance + up * C.catch_reach_rise
+			if reach then
+				pose(reach, byEyes(reach, face, dir), 1, 1, 1, 1, t)
+			end
+			rimAt.WorldPosition = face + dir * 1.8 + up * 1.2
+			local amount = (if calm then 0.25 else 1) * C.catch_tremble * (1 + a)
+			local shake = CFrame.Angles(
+				math.rad(math.noise(t * 16, 4) * amount),
+				math.rad(math.noise(t * 16, 5) * amount),
+				math.rad(math.noise(t * 11, 6) * amount * 0.5)
+			)
+			camera.CFrame = CFrame.lookAt(eye, eye + dir) * shake
+			camera.FieldOfView = C.catch_fov + (C.catch_reach_fov - C.catch_fov) * ease(between(t, C.catch_reach, 0.5))
+		elseif t < C.catch_freeze then
+			-- he grabs: the hands rush past the lens, a shriek and a boom, the view punches out and shakes hard
+			if not grabbed then
+				grabbed = true
+				grabAt = t
 				SoundDirector.play("catch_shriek")
 				SoundDirector.play("catch_boom")
-				blur.Size = C.catch_blur * 1.3
+				blur.Size = C.catch_blur * 1.2
 				if not calm then
 					pulse.BackgroundTransparency = 0.45 -- one red pulse (well under 3 flashes a second)
 					TweenService:Create(pulse, TweenInfo.new(0.45), { BackgroundTransparency = 1 }):Play()
 				end
 				TweenService:Create(blur, TweenInfo.new(0.35), { Size = 4 }):Play()
 			end
-			local a = ease((t - C.catch_lunge) / (C.catch_freeze - C.catch_lunge))
-			local reach = Vector3.new(eye.X, floor, eye.Z) + dir * (C.catch_reach + C.catch_lunge_from)
-			if lunge and lungeOffset then
-				place(lunge, lungeOffset, reach, eye, C.catch_lunge_from * a)
+			local since = t - grabAt
+			local a = math.clamp(since / C.catch_rush, 0, 1)
+			local distance = C.catch_reach_to + (C.catch_grab_to - C.catch_reach_to) * (a * a)
+			local face = eye + dir * distance + up * C.catch_reach_rise
+			if reach then
+				pose(reach, byEyes(reach, face, dir), 1, 1, 1, 1, t)
 			end
-			-- the punch: the view snaps wide then settles; a hard shake that fades
-			local since = t - hitAt
-			camera.FieldOfView = C.catch_punch_fov + (fov0 - C.catch_punch_fov) * math.min(1, since / 0.25)
+			camera.FieldOfView = C.catch_punch_fov + (C.catch_reach_fov - C.catch_punch_fov) * math.min(1, since / 0.25)
 			local hard = (if calm then 0.3 else 1) * C.catch_hit_shake * math.max(0, 1 - since / 0.4)
 			local shake = CFrame.Angles(
 				math.rad((math.random() * 2 - 1) * hard),
 				math.rad((math.random() * 2 - 1) * hard),
 				math.rad((math.random() * 2 - 1) * hard * 0.6)
 			)
-			local aim = Vector3.new(eye.X, floor + C.catch_aim_height, eye.Z) + dir * C.catch_reach
-			camera.CFrame = CFrame.lookAt(eye - dir * 0.8, aim) * shake
+			-- the view lifts to his face as the hands rush past the lens
+			camera.CFrame = CFrame.lookAt(eye, (eye + dir * 3):Lerp(face, 0.7 * a)) * shake
 		elseif not frozen then
 			-- the image freezes in black and white, the tape tears
 			frozen = true
@@ -292,10 +405,10 @@ local function catch(seconds: number, ux: number?, uz: number?)
 		end
 		conn:Disconnect()
 		if stand then
-			stand:Destroy()
+			stand.model:Destroy()
 		end
-		if lunge then
-			lunge:Destroy()
+		if reach then
+			reach.model:Destroy()
 		end
 		grade:Destroy()
 		blur:Destroy()

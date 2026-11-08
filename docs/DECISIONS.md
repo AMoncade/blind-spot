@@ -93,3 +93,15 @@ Avant chaque nuit : chapitre, carte, nuit, gardes, vies. La paie est multipliée
 ## Des choix plutôt que de l'attente (8 novembre 2026)
 
 Adrien : « que ce soit pas juste toujours attendre ta barre qui se reset ». Trois leviers : (1) des caméras mortes dès le début des nuits avancées, donc des zones noires qu'on doit traverser ; (2) des compétences limitées qui sont des décisions sur le noir : le SPRINT pour traverser, la FUSÉE pour faire une île sûre là où il faut travailler (et pour un coéquipier), le caméscope à 5 s qu'on rallonge en achetant des batteries ; (3) des tâches qui se font dans les angles morts. Le caméscope reste un outil de groupe : ce qu'il filme protège les autres. Idées pour plus tard : un trépied qui pose une caméra pour une minute, un leurre sonore, une lampe qui fait baisser la barre moins vite mais qu'il voit de loin.
+
+## Un Invisible sans visage, sauf dans la prise (8 novembre 2026)
+
+Adrien voulait voir « vraiment la face du monstre » dans la mort, mais qu'il reste mystérieux en jeu. Il n'a donc pas de visage en jeu ; la prise devient une courte scène où son visage sort de sa tête lisse (les yeux, puis un sourire qui se déchire et s'ouvre), puis ses mains viennent autour de la tête du garde. Le visage est gardé pour des niveaux futurs (`docs/UNSEEN.md`, `assets/models/unseen_face.obj`).
+
+## Le corps du garde caché en première personne (8 novembre 2026)
+
+Avant, on gardait le corps visible (on voyait ses jambes en regardant en bas). Adrien : « on voit notre propre corps », et c'était l'intérieur des épaules et la veste qu'on voyait. Le corps entier est caché aux yeux du garde pendant un quart ; les mains et le caméscope (le viewmodel) sont son corps. Les autres gardes le voient toujours.
+
+## On ne fonce pas sur l'Invisible (8 novembre 2026)
+
+Un garde qui marche droit sur lui le voit disparaître et réapparaître plus loin (s'il est bien plus près que sa barre ne le placerait) ; s'il l'atteint quand même (sprint, coin), il est pris, quelle que soit sa barre. Ça garde l'horreur : on ne peut pas aller le toucher.
