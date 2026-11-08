@@ -2,7 +2,9 @@ id,kind,x,y,z,sx,sy,sz,count,step_x,occludes,blocks,note
 LobbyFloor,lobbyfloor,0,-0.5,134.5,74,1,53,1,0,0,0,the Halloway ground floor (the lifts sit z 109 to 117)
 LobbyCeiling,lobbyceiling,0,14.5,134.5,74,1,53,1,0,0,0,
 LobbyWallW,lobbywall,-36.5,7,134.5,1,14,53,1,0,0,0,
-LobbyWallE,lobbywall,36.5,7,134.5,1,14,53,1,0,0,0,
+LobbyWallE,lobbywall,36.5,7,119.5,1,14,23,1,0,0,0,east wall: the door to K&V SUPPLY is z 131 to 139
+LobbyWallE2,lobbywall,36.5,7,150,1,14,22,1,0,0,0,
+LintelE,lobbywall,36.5,11.5,135,1,5,8,1,0,0,0,above the shop door (9 high)
 LobbyWallBack,lobbywall,0,7,108.5,74,14,1,1,0,0,0,behind the lift cabins
 LiftWall1,lobbywall,-27.5,7,117.5,17,14,1,1,0,0,0,lift wall: openings at x -16 0 16 (6 wide 8 high)
 LiftWall2,lobbywall,-8,7,117.5,10,14,1,1,0,0,0,
@@ -20,4 +22,12 @@ Sign,sign,0,12.2,118.15,30,2.6,0.3,1,0,0,0,KESTREL & VANE above the lifts
 LobbySpawn,lobbyspawn,0,0.5,150,10,1,6,1,0,0,0,where guards arrive
 Baseboard,trim,0,0.35,118.15,72,0.7,0.3,1,0,0,0,dark baseboard under the lift wall
 BaseboardW,trim,-35.85,0.35,139,0.3,0.7,42,1,0,0,0,
-BaseboardE,trim,35.85,0.35,139,0.3,0.7,42,1,0,0,0,
+BaseboardE,trim,35.85,0.35,124.5,0.3,0.7,13,1,0,0,0,
+BaseboardE2,trim,35.85,0.35,149.5,0.3,0.7,21,1,0,0,0,
+ShopFloor,lobbyfloor,48.5,-0.5,135,24,1,26,1,0,0,0,K&V SUPPLY: the annex east of the hall (x 37 to 60 z 122 to 148)
+ShopCeiling,lobbyceiling,48.5,12.5,135,24,1,26,1,0,0,0,lower than the hall
+ShopWallN,lobbywall,48.5,6.5,148.5,25,13,1,1,0,0,0,
+ShopWallS,lobbywall,48.5,6.5,121.5,25,13,1,1,0,0,0,
+ShopWallE,lobbywall,61,6.5,135,1,13,28,1,0,0,0,behind the counter
+ShopLamp,lobbylamp,41,11.85,135,6,0.3,2,3,7,0,0,
+ShopSign,shopsign,35.85,10.6,135,0.3,2.2,8,1,0,0,0,K&V SUPPLY over the door (faces the hall)

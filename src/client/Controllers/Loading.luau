@@ -26,7 +26,8 @@ local TIPS = {
 	"Your signal bar drains in the dark. Under a camera it fills back up.",
 	"He never walks. He is just closer every time you look.",
 	"Through the camcorder, he is not there.",
-	"A flare is a camera that lasts twenty-five seconds.",
+	"A flare is a camera you drop on the floor.",
+	"K&V SUPPLY, east of the hall: upgrades for your nerve, your legs, your camcorder and your flares.",
 }
 
 function Loading.start()

@@ -4,10 +4,6 @@ vf_amber,Sodium,viewfinder,350,0,VfSodium,#ffc46b,#ff6a2a,#ffd9a0,Warm like the 
 vf_ice,Cold Storage,viewfinder,500,0,VfCold,#9fe6ff,#ff3355,#d6f6ff,Blue as the P3 at 4 AM.,,,
 vf_mil,Night Ops,viewfinder,800,0,VfNightOps,#7dff8a,#ffe14a,#c8ffcf,Green phosphor. Military surplus.,,,
 vf_brass,Old Guard,viewfinder,1500,0,VfOldGuard,#d9a94e,#c0392b,#f0d79a,Brass trim from before 1979.,,,
-bat_std,Factory Cell,battery,0,0,BatteryStd,#7dff8a,#7dff8a,#ffffff,Five seconds of tape. Use them well.,,5,owned by everyone: the camcorder's battery (amount: seconds)
-bat_spare,Spare Cell,battery,400,0,BatterySpare,#7dff8a,#7dff8a,#ffffff,Twelve seconds. A little room to look.,,12,
-bat_pro,Pro Brick,battery,1000,0,BatteryPro,#7dff8a,#7dff8a,#ffffff,Twenty-five seconds. Enough to cross a floor.,,25,
-bat_long,Long-Life,battery,2200,0,BatteryLong,#7dff8a,#7dff8a,#ffffff,Forty-five seconds. The old guard's pack.,,45,
 un_navy,Night Shift,uniform,0,0,UniformNavy,#2b3448,#b9bab2,#ffffff,The jacket they hand you on night one.,,,owned by everyone (frame: the cloth; rec: the stripe)
 un_hivis,Hi-Vis,uniform,400,0,UniformHiVis,#b8c935,#d9dad3,#ffffff,Seen by every camera. And by everything else.,,,
 un_ranger,Ranger,uniform,650,0,UniformRanger,#4a5236,#b49a6a,#ffffff,Surplus from a park that closed at dusk.,,,

@@ -1,11 +1,11 @@
 --!strict
 -- The guard's skills (Adrien, 7 Nov: "que ce soit pas juste toujours attendre ta barre qui se reset"). Each is a
 -- choice about the dark, not a way out of the rules:
---   SPRINT: a short burst of speed (sprint_multiplier for sprint_seconds, then sprint_cooldown) to cross a blind
+--   SPRINT: a short burst of speed (sprint_multiplier; how long and how often: the SPRINT upgrade) to cross a blind
 --     zone before the bar empties;
---   FLARE: a road flare dropped a few steps ahead. For flare_seconds it is a camera: the floor it lights (flare_radius,
+--   FLARE: a road flare dropped a few steps ahead. While it burns it is a camera: the floor it lights (flare_radius,
 --     what it can see) counts as filmed for everyone (the bar fills back up there, he can't stand in it), so a guard
---     can make a safe island in a blind spot to work in. flare_count a night.
+--     can make a safe island in a blind spot to work in. How many a night and how long they burn: the FLARES upgrade.
 -- The server decides: the client only asks (action Skill), on shift and alive; each guard learns what they have left
 -- (event Skills).
 local Players = game:GetService("Players")
@@ -24,6 +24,8 @@ local Server = script.Parent.Parent
 local Actions = require(Server:WaitForChild("Core"):WaitForChild("Actions"))
 local World = require(Server:WaitForChild("Core"):WaitForChild("World"))
 local WatchService = require(script.Parent:WaitForChild("WatchService"))
+local Data = require(Server:WaitForChild("Core"):WaitForChild("Data"))
+local Upgrades = require(Logic:WaitForChild("Upgrades"))
 
 local C = Config.C
 
@@ -42,12 +44,23 @@ local function rootOf(player: Player): BasePart?
 	return if root and root:IsA("BasePart") then root else nil
 end
 
+-- what this guard's levels give: SPRINT (burst, cooldown) and FLARES (a night, burn seconds)
+local function sprintOf(player: Player): (number, number)
+	local burst, cooldown = Upgrades.value(Config.upgradeById.sprint, Upgrades.level(Data.get(player), "sprint"))
+	return burst, cooldown or 20
+end
+
+local function flaresOf(player: Player): (number, number)
+	local count, burn = Upgrades.value(Config.upgradeById.flares, Upgrades.level(Data.get(player), "flares"))
+	return count, burn or 20
+end
+
 local function send(player: Player)
 	Net.event():FireClient(player, "Skills", {
 		flares = flaresLeft[player] or 0,
-		flareMax = C.flare_count,
+		flareMax = (flaresOf(player)),
 		sprintReady = workspace:GetServerTimeNow() + math.max(0, (sprintReady[player] or 0) - os.clock()),
-		sprintCooldown = C.sprint_cooldown,
+		sprintCooldown = select(2, sprintOf(player)),
 	})
 end
 
@@ -61,9 +74,10 @@ local function sprint(player: Player)
 	if not humanoid then
 		return
 	end
-	sprintReady[player] = now + C.sprint_cooldown
+	local burst, cooldown = sprintOf(player)
+	sprintReady[player] = now + cooldown
 	humanoid.WalkSpeed = C.player_walk_speed * C.sprint_multiplier
-	task.delay(C.sprint_seconds, function()
+	task.delay(burst, function()
 		if humanoid.Parent and humanoid.WalkSpeed > C.player_walk_speed then
 			humanoid.WalkSpeed = C.player_walk_speed
 		end
@@ -200,7 +214,8 @@ local function flare(player: Player)
 	lit[id] = model
 	WatchService.setExtra(id, flareCells(spot.X, spot.Z))
 	send(player)
-	task.delay(C.flare_seconds, function()
+	local _, burn = flaresOf(player)
+	task.delay(burn, function()
 		if lit[id] ~= model then
 			return
 		end
@@ -226,7 +241,7 @@ end
 function SkillService.reset(guards: { Player })
 	SkillService.clear()
 	for _, player in guards do
-		flaresLeft[player] = C.flare_count
+		flaresLeft[player] = (flaresOf(player))
 		sprintReady[player] = 0
 		send(player)
 	end

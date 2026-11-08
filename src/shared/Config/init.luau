@@ -29,6 +29,8 @@ Config.Floors = Content.Floors
 Config.Stairs = Content.Stairs
 Config.Signals = Content.Signals
 Config.Chapters = Content.Chapters
+Config.Upgrades = Content.Upgrades
+Config.ShopStations = Content.ShopStations
 
 Config.spotById = {} :: { [string]: typeof(Content.Spots[1]) }
 for _, spot in Content.Spots do
@@ -68,6 +70,11 @@ end
 Config.signalById = {} :: { [string]: typeof(Content.Signals[1]) }
 for _, signal in Content.Signals do
 	Config.signalById[signal.id] = signal
+end
+
+Config.upgradeById = {} :: { [string]: typeof(Content.Upgrades[1]) }
+for _, upgrade in Content.Upgrades do
+	Config.upgradeById[upgrade.id] = upgrade
 end
 
 Config.stairsBySpot = {} :: { [string]: typeof(Content.Stairs[1]) }

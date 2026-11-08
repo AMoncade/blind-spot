@@ -1,7 +1,15 @@
 id,model,x,y,z,yaw,note
 Desk,SecurityDesk,-31.5,0,140,90,the Kestrel & Vane check-in desk and its monitor wall (faces the hall: +x)
-Board,NoticeBoard,35.85,2.8,140,-90,missing guards and the night rules (faces -x)
+Board,NoticeBoard,35.85,2.8,152,-90,missing guards and the night rules (faces -x)
 BenchN,Bench,26,0,149,-90,
 BenchS,Bench,26,0,131,-90,
 LampW,StreetLamp,-22,0,166,0,street lamp outside the glass (its arm over the street)
 LampE,StreetLamp,22,0,166,0,
+ShopCounter,ShopCounter,56,0,135,-90,the K&V SUPPLY counter (faces the door: -x)
+StandSignal,StandSignal,42,0,143,180,a stand: the signal amplifier (faces the room: -z)
+StandSprint,StandSprint,50,0,143,180,a stand: the boots
+StandCamera,StandCamera,42,0,127,0,a stand: the camcorder (faces the room: +z)
+StandFlares,StandFlares,50,0,127,0,a stand: the box of flares
+ShopLocker1,Locker,39.5,0,147,180,K&V SUPPLY: staff lockers along the north wall (a copy of the level's locker)
+ShopLocker2,Locker,45.2,0,147,180,
+ShopCrates,Crates,57,0,126.5,0,K&V SUPPLY: stock in the south east corner (a copy of the P2 crates)

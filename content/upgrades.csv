@@ -1,0 +1,5 @@
+id,name,max,cost_base,cost_growth,values,values2,unit,unit2,art,blurb,note
+signal,SIGNAL,10,150,1.32,1;0.9;0.81;0.73;0.66;0.6;0.55;0.5;0.46;0.42,,x drain,,UpgradeSignal,How long your nerve holds off camera.,the signal bar drains this many times its base speed (level 1: fast)
+sprint,SPRINT,5,200,1.6,2;2.5;3;3.5;4,22;19;16;13;10,s burst,s cooldown,SkillSprint,A burst of speed across the dark.,SPRINT: seconds of burst; values2: seconds before it comes back
+camera,CAMCORDER,8,150,1.45,5;8;12;16;21;27;35;45,0.4;0.5;0.6;0.7;0.8;0.9;1;1.2,s tape,x charge,BatteryPro,Seconds of tape and how fast it charges under a camera.,the camcorder: battery seconds; values2: recharge under a fixed camera
+flares,FLARES,5,250,1.55,1;2;2;3;4,18;22;26;30;35,per night,s burn,SkillFlare,Red flares: a camera you drop on the floor.,FLARE: flares a night; values2: seconds a flare burns

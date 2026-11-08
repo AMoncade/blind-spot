@@ -24,6 +24,7 @@ local ORDER = {
 	{ Services, "LobbyService" },
 	{ Services, "MenuService" },
 	{ Services, "UniformService" },
+	{ Services, "UpgradeService" },
 	{ Services, "DebugService" },
 }
 

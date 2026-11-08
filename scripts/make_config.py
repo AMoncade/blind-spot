@@ -147,6 +147,19 @@ def build():
                           "x": num(r["x"]) + dx, "y": num(r["y"]), "z": num(r["z"]), "yaw": num(r["yaw"])})
     mods["Spots"] = ("spots*.csv", spots)
 
+    def nums(s):
+        return [num(x) for x in s.split(";") if x]
+
+    mods["Upgrades"] = ("upgrades.csv", [
+        {"id": r["id"], "name": r["name"], "max": int(r["max"]), "costBase": num(r["cost_base"]),
+         "costGrowth": num(r["cost_growth"]), "values": nums(r["values"]), "values2": nums(r["values2"]),
+         "unit": r["unit"], "unit2": r["unit2"], "art": r["art"], "blurb": r["blurb"]}
+        for r in rows("upgrades.csv")])
+
+    mods["ShopStations"] = ("shop_stations.csv", [
+        {"id": r["id"], "upgrade": r["upgrade"], "x": num(r["x"]), "y": num(r["y"]), "z": num(r["z"])}
+        for r in rows("shop_stations.csv")])
+
     mods["Chapters"] = ("chapters.csv", [
         {"id": r["id"], "name": r["name"], "map": r["map"], "mapNote": r["map_note"], "art": r["art"],
          "mapArt": r["map_art"], "locked": flag(r["locked"])} for r in rows("chapters.csv")])

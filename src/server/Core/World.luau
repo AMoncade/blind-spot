@@ -547,10 +547,10 @@ local function lobbyModel(name: string): Model?
 end
 
 -- a dark sign face with lines of text: { text, height as a fraction, colour }
-local function signGui(p: BasePart, lines: { { string } })
+local function signGui(p: BasePart, lines: { { string } }, face: Enum.NormalId?)
 	local gui = Instance.new("SurfaceGui")
 	gui.Name = "Sign"
-	gui.Face = Enum.NormalId.Back -- +Z: toward the hall
+	gui.Face = face or Enum.NormalId.Back -- +Z: toward the hall
 	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
 	gui.PixelsPerStud = 40
 	gui.LightInfluence = 0
@@ -614,6 +614,20 @@ local function buildLobbyBlock(root: Model, folders: { [string]: Folder }, b: ty
 	elseif b.kind == "sign" then
 		local p = part(folders.Shell, b.id, cf, size, rgb(C.lobby_color_trim), Enum.Material.Metal)
 		signGui(p, { { "KESTREL & VANE", "0.62" }, { "NIGHT SECURITY  ·  THE HALLOWAY", "0.3", "#c9a46a" } })
+	elseif b.kind == "shopsign" then
+		-- K&V SUPPLY over the shop door, on the hall's side of the east wall (-x)
+		local p = part(folders.Shell, b.id, cf, size, rgb(C.lobby_color_trim), Enum.Material.Metal)
+		signGui(
+			p,
+			{ { "K&V SUPPLY", "0.6" }, { "UPGRADES  ·  NIGHT STAFF ONLY", "0.3", "#c9a46a" } },
+			Enum.NormalId.Left
+		)
+		local glow = Instance.new("SurfaceLight")
+		glow.Face = Enum.NormalId.Left
+		glow.Color = rgb("#c9a46a")
+		glow.Brightness = 0.8
+		glow.Range = 8
+		glow.Parent = p
 	elseif b.kind == "lobbyspawn" then
 		local s = Instance.new("SpawnLocation")
 		s.Name = "LobbySpawn"
@@ -729,6 +743,31 @@ function World.buildLobby()
 	end
 	for _, lift in Config.Lifts do
 		buildLift(folders.Lifts, lift)
+	end
+	-- K&V SUPPLY: a prompt on the counter and on each stand (UpgradeService opens the upgrade screen)
+	local shop = folder(root, "Shop")
+	for _, station in Config.ShopStations do
+		local anchor = part(
+			shop,
+			station.id,
+			CFrame.new(station.x, station.y, station.z),
+			Vector3.new(0.6, 0.6, 0.6),
+			Color3.new(1, 1, 1),
+			Enum.Material.SmoothPlastic
+		)
+		anchor.Transparency = 1
+		anchor.CanCollide = false
+		anchor.CanQuery = false
+		anchor.CanTouch = false
+		anchor:SetAttribute("Upgrade", station.upgrade)
+		local def = Config.upgradeById[station.upgrade]
+		local prompt = Instance.new("ProximityPrompt")
+		prompt.ObjectText = if def then def.name else "K&V SUPPLY"
+		prompt.ActionText = if def then "Upgrade" else "Upgrades"
+		prompt.HoldDuration = 0
+		prompt.MaxActivationDistance = 8
+		prompt.RequiresLineOfSight = false
+		prompt.Parent = anchor
 	end
 	root:SetAttribute("Lifts", #Config.Lifts)
 	root.Parent = workspace

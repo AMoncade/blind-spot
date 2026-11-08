@@ -14,6 +14,7 @@ local Watch = require(Logic:WaitForChild("Watch"))
 local Server = script.Parent.Parent
 local Actions = require(Server:WaitForChild("Core"):WaitForChild("Actions"))
 local Data = require(Server:WaitForChild("Core"):WaitForChild("Data"))
+local Upgrades = require(Shared:WaitForChild("Logic"):WaitForChild("Upgrades"))
 local WatchService = require(script.Parent:WaitForChild("WatchService"))
 
 local C = Config.C
@@ -33,11 +34,12 @@ type State = {
 local states: { [Player]: State } = {}
 local blocked: { [Player]: boolean } = {} -- dead players can't film
 
--- seconds of tape on this guard's battery (Adrien, 7 Nov: 5 s at first, better ones in the shop)
-local function capacity(player: Player): number
-	local profile = Data.get(player)
-	local item = profile and Config.shopById[profile.battery]
-	return if item and item.kind == "battery" then item.amount else C.camcorder_battery
+-- seconds of tape on this guard's battery, and how fast it charges under a fixed camera: the CAMCORDER upgrade
+-- (Adrien, 7-8 Nov: 5 s at first, better at K&V SUPPLY)
+local function capacity(player: Player): (number, number)
+	local def = Config.upgradeById.camera
+	local seconds, recharge = Upgrades.value(def, Upgrades.level(Data.get(player), "camera"))
+	return seconds, recharge or 0.5
 end
 
 local function state(player: Player): State
@@ -61,7 +63,7 @@ local function sendBattery(player: Player, s: State, force: boolean?)
 	local whole = math.ceil(s.battery)
 	if force or whole ~= s.lastSentBattery then
 		s.lastSentBattery = whole
-		Net.event():FireClient(player, "Battery", s.battery, capacity(player), s.raised)
+		Net.event():FireClient(player, "Battery", s.battery, (capacity(player)), s.raised)
 	end
 end
 
@@ -81,9 +83,11 @@ end
 
 -- a full battery for everyone (a new night)
 function CamcorderService.reset()
-	for player, s in states do
+	-- every guard, also the ones who never raised it yet: their battery depends on their CAMCORDER upgrade
+	for _, player in Players:GetPlayers() do
+		local s = state(player)
 		lower(player, s)
-		s.battery = capacity(player)
+		s.battery = (capacity(player))
 		sendBattery(player, s, true)
 	end
 end
@@ -133,9 +137,9 @@ function CamcorderService.start()
 			if not s.raised then
 				-- lowered under a fixed camera, the battery charges back (Adrien, 7 Nov: "ça s'allonge avec les
 				-- autres cams"): the security cameras' feed powers the camcorder's dock
-				local full = capacity(player)
+				local full, recharge = capacity(player)
 				if s.battery < full and #WatchService.seenBy(player) > 0 then
-					s.battery = math.min(full, s.battery + dt * C.camcorder_recharge)
+					s.battery = math.min(full, s.battery + dt * recharge)
 					sendBattery(player, s)
 				end
 				continue

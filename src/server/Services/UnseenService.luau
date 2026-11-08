@@ -23,6 +23,8 @@ local Hunt = require(Logic:WaitForChild("Hunt"))
 local Rng = require(Logic:WaitForChild("Rng"))
 
 local WatchService = require(script.Parent:WaitForChild("WatchService"))
+local Upgrades = require(Logic:WaitForChild("Upgrades"))
+local Data = require(script.Parent.Parent:WaitForChild("Core"):WaitForChild("Data"))
 local PowerDirector = require(script.Parent:WaitForChild("PowerDirector"))
 
 local C = Config.C
@@ -71,8 +73,10 @@ local function statuses(dt: number, phase: string): { Status }
 		if root and onShift then
 			local isFilmed = WatchService.isFilmed(player)
 			offTime[player] = if isFilmed then 0 else (offTime[player] or 0) + dt
+			-- the night's difficulty times the guard's SIGNAL upgrade (level 1: the base speed, fast)
+			local nerve = Upgrades.value(Config.upgradeById.signal, Upgrades.level(Data.get(player), "signal"))
 			exposure[player] =
-				Hunt.exposure(exposure[player] or 1, false, isFilmed, phase, dt, C, UnseenService.speedScale)
+				Hunt.exposure(exposure[player] or 1, false, isFilmed, phase, dt, C, UnseenService.speedScale * nerve)
 			table.insert(out, { player = player, root = root, filmed = isFilmed })
 		else
 			offTime[player] = 0

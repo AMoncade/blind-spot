@@ -25,6 +25,7 @@ local DoorService = require(script.Parent:WaitForChild("DoorService"))
 local StairsService = require(script.Parent:WaitForChild("StairsService"))
 local SignalService = require(script.Parent:WaitForChild("SignalService"))
 local SkillService = require(script.Parent:WaitForChild("SkillService"))
+local UpgradeService = require(script.Parent:WaitForChild("UpgradeService"))
 local CoopService = require(script.Parent:WaitForChild("CoopService"))
 local StoryService = require(script.Parent:WaitForChild("StoryService"))
 
@@ -326,6 +327,7 @@ function NightService.init()
 	StairsService.isPlaying = NightService.isPlaying
 	SignalService.onShift = NightService.onShift
 	SkillService.isPlaying = NightService.isPlaying
+	UpgradeService.onShift = NightService.onShift
 	StairsService.onTake = function()
 		StoryService.trigger("first_floor") -- once a night: the first time a guard leaves their floor
 	end

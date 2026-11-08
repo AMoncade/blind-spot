@@ -17,6 +17,7 @@ return {
 	Nights = require(if script then script:WaitForChild("Nights") else "@self/Nights"),
 	Radio = require(if script then script:WaitForChild("Radio") else "@self/Radio"),
 	Shop = require(if script then script:WaitForChild("Shop") else "@self/Shop"),
+	ShopStations = require(if script then script:WaitForChild("ShopStations") else "@self/ShopStations"),
 	Signals = require(if script then script:WaitForChild("Signals") else "@self/Signals"),
 	Signs = require(if script then script:WaitForChild("Signs") else "@self/Signs"),
 	Sounds = require(if script then script:WaitForChild("Sounds") else "@self/Sounds"),
@@ -24,4 +25,5 @@ return {
 	Stairs = require(if script then script:WaitForChild("Stairs") else "@self/Stairs"),
 	Tapes = require(if script then script:WaitForChild("Tapes") else "@self/Tapes"),
 	Tasks = require(if script then script:WaitForChild("Tasks") else "@self/Tasks"),
+	Upgrades = require(if script then script:WaitForChild("Upgrades") else "@self/Upgrades"),
 }

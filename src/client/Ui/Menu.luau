@@ -10,6 +10,7 @@ local SocialService = game:GetService("SocialService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
 local Difficulty = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Logic"):WaitForChild("Difficulty"))
+local Upgrades = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Logic"):WaitForChild("Upgrades"))
 local Net = require(Shared:WaitForChild("Net"))
 local Client = script.Parent.Parent
 local State = require(Client:WaitForChild("State"))
@@ -336,6 +337,127 @@ local function buildShift(gui: ScreenGui)
 	end)
 end
 
+-- ---------------------------------------------------------------- K&V SUPPLY (the upgrades)
+
+-- Adrien, 8 Nov: the shop east of the hall. Its prompts open this screen (event OpenUpgrades); one row per upgrade
+-- (content/upgrades.csv): its level, what it gives now and at the next level, and the price (Logic/Upgrades).
+local upgradeRows: { [string]: Frame } = {}
+
+local function formatValue(v: number, unit: string): string
+	if string.sub(unit, 1, 1) == "x" then
+		return string.format("×%.2f", v) .. string.sub(unit, 2)
+	elseif string.sub(unit, 1, 1) == "s" then
+		return string.format("%gs", v) .. string.sub(unit, 2)
+	end
+	return string.format("%g ", v) .. unit
+end
+
+local function describe(def: any, level: number): string
+	local v, v2 = Upgrades.value(def, level)
+	local text = formatValue(v, def.unit)
+	if v2 and def.unit2 ~= "" then
+		text ..= "  ·  " .. formatValue(v2, def.unit2)
+	end
+	return text
+end
+
+local function buildUpgrades(gui: ScreenGui)
+	local root, body, close = Kit.window(gui, "Upgrades", "K&V SUPPLY")
+	windows.Upgrades = root
+	close.Activated:Connect(function()
+		open(nil)
+	end)
+	local list = Kit.new("ScrollingFrame", {
+		Name = "Rows",
+		Size = UDim2.fromScale(1, 1),
+		CanvasSize = UDim2.new(),
+		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+		ScrollingDirection = Enum.ScrollingDirection.Y,
+		ScrollBarThickness = 4,
+		ScrollBarImageColor3 = COLOR.brass,
+		Parent = body,
+	})
+	Kit.new("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = list })
+	Kit.new("UIPadding", { PaddingRight = UDim.new(0, 8), Parent = list })
+	for k, def in Config.Upgrades do
+		local row = Kit.plate(list, { Name = def.id, Size = UDim2.new(1, 0, 0, 70), LayoutOrder = k })
+		upgradeRows[def.id] = row
+		Kit.image(row, (ART :: any)[def.art] or "", {
+			Name = "Icon",
+			Size = UDim2.fromOffset(60, 60),
+			Position = UDim2.new(0, 6, 0.5, 0),
+			AnchorPoint = Vector2.new(0, 0.5),
+		})
+		Kit.text(row, def.name, {
+			Name = "Name",
+			FontFace = FONT.title,
+			TextColor3 = COLOR.brass,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Position = UDim2.new(0, 74, 0, 6),
+			Size = UDim2.new(0.3, 0, 0, 22),
+			Max = 22,
+		})
+		local level = Kit.text(row, "", {
+			Name = "Level",
+			FontFace = FONT.mono,
+			TextColor3 = COLOR.green,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Position = UDim2.new(0.33, 74, 0, 8),
+			Size = UDim2.new(0.3, 0, 0, 18),
+			Max = 16,
+		})
+		local effect = Kit.text(row, "", {
+			Name = "Effect",
+			FontFace = FONT.paper,
+			TextColor3 = COLOR.ink,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Position = UDim2.new(0, 74, 0, 32),
+			Size = UDim2.new(1, -230, 0, 16),
+			Max = 15,
+		})
+		local blurb = Kit.text(row, def.blurb, {
+			Name = "Blurb",
+			FontFace = FONT.paper,
+			TextColor3 = COLOR.dim,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Position = UDim2.new(0, 74, 0, 50),
+			Size = UDim2.new(1, -230, 0, 14),
+			Max = 13,
+		})
+		blurb.TextStrokeTransparency = 1
+		local buy, buyLabel = Kit.button(row, ART.DarkButton, "", {
+			Name = "Buy",
+			AnchorPoint = Vector2.new(1, 0.5),
+			Position = UDim2.new(1, -8, 0.5, 0),
+			Size = UDim2.fromOffset(140, 48),
+			TextSize = 20,
+		})
+		buy.Activated:Connect(function()
+			Net.send("Upgrade", def.id)
+		end)
+		local stroke = row:FindFirstChildOfClass("UIStroke") :: UIStroke
+		table.insert(refreshers, function()
+			local profile = State.profile :: any
+			local lv = Upgrades.level(profile, def.id)
+			level.Text = `LEVEL {lv}/{def.max}  ` .. string.rep("■", lv) .. string.rep("□", def.max - lv)
+			local cost = Upgrades.cost(def, lv)
+			if cost then
+				effect.Text = describe(def, lv) .. "   →   " .. describe(def, lv + 1)
+				buyLabel.Text = Kit.money(cost)
+				buyLabel.TextColor3 = if profile and profile.pay >= cost then COLOR.brass else COLOR.dim
+				Kit.setEnabled(buy, ART.DarkButton, true)
+			else
+				effect.Text = describe(def, lv)
+				buyLabel.Text = "MAX"
+				buyLabel.TextColor3 = COLOR.green
+				Kit.setEnabled(buy, ART.DarkButton, false)
+			end
+			stroke.Color = if root:GetAttribute("Focus") == def.id then COLOR.brass else COLOR.plateEdge
+			stroke.Thickness = if root:GetAttribute("Focus") == def.id then 2 else 1
+		end)
+	end
+end
+
 -- ---------------------------------------------------------------- SHOP
 
 local function buildShop(gui: ScreenGui)
@@ -344,7 +466,7 @@ local function buildShop(gui: ScreenGui)
 	close.Activated:Connect(function()
 		open(nil)
 	end)
-	Kit.text(body, "BATTERIES  ·  VIEWFINDERS  ·  UNIFORMS  ·  LAMPS  ·  PAID FROM YOUR SHIFTS", {
+	Kit.text(body, "VIEWFINDERS  ·  UNIFORMS  ·  LAMPS  ·  UPGRADES: K&V SUPPLY, EAST OF THE HALL", {
 		FontFace = FONT.paper,
 		TextColor3 = COLOR.dim,
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -387,10 +509,7 @@ local function buildShop(gui: ScreenGui)
 			Position = UDim2.new(0.5, 0, 0.5, -2),
 			AnchorPoint = Vector2.new(0.5, 0.5),
 		})
-		local cosmetic = item.kind == "viewfinder"
-			or item.kind == "uniform"
-			or item.kind == "lamp"
-			or item.kind == "battery"
+		local cosmetic = item.kind == "viewfinder" or item.kind == "uniform" or item.kind == "lamp"
 		if cosmetic then
 			for n, hex in (if item.kind == "lamp" then { item.frame } else { item.frame, item.rec }) do
 				Kit.new("Frame", {
@@ -888,6 +1007,7 @@ function Menu.build(gui: ScreenGui): (() -> (), GuiObject)
 	end
 
 	buildShift(gui)
+	buildUpgrades(gui)
 	buildShop(gui)
 	buildDaily(gui)
 	buildSettings(gui)
@@ -926,6 +1046,14 @@ function Menu.start()
 	end)
 	State.on("Notice", function(text: string, good: boolean)
 		State.notice(text, good)
+	end)
+	-- a K&V SUPPLY prompt: the upgrade screen, the stand's upgrade lit
+	State.on("OpenUpgrades", function(id: string?)
+		windows.Upgrades:SetAttribute("Focus", id or "")
+		refresh()
+		if not windows.Upgrades.Visible then
+			open("Upgrades")
+		end
 	end)
 	State.on("Shift", function(onShift: boolean)
 		gui.Enabled = not onShift

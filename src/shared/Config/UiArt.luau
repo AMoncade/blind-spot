@@ -32,6 +32,7 @@ return {
 	MapHalloway = "rbxassetid://115414797157274",
 	-- the skills and the camcorder batteries (2026-11-07, same style)
 	SkillSprint = "rbxassetid://107030626273257",
+	UpgradeSignal = "rbxassetid://118585178971829", -- K&V SUPPLY: the SIGNAL upgrade
 	SkillFlare = "rbxassetid://75281169634829",
 	BatteryStd = "rbxassetid://126944483358853",
 	BatterySpare = "rbxassetid://102950014150945",

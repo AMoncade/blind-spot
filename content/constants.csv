@@ -29,7 +29,6 @@ camcorder_range,26,studs
 camcorder_hfov,55,degrees
 camcorder_vfov,40,degrees
 camcorder_battery,5,seconds of recording on the factory battery (the shop sells bigger ones: shop.csv kind battery)
-camcorder_recharge,0.5,seconds of battery won per second spent lowered under a fixed camera
 camcorder_rate,10,times per second the server computes a camcorder field
 camcorder_max_turn,540,degrees per second a camcorder may turn (anti cheat)
 camcorder_samples,1.5;5,heights a camcorder tests in a cell
@@ -190,9 +189,9 @@ drip_min,6,shortest gap between two water drops (s)
 drip_max,16,longest gap between two water drops (s)
 hush_volume,0.06,the beds' volume while the Unseen closes in (the silence)
 hush_seconds,0.5,how fast the sound dies
-exposure_drain_live,25,seconds off camera in LIVE to empty the signal bar
-exposure_drain_flicker,18,seconds off camera in FLICKER to empty it
-exposure_drain_blackout,12,seconds off camera in a BLACKOUT to empty it
+exposure_drain_live,14,seconds off camera in LIVE to empty the signal bar with no upgrade (SIGNAL upgrade slows it)
+exposure_drain_flicker,10,seconds off camera in FLICKER to empty it (no upgrade)
+exposure_drain_blackout,7,seconds off camera in a BLACKOUT to empty it (no upgrade)
 exposure_refill,5,seconds on camera to fill it from empty
 vignette_max,0.12,edge darkness when the signal bar is empty (0 black 1 clear)
 vignette_off,0.7,edge darkness as soon as the guard leaves every field
@@ -243,10 +242,6 @@ catch_tremble,1.6,degrees the view trembles at most while he stares
 catch_hit_shake,5,degrees the view shakes when he lunges (fades in 0.4 s)
 catch_punch_fov,92,the view snaps this wide when he hits
 sprint_multiplier,1.7,SPRINT: the walk speed times this
-sprint_seconds,3,SPRINT: how long the burst lasts
-sprint_cooldown,18,SPRINT: seconds before it can go again
-flare_count,2,FLARE: flares a guard has each night
-flare_seconds,25,FLARE: how long a flare burns (and films)
 flare_radius,8,FLARE: studs of floor it lights and keeps safe
 flare_throw,4,FLARE: studs ahead of the guard it lands
 flare_color,#ff4a2e,FLARE: its red

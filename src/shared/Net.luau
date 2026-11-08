@@ -22,6 +22,7 @@ Net.ACTIONS = {
 	Equip = 6, -- (shop id)
 	Redeem = 2, -- (code)
 	Skill = 4, -- ("sprint" | "flare")
+	Upgrade = 4, -- (upgrade id): a level at K&V SUPPLY
 	Signal = 2, -- (signal id, x, y, z): a coop signal; x, y, z = where the guard looks (OVER HERE)
 	SetSetting = 10, -- (name, value)
 	Debug = 10, -- Studio only (Core/Actions refuses it in a live server)

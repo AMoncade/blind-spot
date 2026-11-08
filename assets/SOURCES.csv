@@ -37,3 +37,5 @@ Shift setup cards (2),image,crops of Adrien's own thumbnail,Adrien's,,2026-11-07
 Catch sounds (4),audio,ProSoundEffects and APM via the Roblox Creator Store,Roblox-licensed: free in any Roblox experience,,2026-11-08,see content/sounds.csv (catch_*),whoosh vocal shriek boom
 UI art (4th set),image,generated with Ropilot (same style as the UI art),generated for the game,,2026-11-08,see src/shared/Config/UiArt.luau,sprint flare and 4 camcorder batteries
 Flare,mesh,own (tools/blender/floor_props.py),own work,,2026-11-08,ServerStorage.LevelModels.Flare,the FLARE skill's road flare
+ShopCounter + 4 stands,mesh+texture,own (tools/blender/shop_props.py; textures drawn in code),own work,,2026-11-08,ServerStorage.LobbyModels,K&V SUPPLY's counter and stands
+UpgradeSignal,image,generated with Ropilot (same style as the UI art),generated for the game,,2026-11-08,rbxassetid://118585178971829,the SIGNAL upgrade's icon

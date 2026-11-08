@@ -72,10 +72,10 @@ function spec.shopConfigIsSane()
 	eq(Config.shopById.un_navy.price, 0, "the night shift jacket is free")
 	eq(Config.shopById.lp_halogen.price, 0, "the halogen lamp is free")
 	eq(Config.shopById.un_kv.unlock, "group", "the company uniform comes with the group")
-	-- the factory battery is the short one (Adrien, 7 Nov: 5 s), the others are bought
-	eq(Config.shopById.bat_std.price, 0, "the factory battery is free")
-	eq(Config.shopById.bat_std.amount, Config.C.camcorder_battery, "it is the base battery")
-	ok(Config.shopById.bat_long.amount > Config.shopById.bat_spare.amount, "a better battery lasts longer")
+	-- the camcorder's battery is an upgrade now (K&V SUPPLY), not a shop item
+	for _, item in Config.Shop do
+		ok(item.kind ~= "battery", "no battery in the cosmetics shop")
+	end
 end
 
 return spec
