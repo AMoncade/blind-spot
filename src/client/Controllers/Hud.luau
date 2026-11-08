@@ -366,10 +366,14 @@ function Hud.fillReport(parts: Parts, summary: any)
 	parts.reportRows[1].Text = `TASKS DONE  {summary.tasks or 0}/{summary.total or 0}`
 	parts.reportRows[2].Text = `TIMES CAUGHT  {summary.deaths or 0}`
 	parts.reportPay.Text = "+" .. Kit.money(summary.pay or 0)
-	local unlockedNext = summary.outcome == "cleared" and summary.unlocked and summary.unlocked > (summary.night or 0)
+	-- what comes next (Adrien, 8 Nov: "je sais pas trop comment ça progresse"): the next night, or what it takes
+	local night = summary.night or 1
+	local unlockedNext = summary.outcome == "cleared" and summary.unlocked and summary.unlocked > night
 	parts.reportFoot.Text = if unlockedNext
-		then `NIGHT {summary.unlocked} UNLOCKED.  BACK TO THE LOBBY IN {C.lobby_return_delay} S.`
-		else `BACK TO THE LOBBY IN {C.lobby_return_delay} SECONDS.`
+		then `NIGHT {summary.unlocked} OF {#Config.Nights} UNLOCKED  ·  SPEND YOUR PAY AT K&V SUPPLY`
+		elseif summary.outcome == "cleared" then "ROUND CLEARED  ·  SPEND YOUR PAY AT K&V SUPPLY"
+		elseif summary.outcome == "unfinished" then `FINISH THE ROUND AND CLOCK OUT TO UNLOCK NIGHT {night + 1}`
+		else "TRY AGAIN, WITH UPGRADES OR AN EASIER MODE"
 end
 
 function Hud.start()

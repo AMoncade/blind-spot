@@ -19,7 +19,7 @@ return {
 		unseenSpeed = 0.85,
 		extraScans = 0,
 		cables = 0,
-		intro = "Learn the round. Stay where the cameras see you.",
+		intro = "Follow the markers to your round. Stay where the cameras see you.",
 		reward = 1,
 		deadCams = 0,
 	},

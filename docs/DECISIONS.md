@@ -105,3 +105,11 @@ Avant, on gardait le corps visible (on voyait ses jambes en regardant en bas). A
 ## On ne fonce pas sur l'Invisible (8 novembre 2026)
 
 Un garde qui marche droit sur lui le voit disparaître et réapparaître plus loin (s'il est bien plus près que sa barre ne le placerait) ; s'il l'atteint quand même (sprint, coin), il est pris, quelle que soit sa barre. Ça garde l'horreur : on ne peut pas aller le toucher.
+
+## Des modes plutôt qu'un seul réglage (8 novembre 2026)
+
+Adrien trouvait une nuit solo trop facile (« presque tout est blanc », « tu cours, tu allumes le générateur, tout est safe ») mais voulait garder un mode facile. Trois modes au lancement : EASY garde le jeu d'avant, NORMAL devient la référence (moins de caméras, des champs plus courts, des tubes morts), HARD pour les gardes améliorés. Chaque mode change ce qu'on voit (les zones sûres suivent les champs) et paie en conséquence. Et il casse des caméras devant toi : la nuit se resserre au lieu de rester sûre une fois le générateur relancé.
+
+## La fin de la ronde (8 novembre 2026)
+
+La nuit durait jusqu'à 6 h même la ronde finie : on attendait sans rien à faire. Maintenant la ronde finie, le garde retourne au poste pour pointer (CLOCK OUT), et la nuit se termine là.

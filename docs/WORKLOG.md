@@ -178,3 +178,13 @@ Demandes d'Adrien, toutes faites et testées en playtest :
 - **On ne fonce plus sur l'Invisible** : trop près pour ta barre, il disparaît et réapparaît plus loin ; l'atteindre quand même, c'est être pris (`Hunt.flees`, `Hunt.touches`).
 - **La batterie vide** : l'image du caméscope meurt (BATTERY EMPTY) puis les mains le baissent ; l'image suit l'écran en descendant, la lumière revient en douceur.
 - **La prise, une scène de 6 s** (`Controllers/Death`) : sa tête lisse juste devant tes yeux, les orbites qui se creusent, les yeux qui en sortent et s'allument, un sourire en aiguilles qui se déchire et s'ouvre ; la bande saute : il est penché, ses deux longues mains ouvertes qui viennent autour de ta tête ; il saisit ; SIGNAL LOST. En jeu il reste sans visage (`docs/UNSEEN.md`) ; deux modèles Blender (`UnseenCatch`, `UnseenReach`, `tools/blender/unseen.py`), le visage gardé dans `assets/models/unseen_face.obj` pour des niveaux futurs.
+
+## 2026-11-08 : plus dur, plus guidé, il casse les caméras, l'écran de mort de l'image
+
+Après une partie solo d'Adrien (« relativement très facile », « on sait pas où aller », « après les tapes il n'y a plus rien ») :
+- **Guidé** : rien à faire sur ton étage, un repère sur la porte de l'escalier (« STAIRS DOWN TO P2 ») ; la nuit 1 dit de suivre les repères ; entre deux tâches, la feuille dit l'heure de la suivante ; la ronde finie, **CLOCK OUT** au poste termine la nuit (sinon on attendait 6 h sans rien à faire) ; le rapport dit ce qui vient (nuit débloquée, K&V SUPPLY, ce qu'il manque).
+- **Trois modes** au lancement (`content/modes.csv`) : EASY (le jeu d'avant), NORMAL (par défaut : 2 caméras mortes de plus, des champs à 80 %, un tiers des tubes morts), HARD (4 de plus, 65 %, plus de la moitié des tubes, la barre plus rapide) ; la paie suit. Les zones sûres affichées suivent les mêmes champs.
+- **Un garage plus sombre** : tubes plus faibles et plus courts, lumière de base plus basse.
+- **Il casse des caméras devant toi** : sous une caméra que tu vois, hors de tout champ ; elle éclate (verre, court-circuit, étincelles, la tête tombe) et reste morte la nuit ; 1 en EASY, 2 en NORMAL, 4 en HARD, plus les nuits avancées.
+- **L'écran de mort** comme l'image d'Adrien, sans visage (chapitre 1) : sa tête lisse qui penche, puis ses deux mains griffues de chaque côté de sa tête, image figée froide et rouge, REC, SIGNAL LOST, YOU WERE CAUGHT ; la dernière vie : RETRY ou LOBBY (le rapport attend).
+- Testé en playtest : le mode HARD (6 caméras mortes, champs à 65 %), le repère d'escalier, la caméra cassée devant le garde (il reste visible), la mort finale (RETRY relance la nuit, LOBBY remonte), la mort avec des vies, le CLOCK OUT.
