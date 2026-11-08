@@ -42,6 +42,7 @@ local bars: { Frame } = {}
 local pulse: Frame
 local catchId = 0
 local cleanup: (() -> ())? = nil -- what the current catch made in the world
+local returnAt = 0 -- the last life: os.clock() when everyone goes up to the lobby (the server's retry_window)
 
 type Screen = {
 	root: Frame,
@@ -258,10 +259,16 @@ local function build()
 	black.Parent = gui
 	gui.Parent = player:WaitForChild("PlayerGui")
 
-	-- REC blinks once a second while the screen is up
+	-- REC blinks once a second while the screen is up; the last life counts down to the lobby
 	RunService.RenderStepped:Connect(function()
 		if root.Visible then
 			dot.Visible = math.floor(os.clock() * C.rec_blink_hz * 2) % 2 == 0
+			if Death.final then
+				lives.Position = UDim2.fromScale(0.5, 0.975)
+				lives.Text = `BACK TO THE LOBBY IN {math.max(0, math.ceil(returnAt - os.clock()))}`
+			else
+				lives.Position = UDim2.fromScale(0.5, 0.89)
+			end
 		end
 	end)
 end
@@ -359,7 +366,7 @@ local function showScreen(final: boolean, livesLeft: number)
 	s.buttons.Visible = final
 	s.retry.Text = "RETRY"
 	s.lobby.Text = "LOBBY"
-	s.lives.Visible = not final
+	s.lives.Visible = true
 	s.lives.Text = if livesLeft <= 0
 		then "DOWN  ·  A TEAMMATE'S SYRINGE CAN BRING YOU BACK"
 		elseif livesLeft == 1 then "1 LIFE LEFT  ·  BACK AT THE POST"
@@ -413,6 +420,7 @@ local function catch(seconds: number, ux: number?, uz: number?, final: boolean, 
 	local camera = workspace.CurrentCamera
 	FirstPerson.frozen = true
 	Death.final = final
+	returnAt = os.clock() + seconds + C.retry_window
 	camera.CameraType = Enum.CameraType.Scriptable
 	gui.Enabled = true
 	black.BackgroundTransparency = 1
