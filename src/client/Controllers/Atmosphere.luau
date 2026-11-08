@@ -19,6 +19,8 @@ local C = Config.C
 
 local Atmosphere = {}
 
+Atmosphere.ready = false -- the tubes and the camera LEDs are collected (the loading screen waits for it)
+
 local OFF_COLOR = Color3.fromRGB(70, 74, 78)
 local SPUTTER_RADIUS = 9
 
@@ -209,8 +211,12 @@ function Atmosphere.start()
 	GRADES.flicker = grade("p3_flicker")
 	GRADES.blackout = grade("p3_blackout")
 	onColor = Color3.fromRGB(Config.rgb(C.tube_color))
-	collect()
+	-- the base light at once (it used to wait for the level to stream in: the first seconds were black), the tubes
+	-- and the camera LEDs as soon as they are there
+	applyGrade(if State.shift then "live" else "lobby", 1)
 	RunService.Heartbeat:Connect(update)
+	collect()
+	Atmosphere.ready = true
 end
 
 return Atmosphere
