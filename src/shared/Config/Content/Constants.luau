@@ -249,4 +249,10 @@ return {
 	flare_color = "#ff4a2e",
 	flare_brightness = 3,
 	flare_disc_alpha = 0.82,
+	threat_start = 0.45,
+	threat_red = 0.6,
+	threat_beat_min = 0.8,
+	threat_beat_max = 1.8,
+	threat_creep = 0.18,
+	threat_shake = 1.4,
 }

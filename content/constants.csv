@@ -247,3 +247,9 @@ flare_throw,4,FLARE: studs ahead of the guard it lands
 flare_color,#ff4a2e,FLARE: its red
 flare_brightness,3,
 flare_disc_alpha,0.82,FLARE: the safe disc on the floor (transparency)
+threat_start,0.45,under this signal bar (off camera) the screen starts to show the threat: red edges, black creeping in, a shake
+threat_red,0.6,how opaque the red edge gets at its strongest (bar empty)
+threat_beat_min,0.8,the red edge's heartbeats a second when the threat starts
+threat_beat_max,1.8,and when the bar is empty (well under 3 flashes a second)
+threat_creep,0.18,how far the black edges creep in when the bar is empty (gradient offset)
+threat_shake,1.4,degrees the view shakes at most when the bar is empty (Reduce Flashes: a third)

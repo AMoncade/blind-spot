@@ -43,6 +43,8 @@ end
 
 export type Parts = {
 	vignetteEdges: { Frame },
+	vignetteGradients: { UIGradient },
+	threatEdges: { Frame },
 	signal: ImageLabel,
 	signalLabel: TextLabel,
 	signalFill: Frame,
@@ -124,6 +126,8 @@ function Hud.build(gui: ScreenGui): Parts
 	-- off camera, the screen's edges darken, more as the signal bar drains (Adrien, Nov 7)
 	local vignette = Kit.new("Frame", { Name = "Vignette", Size = UDim2.fromScale(1, 1), Parent = gui })
 	local vignetteEdges = {}
+	local vignetteGradients = {}
+	local threatEdges = {}
 	for k, rotation in { 0, 90, 180, 270 } do
 		local edge = Kit.new("Frame", {
 			Name = "Edge" .. k,
@@ -135,15 +139,36 @@ function Hud.build(gui: ScreenGui): Parts
 			Rotation = rotation,
 			Parent = vignette,
 		}) :: Frame
-		Kit.new("UIGradient", {
+		local gradient = Kit.new("UIGradient", {
 			Transparency = NumberSequence.new({
 				NumberSequenceKeypoint.new(0, 0),
 				NumberSequenceKeypoint.new(0.32, 1),
 				NumberSequenceKeypoint.new(1, 1),
 			}),
 			Parent = edge,
-		})
+		}) :: UIGradient
 		table.insert(vignetteEdges, edge)
+		table.insert(vignetteGradients, gradient)
+		-- the threat (Adrien, 8 Nov): a red edge that beats like a heart as the bar runs out
+		local red = Kit.new("Frame", {
+			Name = "Threat" .. k,
+			BackgroundColor3 = Color3.fromRGB(Config.rgb(C.rec_color)),
+			BackgroundTransparency = 1,
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Size = edge.Size,
+			Rotation = rotation,
+			Parent = vignette,
+		}) :: Frame
+		Kit.new("UIGradient", {
+			Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 0),
+				NumberSequenceKeypoint.new(0.22, 1),
+				NumberSequenceKeypoint.new(1, 1),
+			}),
+			Parent = red,
+		})
+		table.insert(threatEdges, red)
 	end
 
 	-- the signal bar, bottom centre (clear of the thumbstick and the jump button): full on camera, it drains off
@@ -301,6 +326,8 @@ function Hud.build(gui: ScreenGui): Parts
 	})
 	return {
 		vignetteEdges = vignetteEdges,
+		vignetteGradients = vignetteGradients,
+		threatEdges = threatEdges,
 		signal = bar,
 		signalLabel = barLabel,
 		signalFill = fill,
@@ -394,6 +421,8 @@ function Hud.start()
 
 	local lastFilmed: boolean? = nil
 	local darkness = 1 -- the vignette's edge transparency, eased
+	local threat = 0 -- 0 safe, 1 the bar is empty (eased): red edges, black creeping in
+	local beat = 0 -- the red edge's heartbeat phase
 	RunService.RenderStepped:Connect(function(dt: number)
 		-- the vignette and the signal bar
 		local live = State.shift and not State.dead and not State.down
@@ -405,8 +434,20 @@ function Hud.start()
 			target = C.vignette_off
 		end
 		darkness += (target - darkness) * math.min(1, dt * 4)
-		for _, edge in parts.vignetteEdges do
+		-- the threat: under threat_start (off camera), the black creeps in from the edges and a red edge beats,
+		-- faster as the bar runs out (at most threat_beat_max a second: never a flash)
+		local want = if live and not State.filmed then math.clamp((C.threat_start - e) / C.threat_start, 0, 1) else 0
+		threat += (want - threat) * math.min(1, dt * 5)
+		for k, edge in parts.vignetteEdges do
 			edge.BackgroundTransparency = darkness
+			parts.vignetteGradients[k].Offset = Vector2.new(threat * C.threat_creep, 0)
+		end
+		local calm = Settings.get("ReduceFlashes") == true
+		beat += dt * (C.threat_beat_min + (C.threat_beat_max - C.threat_beat_min) * threat) * math.pi * 2
+		local pulse = if calm then 0.6 else math.max(0, math.sin(beat)) ^ 2
+		local redAlpha = 1 - threat * C.threat_red * (0.35 + 0.65 * pulse)
+		for _, red in parts.threatEdges do
+			red.BackgroundTransparency = redAlpha
 		end
 		parts.signal.Visible = live
 		parts.signalFill.Size = UDim2.fromScale(e, 1)

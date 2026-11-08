@@ -24,6 +24,7 @@ FirstPerson.frozen = false -- the death freezes the view
 
 local walked = 0
 local bob = 0
+local shake = 0 -- the threat's shake (0 calm, 1 the bar is empty), eased
 
 local function showBody(character: Model)
 	for _, d in character:GetDescendants() do
@@ -95,6 +96,20 @@ function FirstPerson.start()
 		bob += (target - bob) * math.min(1, dt * 12)
 		if math.abs(bob) > 1e-4 then
 			camera.CFrame *= CFrame.new(0, bob, 0)
+		end
+		-- the threat (Adrien, 8 Nov): the view shakes more as the signal bar runs out off camera
+		local want = if not State.filmed
+			then math.clamp((C.threat_start - State.exposure) / C.threat_start, 0, 1)
+			else 0
+		shake += (want - shake) * math.min(1, dt * 4)
+		if shake > 0.01 then
+			local t = os.clock()
+			local tremble = C.threat_shake * shake ^ 1.5 * (if Settings.get("ReduceFlashes") == true then 0.3 else 1)
+			camera.CFrame *= CFrame.Angles(
+				math.rad(math.noise(t * 9, 11) * tremble),
+				math.rad(math.noise(t * 9, 12) * tremble),
+				math.rad(math.noise(t * 6, 13) * tremble * 0.5)
+			)
 		end
 	end)
 end

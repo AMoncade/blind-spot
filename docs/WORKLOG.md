@@ -157,3 +157,7 @@ Demande d'Adrien : un vrai petit magasin dans le lobby pour améliorer le sprint
 - **Plus dur sans amélioration** : la barre se vide en 14 s en LIVE, 10 s quand ça vacille, 7 s dans un blackout (et ×1,35 la nuit 6).
 - **Les améliorations à venir** sont notées dans `docs/UPGRADES.md` (trépied, leurre, lampe, mains sûres, radio, vies, badge, caméras réparées).
 - **Testé en playtest** : l'annexe et ses invites, l'écran et les achats (niveaux, paie, refus faute de paie, refus pendant un quart), la barre plus lente au niveau 3 (−0,050/s au lieu de −0,061/s), le caméscope à 8 s, 2 fusées, le sprint de 2,5 s avec 19 s de recharge.
+
+## 2026-11-08 : la menace se sent sur les bords de l'écran
+
+Demande d'Adrien : sentir la menace sur les côtés de l'écran quand la barre baisse. Sous 45 % hors caméra (`threat_*`) : un bord rouge qui bat comme un cœur, de 0,8 à 1,8 battement par seconde (jamais un flash) et de plus en plus fort ; le noir des bords qui gagne vers le centre ; la vue qui tremble jusqu'à 1,4° (`Controllers/Hud`, `Controllers/FirstPerson`). Reduce Flashes : un rouge fixe et un tremblement trois fois plus petit. Tout revient au calme sous une caméra. Testé en playtest : rien au-dessus de 45 %, puis des battements de plus en plus rapprochés (1,07 s → 0,6 s) et profonds, le noir qui avance, la vue qui tremble de 0,02° à 2,3° par image, et le retour au calme après la prise.
