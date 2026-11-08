@@ -120,9 +120,9 @@ game_place_id,0,the game place in a published universe; 0 = play the night in th
 lobby_color_floor,#5b554d,lobby terrazzo
 lobby_color_wall,#8a847a,lobby walls
 lobby_color_trim,#1c1d1f,lobby trims and mullions
-lobby_lamp_color,#ffd8a8,warm lobby ceiling lamps
-lobby_lamp_brightness,2.6,
-lobby_lamp_range,26,
+lobby_lamp_color,#dcd6be,pale tired lobby ceiling panels (Adrien, 8 Nov: dim and unsettling)
+lobby_lamp_brightness,1.4,
+lobby_lamp_range,20,
 street_color,#101214,asphalt outside the glass
 street_glow_color,#7f9cc4,cold street light coming through the glass
 lift_model_dz,0.55,the lift model bounds centre sits this far toward the hall from the cabin centre
@@ -134,9 +134,9 @@ street_lamp_brightness,2.2,
 street_lamp_range,24,
 lobby_glass_color,#5f7480,the glass front
 lobby_glass_transparency,0.8,
-lobby_ambient,#5a524a,lobby: warm base light (readable at any graphics level)
-lobby_outdoor,#3c3a38,
-lobby_exposure,0.3,
+lobby_ambient,#2a2723,lobby: a low base light (dim and unsettling but readable at any graphics level)
+lobby_outdoor,#1f2329,
+lobby_exposure,0,
 p3_live_ambient,#2a3336,P3 in LIVE: cold base light under the tubes
 p3_live_outdoor,#1e2528,
 p3_live_exposure,0,
@@ -260,3 +260,7 @@ lcd_glow_alpha,0.82,the camcorder's screen: its own green glow lifting the dark 
 lcd_surround_alpha,0.4,the garage around the camcorder's screen while filming: how see-through the dark over it is
 lcd_clear_at,0.55,how far up the camcorder is (0 to 1) when its glass clears and the picture comes on
 vm_raised_steady,0.7,how much steadier the hands are with the camcorder held up (0 as loose as at rest)
+lobby_lamps_dead,Lamp3;Lamp21,lobby ceiling panels that are dead
+lobby_lamps_dim,Lamp1;Lamp23;ShopLamp1;ShopLamp3,lobby ceiling panels that are weak and drop out now and then
+lobby_lamp_dim,0.35,how bright a weak lobby panel is
+lobby_lamp_dropout,0.22,how often a weak lobby panel drops out (share of flicker_min_interval slots)

@@ -37,7 +37,7 @@ return {
 		values2 = { 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.2 },
 		unit = "s tape",
 		unit2 = "x charge",
-		art = "BatteryPro",
+		art = "UpgradeCamcorder",
 		blurb = "Seconds of tape and how fast it charges under a camera.",
 	},
 	{

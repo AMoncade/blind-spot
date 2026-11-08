@@ -77,6 +77,72 @@ local function stutter(seed: number, key: number, t: number): boolean
 	return noise(seed, key, slot) > 0.45
 end
 
+-- The lobby's ceiling panels (Adrien, 8 Nov: "une lumière beaucoup plus tamisée, inquiétante"): a few dead
+-- (lobby_lamps_dead), a few weak ones that drop out now and then (lobby_lamps_dim; at most 3 flashes a second, a steady
+-- dim glow with Reduce flashes), the rest on, pale and low. Client side: the server builds them all alike.
+type Lamp = { part: BasePart, light: SurfaceLight, mood: string, hash: number, state: number }
+local lamps: { Lamp } = {}
+
+local function names(list: string): { [string]: boolean }
+	local set = {}
+	for _, n in string.split(list, ";") do
+		if n ~= "" then
+			set[n] = true
+		end
+	end
+	return set
+end
+
+local function collectLobby()
+	local lobby = workspace:WaitForChild("Lobby", 30)
+	local folder = lobby and lobby:WaitForChild("Lights", 10)
+	if not folder then
+		return
+	end
+	local dead, dim = names(C.lobby_lamps_dead), names(C.lobby_lamps_dim)
+	for _, p in folder:GetChildren() do
+		local light = p:FindFirstChildOfClass("SurfaceLight")
+		if p:IsA("BasePart") and light then
+			table.insert(lamps, {
+				part = p,
+				light = light,
+				mood = if dead[p.Name] then "dead" elseif dim[p.Name] then "dim" else "on",
+				hash = stringHash(p.Name),
+				state = -1,
+			})
+		end
+	end
+end
+
+local function updateLobby()
+	local reduce = Settings.get("ReduceFlashes") == true
+	local t = os.clock()
+	for _, lamp in lamps do
+		local level = 1
+		if lamp.mood == "dead" then
+			level = 0
+		elseif lamp.mood == "dim" then
+			level = C.lobby_lamp_dim
+			-- now and then it drops out for a slot (never shorter than flicker_min_interval)
+			if
+				not reduce
+				and noise(91, lamp.hash % 13, math.floor(t / C.flicker_min_interval)) < C.lobby_lamp_dropout
+			then
+				level = 0
+			end
+		end
+		if lamp.state ~= level then
+			lamp.state = level
+			lamp.light.Enabled = level > 0
+			lamp.light.Brightness = C.lobby_lamp_brightness * level
+			lamp.part.Material = if level > 0 then Enum.Material.Neon else Enum.Material.SmoothPlastic
+			lamp.part.Color = if level > 0
+				then OFF_COLOR:Lerp(Color3.fromRGB(Config.rgb(C.lobby_lamp_color)), 0.35 + 0.65 * level)
+				else OFF_COLOR
+		end
+	end
+end
+
 local function collect()
 	for _, p in Level.folder("Lights"):GetChildren() do
 		if p:IsA("BasePart") and p:GetAttribute("Kind") == "tube" then
@@ -143,6 +209,9 @@ local function applyGrade(name: string, dt: number)
 end
 
 local function update(dt: number)
+	if not State.shift then
+		updateLobby()
+	end
 	local t, seg = State.now()
 	local phase = if seg then seg.phase else "LIVE"
 	applyGrade(
@@ -215,6 +284,7 @@ function Atmosphere.start()
 	-- and the camera LEDs as soon as they are there
 	applyGrade(if State.shift then "live" else "lobby", 1)
 	RunService.Heartbeat:Connect(update)
+	task.spawn(collectLobby)
 	collect()
 	Atmosphere.ready = true
 end

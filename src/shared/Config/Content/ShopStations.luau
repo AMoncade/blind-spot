@@ -8,32 +8,4 @@ return {
 		y = 3.4,
 		z = 135,
 	},
-	{
-		id = "StandSignal",
-		upgrade = "signal",
-		x = 42,
-		y = 3.2,
-		z = 141,
-	},
-	{
-		id = "StandSprint",
-		upgrade = "sprint",
-		x = 50,
-		y = 3.2,
-		z = 141,
-	},
-	{
-		id = "StandCamera",
-		upgrade = "camera",
-		x = 42,
-		y = 3.2,
-		z = 129,
-	},
-	{
-		id = "StandFlares",
-		upgrade = "flares",
-		x = 50,
-		y = 3.2,
-		z = 129,
-	},
 }
