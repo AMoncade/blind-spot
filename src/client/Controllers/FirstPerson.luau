@@ -1,9 +1,9 @@
 --!strict
--- First person, locked (plan section 11, FirstPersonController): the body stays visible, the head bob follows the
--- walk and the setting (0 to 1), the field of view is a setting (70 to 90). Touch works with Roblox's own controls.
--- Only the body shows: the head and every accessory (hair, hats) stay hidden, or they would sit in front of the eyes
--- (Adrien, Nov 7: "un peu derrière la tête, tu vois mal"); the eyes sit a little forward (fp_camera_forward) so a look
--- down shows the legs, not the inside of the chest. No mouse cursor during a shift (the view is the aim).
+-- First person, locked (plan section 11, FirstPersonController): the head bob follows the walk and the setting (0 to
+-- 1), the field of view is a setting (70 to 90). Touch works with Roblox's own controls. The guard's own body is
+-- hidden from their eyes, all of it (Adrien, 8 Nov: "on voit notre propre corps", a look down showed the inside of the
+-- shoulders and the vest): the hands and the camcorder (Viewmodel.luau) are the body in first person. Other guards
+-- still see it. The eyes sit a little forward (fp_camera_forward). No mouse cursor during a shift (the view is the aim).
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -26,11 +26,13 @@ local walked = 0
 local bob = 0
 local shake = 0 -- the threat's shake (0 calm, 1 the bar is empty), eased
 
-local function showBody(character: Model)
+local function hideBody(character: Model, hidden: boolean)
+	local value = if hidden then 1 else 0
 	for _, d in character:GetDescendants() do
-		if d:IsA("BasePart") then
-			local hidden = d.Name == "Head" or d:FindFirstAncestorWhichIsA("Accessory") ~= nil
-			d.LocalTransparencyModifier = if hidden then 1 else 0
+		if d:IsA("BasePart") or d:IsA("Decal") then
+			if d.LocalTransparencyModifier ~= value then
+				d.LocalTransparencyModifier = value
+			end
 		end
 	end
 end
@@ -76,13 +78,14 @@ function FirstPerson.start()
 		local camera = workspace.CurrentCamera
 		camera.FieldOfView = math.clamp(Settings.get("FieldOfView"), 1, C.fov_max)
 		local character = player.Character
-		if not character or FirstPerson.frozen or State.dead then
+		if not character then
 			return
 		end
-		if not State.shift then
+		-- hidden while the eyes are the guard's: the whole shift, the death's turn too (the lobby is third person)
+		hideBody(character, State.shift)
+		if FirstPerson.frozen or State.dead or not State.shift then
 			return
 		end
-		showBody(character)
 		local humanoid = character:FindFirstChildOfClass("Humanoid")
 		if not humanoid then
 			return
