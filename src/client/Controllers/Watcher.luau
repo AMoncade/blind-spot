@@ -156,8 +156,8 @@ function Watcher.start()
 	State.on("Down", function(payload: any)
 		badge = payload and payload.badge == true
 		info.Text = if badge
-			then "YOU WERE TAKEN. TURN A CAMERA TOWARD YOUR TEAM. YOUR BADGE CAN BRING YOU BACK."
-			else "YOU WERE TAKEN AGAIN. WATCH OVER YOUR TEAM UNTIL 6 AM."
+			then "YOU WERE TAKEN. TURN A CAMERA TOWARD YOUR TEAM. A TEAMMATE'S SYRINGE CAN BRING YOU BACK."
+			else "YOU WERE TAKEN. NO SYRINGE LEFT: WATCH OVER YOUR TEAM UNTIL 6 AM."
 		gui.Enabled = true
 		grade.Parent = workspace.CurrentCamera
 		grade.Enabled = true

@@ -355,6 +355,7 @@ function NightService.launch(
 	end
 	CamcorderService.reset()
 	SkillService.reset(guards)
+	CoopService.giveSyringes(guards, mode.syringes)
 	PowerDirector.startNight(nightNumber, seed)
 	StoryService.begin(nightNumber, seed)
 	sendSquad()
@@ -408,12 +409,12 @@ function NightService.init()
 	CoopService.isDown = function(player: Player): boolean
 		return down[player] == true
 	end
-	CoopService.onRevive = function(player: Player)
-		-- brought back by their badge: on their feet in the booth
+	CoopService.onRevive = function(player: Player, at: Vector3)
+		-- a teammate's syringe: on their feet where they fell
 		down[player] = nil
 		local root = rootOf(player)
 		if root then
-			root.CFrame = World.spawnCFrame()
+			root.CFrame = CFrame.new(at + Vector3.new(0, 3, 0))
 			root.Anchored = false
 		end
 		CamcorderService.block(player, false)

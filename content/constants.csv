@@ -303,3 +303,4 @@ kill_red_edge,0.55,how red the kill screen's edges get (0 full red)
 catch_pitch,-24,degrees he leans back around his face in the hands shot (his hands come up beside his head)
 catch_reach_tilt,8,degrees his head and hands tilt in the hands shot
 smash_blind_after,4,seconds past his time with no camera in front of the guard before one dies out of sight (modes with smash_blind)
+revive_seconds,6,seconds a teammate holds the syringe over a taken guard to bring them back

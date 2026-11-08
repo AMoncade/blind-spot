@@ -1,5 +1,5 @@
-id,name,dead_cams,cam_range,drain,drain_max,dark_tubes,smashes,smash_every,smash_blind,sprint,flares,pay,blurb,note
-easy,EASY,0,1,0.8,0.8,0.15,1,0,0,1,1,0.7,"A slow bar, one more flare.","as before (Adrien, 8 Nov): one camera broken a night, a flare more"
-normal,NORMAL,2,0.8,1.6,1.2,0.35,-1,60,1,1,0,1,"A camera dies every minute. The bar drains 2x.","the bar twice as fast as EASY (1.5x with the SIGNAL upgrade maxed); a camera every minute"
-hard,HARD,4,0.65,3.2,2.4,0.55,-1,60,1,0,0,1.6,"The bar drains 4x. No sprint.","twice NORMAL's bar; SPRINT locked"
-nightmare,NIGHTMARE,4,0.65,16,12,0.55,-1,20,1,0,0,3,"For a squad. A camera dies every 20 s.","five times HARD's bar, a camera every 20 s: in 4 to 5 minutes almost none are left (the post's stay); made to be nearly impossible solo"
+id,name,dead_cams,cam_range,drain,drain_max,dark_tubes,smashes,smash_every,smash_blind,sprint,flares,syringes,pay,blurb,note
+easy,EASY,0,1,0.8,0.8,0.15,1,0,0,1,1,3,0.7,"A slow bar, one more flare.","as before (Adrien, 8 Nov): one camera broken a night, a flare more, 3 syringes each"
+normal,NORMAL,2,0.8,1.6,1.2,0.35,-1,60,1,1,0,2,1,A camera dies every minute. The bar drains 2x.,"the bar twice as fast as EASY (1.5x with the SIGNAL upgrade maxed); a camera every minute; 2 syringes each"
+hard,HARD,4,0.65,3.2,2.4,0.55,-1,60,1,0,0,1,1.6,The bar drains 4x. No sprint.,"twice NORMAL's bar; SPRINT locked; 1 syringe each"
+nightmare,NIGHTMARE,4,0.65,16,12,0.55,-1,20,1,0,0,0,3,For a squad. A camera dies every 20 s.,"five times HARD's bar, a camera every 20 s: in 4 to 5 minutes almost none are left (the post's stay); no syringe; made to be nearly impossible solo"

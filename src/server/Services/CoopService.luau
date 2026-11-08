@@ -2,8 +2,10 @@
 -- The co-op after a death (plan section 3, "Coop de 1 à 4"): a guard taken while others are still on shift wakes up
 -- in the security booth as a watcher. They look through the cameras (the client's Watcher view, where the Unseen is
 -- never seen) and may turn one camera at a time toward a teammate, within camera_turn_max (WatchService recomputes
--- its field). Their badge lies where they were taken: a teammate who brings it to the booth's sign-in book brings
--- them back, once per night per guard. NightService decides who is down; this keeps the badges and the watchers.
+-- its field). Their badge lies where they were taken: a teammate who holds a syringe over it for revive_seconds brings
+-- them back there (Adrien, 8 Nov: "un teammate peut te revive mais ça prend du temps, avec une seringue"). Each guard
+-- has the mode's syringes for the night (EASY 3, NORMAL 2, HARD 1, NIGHTMARE 0). NightService decides who is down;
+-- this keeps the badges, the syringes and the watchers.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -15,7 +17,6 @@ local Server = script.Parent.Parent
 local World = require(Server:WaitForChild("Core"):WaitForChild("World"))
 local Actions = require(Server:WaitForChild("Core"):WaitForChild("Actions"))
 local WatchService = require(script.Parent:WaitForChild("WatchService"))
-local TaskService = require(script.Parent:WaitForChild("TaskService"))
 
 local C = Config.C
 
@@ -23,12 +24,12 @@ local CoopService = {}
 
 -- NightService sets these
 CoopService.isPlaying = nil :: ((player: Player) -> boolean)?
-CoopService.onRevive = nil :: ((player: Player) -> ())?
+CoopService.onRevive = nil :: ((player: Player, at: Vector3) -> ())?
 
 type Badge = { owner: Player, part: BasePart, carrier: Player? }
 
 local badges: { [Player]: Badge } = {} -- owner -> their badge on the floor or in someone's hand
-local revived: { [Player]: boolean } = {} -- already brought back once tonight
+local syringes: { [Player]: number } = {} -- each guard's syringes left tonight
 local watching: { [Player]: string } = {} -- watcher -> the camera they turn
 
 local function playing(player: Player): boolean
@@ -81,15 +82,48 @@ local function removeBadge(owner: Player)
 	end
 end
 
--- A guard is down: they become a watcher; their badge drops where they were taken, unless they were already brought
--- back tonight (then they watch until 6 AM).
+-- the syringes, to each guard (and whether a teammate can still bring someone back)
+local function sendSyringes()
+	for player, n in syringes do
+		if player.Parent then
+			Net.event():FireClient(player, "Syringes", n)
+		end
+	end
+end
+
+local function anyLeft(except: Player?): boolean
+	for player, n in syringes do
+		if player ~= except and n > 0 and playing(player) then
+			return true
+		end
+	end
+	return false
+end
+
+local function refreshPrompts()
+	for _, b in badges do
+		local prompt = b.part:FindFirstChildOfClass("ProximityPrompt")
+		if prompt then
+			prompt.Enabled = anyLeft(b.owner)
+		end
+	end
+end
+
+-- a new shift: every guard's syringes for the night (the mode); none in a solo shift
+function CoopService.giveSyringes(guards: { Player }, count: number)
+	table.clear(syringes)
+	for _, player in guards do
+		syringes[player] = if #guards > 1 then count else 0
+	end
+	if #guards > 1 then
+		sendSyringes()
+	end
+end
+
+-- A guard is down: they become a watcher; their badge drops where they were taken, and a teammate's syringe can bring
+-- them back there.
 function CoopService.down(player: Player, at: Vector3)
 	watching[player] = nil
-	if revived[player] then
-		Net.event():FireClient(player, "Down", { badge = false })
-		broadcast()
-		return
-	end
 	removeBadge(player)
 	local part = Instance.new("Part")
 	part.Name = "Badge_" .. player.UserId
@@ -106,31 +140,37 @@ function CoopService.down(player: Player, at: Vector3)
 	glow.Brightness = 0.8
 	glow.Parent = part
 	local prompt = Instance.new("ProximityPrompt")
-	prompt.ActionText = "Take badge"
+	prompt.ActionText = "Revive (syringe)"
 	prompt.ObjectText = player.DisplayName
-	prompt.HoldDuration = C.pickup_hold
+	prompt.HoldDuration = C.revive_seconds
 	prompt.MaxActivationDistance = 7
 	prompt.RequiresLineOfSight = false
 	prompt.Parent = part
 	part.Parent = badgeFolder()
 	local badge: Badge = { owner = player, part = part, carrier = nil }
 	badges[player] = badge
-	prompt.Triggered:Connect(function(taker)
-		if not playing(taker) or badge.carrier then
+	prompt.Triggered:Connect(function(medic)
+		if medic == player or not playing(medic) or badges[player] ~= badge then
 			return
 		end
-		if carried(taker) or TaskService.isCarrying(taker) then
-			notify(taker, "YOUR HANDS ARE FULL")
+		if (syringes[medic] or 0) <= 0 then
+			notify(medic, "NO SYRINGE LEFT")
 			return
 		end
-		badge.carrier = taker
-		part.Transparency = 1
-		prompt.Enabled = false
-		glow.Enabled = false
-		notify(taker, string.upper(player.DisplayName) .. "'S BADGE TAKEN", true)
+		syringes[medic] -= 1
+		local where = part.Position
+		removeBadge(player)
+		CoopService.watcherLeft(player)
+		sendSyringes()
+		refreshPrompts()
 		broadcast()
+		if player.Parent and CoopService.onRevive then
+			CoopService.onRevive(player, where)
+		end
+		notify(medic, string.upper(player.DisplayName) .. " IS BACK ON SHIFT", true)
 	end)
-	Net.event():FireClient(player, "Down", { badge = true })
+	prompt.Enabled = anyLeft(player)
+	Net.event():FireClient(player, "Down", { badge = anyLeft(player) })
 	broadcast()
 end
 
@@ -158,7 +198,7 @@ function CoopService.reset()
 	for owner in badges do
 		removeBadge(owner)
 	end
-	table.clear(revived)
+	table.clear(syringes)
 	table.clear(watching)
 	WatchService.resetAims()
 	broadcast()
@@ -169,23 +209,6 @@ function CoopService.watcherLeft(player: Player)
 		WatchService.setAimOffset(watching[player], 0)
 		watching[player] = nil
 	end
-end
-
-local function signIn(player: Player)
-	local b = carried(player)
-	if not b then
-		notify(player, "BRING A GUARD'S BADGE HERE")
-		return
-	end
-	local owner = b.owner
-	removeBadge(owner)
-	revived[owner] = true
-	CoopService.watcherLeft(owner)
-	broadcast()
-	if owner.Parent and CoopService.onRevive then
-		CoopService.onRevive(owner)
-	end
-	notify(player, string.upper(owner.DisplayName) .. " IS BACK ON SHIFT", true)
 end
 
 function CoopService.init()
@@ -231,17 +254,12 @@ CoopService.isDown = function(_player: Player): boolean
 end
 
 function CoopService.start()
+	-- the sign-in book no longer signs anyone back in (the syringes do): its prompt stays off
 	local root = World.root :: Model
 	local spot = (root:WaitForChild("Spots") :: Folder):WaitForChild("SignIn")
 	local prompt = spot:FindFirstChildWhichIsA("ProximityPrompt", true)
 	if prompt then
-		prompt.ActionText = "Sign a guard back in"
-		prompt.Enabled = true
-		prompt.Triggered:Connect(function(player)
-			if playing(player) then
-				signIn(player)
-			end
-		end)
+		prompt.Enabled = false
 	end
 end
 

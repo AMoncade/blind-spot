@@ -361,7 +361,7 @@ local function showScreen(final: boolean, livesLeft: number)
 	s.lobby.Text = "LOBBY"
 	s.lives.Visible = not final
 	s.lives.Text = if livesLeft <= 0
-		then "DOWN  ·  A TEAMMATE CAN BRING YOUR BADGE BACK"
+		then "DOWN  ·  A TEAMMATE'S SYRINGE CAN BRING YOU BACK"
 		elseif livesLeft == 1 then "1 LIFE LEFT  ·  BACK AT THE POST"
 		else `{livesLeft} LIVES LEFT  ·  BACK AT THE POST`
 	local info = TweenInfo.new(C.kill_fade)

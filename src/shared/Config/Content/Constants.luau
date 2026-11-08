@@ -305,4 +305,5 @@ return {
 	catch_pitch = -24,
 	catch_reach_tilt = 8,
 	smash_blind_after = 4,
+	revive_seconds = 6,
 }

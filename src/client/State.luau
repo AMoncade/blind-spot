@@ -23,6 +23,7 @@ State.marked = false -- the bar ran out: he knows where you are
 State.down = false -- co-op: taken, watching through the cameras from the booth
 State.squad = nil :: any -- { solo, lives, up, total, down = names } (event Squad)
 State.badges = {} :: { any } -- taken guards' badges: { id, name, pos, carriedBy } (event Badges)
+State.syringes = nil :: number? -- co-op: this guard's syringes left tonight (event Syringes; nil in solo)
 State.tasks = nil :: any -- the night's tasks (event Tasks: tasks, held, brokenCams, brokenLights)
 State.profile = nil :: any -- the saved profile as the server sends it (event Profile)
 State.profileAt = nil :: number? -- os.time() when it arrived (the daily countdown runs from it)
@@ -82,6 +83,8 @@ function State.start()
 			State.squad = ...
 		elseif name == "Badges" then
 			State.badges = ...
+		elseif name == "Syringes" then
+			State.syringes = ...
 		elseif name == "Exposure" then
 			local e, m = ...
 			State.exposure, State.marked = e, m
@@ -93,6 +96,7 @@ function State.start()
 		elseif name == "Shift" then
 			State.shift = ...
 			State.dead = false -- a new shift (RETRY) or the lobby: no longer caught
+			State.syringes = nil
 			if not State.shift then
 				State.down = false
 			end

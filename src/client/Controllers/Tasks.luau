@@ -150,9 +150,8 @@ function Tasks.fill(parts: Parts, data: any, myId: number)
 	for _, b in State.badges or {} do
 		if free <= LINES then
 			local l = parts.lines[free]
-			local mine = b.carriedBy == myId
-			l.Text = (if mine then "[>] " else "[ ] ") .. "Bring " .. b.name .. "'s badge to the booth"
-			l.TextColor3 = if mine then COLOR.red else COLOR.paperInk
+			l.Text = "[ ] Revive " .. b.name .. " (hold a syringe over their badge)"
+			l.TextColor3 = COLOR.red
 			l.Visible = true
 			free += 1
 		end
@@ -186,7 +185,8 @@ function Tasks.fill(parts: Parts, data: any, myId: number)
 	parts.root.Size = UDim2.fromOffset(250, 78 + (free - 1) * 18)
 	parts.count.Text = `{done}/{#list}`
 	local held = data and data.held and data.held[tostring(myId)]
-	parts.holding.Text = if held then "HOLDING: " .. string.upper(held) else "HANDS FREE"
+	parts.holding.Text = (if held then "HOLDING: " .. string.upper(held) else "HANDS FREE")
+		.. (if State.syringes then `  ·  SYRINGES ×{State.syringes}` else "")
 	parts.holding.TextColor3 = if held then COLOR.red else Color3.fromRGB(120, 112, 98)
 end
 
@@ -277,20 +277,15 @@ local function refreshMarkers(data: any, myId: number)
 	end
 	if State.shift and not State.down then
 		for _, b in State.badges or {} do
-			local key, text, pos
-			if b.carriedBy == myId then
-				key, text = "badge:" .. b.id .. ":use", "SIGN IN " .. b.name
-				local book = Config.spotById.SignIn
-				pos = { book.x, book.y, book.z }
-			elseif b.carriedBy == nil then
-				key, text, pos = "badge:" .. b.id, b.name .. "'S BADGE", b.pos
-			end
-			if key and pos then
-				local anchor = if b.carriedBy == myId then spotAnchor(pos) else badgeAnchor(b.id)
+			local key, text = "badge:" .. b.id, "REVIVE " .. b.name
+			if b.id ~= myId then
+				local anchor = badgeAnchor(b.id)
 				if anchor then
 					local m = marker(key, text)
 					m.Adornee = anchor
+					m:SetAttribute("Floor", (Config.floorAt(b.pos[1])))
 					wanted[key] = true
+					goes((Config.floorAt(b.pos[1])))
 				end
 			end
 		end
@@ -363,6 +358,7 @@ function Tasks.start()
 	end
 	State.on("Tasks", refresh)
 	State.on("Badges", refresh)
+	State.on("Syringes", refresh)
 	State.on("Down", refresh)
 	State.on("Respawn", refresh)
 	State.on("Shift", refresh)
