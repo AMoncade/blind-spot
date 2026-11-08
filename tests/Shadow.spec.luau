@@ -132,6 +132,18 @@ function spec.heComesCloserAsTheBarDrops()
 	ok(Hunt.jumpDelay("LIVE", 1, 1.3, 0.5, C) < Hunt.jumpDelay("LIVE", 1, 1, 0.5, C), "harder night: sooner")
 end
 
+function spec.youCantWalkUpToHim()
+	-- full bar: he stands far away; walk halfway to him and he is gone, further away
+	local far = Hunt.stalkDistance(1, C)
+	ok(not Hunt.flees(far, 1, C), "where he stands: he stays")
+	ok(Hunt.flees(far * 0.4, 1, C), "much nearer: he jumps away")
+	-- reaching him is a catch, whatever the bar
+	ok(Hunt.touches(C.unseen_touch_distance * 0.9, C), "reached: caught")
+	ok(not Hunt.touches(C.unseen_touch_distance * 2, C), "not reached")
+	-- a nearly empty bar puts him so close that walking at him reaches him before he flees
+	ok(Hunt.stalkDistance(0, C) * C.unseen_flee_share < C.unseen_touch_distance, "empty bar: walking at him is a catch")
+end
+
 function spec.theCatchNeedsAnEmptyBarInTheDark()
 	ok(Hunt.catches(0, false, 1, C), "empty, off camera, past the grace")
 	ok(not Hunt.catches(0.05, false, 5, C), "not empty yet")

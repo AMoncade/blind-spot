@@ -272,4 +272,6 @@ return {
 	descent_photo_alpha = 0.75,
 	camcorder_empty_hold = 0.7,
 	camcorder_empty_fade = 0.3,
+	unseen_touch_distance = 2.2,
+	unseen_flee_share = 0.5,
 }

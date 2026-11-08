@@ -58,6 +58,17 @@ function Hunt.stalkDistance(exposure: number, C: any): number
 	return C.stalk_near + (C.stalk_far - C.stalk_near) * e
 end
 
+-- Rule 5 (Adrien, 8 Nov): a guard who walks up to him. Within unseen_touch_distance studs he has them (caught,
+-- whatever their bar); nearer than unseen_flee_share of the distance their bar puts him at, he is gone (he jumps
+-- further away). With a nearly empty bar that distance is already short: walking at him there is a catch.
+function Hunt.touches(distance: number, C: any): boolean
+	return distance <= C.unseen_touch_distance
+end
+
+function Hunt.flees(distance: number, exposure: number, C: any): boolean
+	return distance < Hunt.stalkDistance(exposure, C) * C.unseen_flee_share
+end
+
 -- Seconds until his next jump: shorter when the power fails, on harder nights (scale) and as the bar drops.
 -- roll: a number in [0, 1) (the night's Rng).
 function Hunt.jumpDelay(phase: string, exposure: number, scale: number, roll: number, C: any): number

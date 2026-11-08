@@ -8,7 +8,10 @@
 --      sends him away at once (the camcorders show a VHS trace where he was);
 --   2. your eyes don't count (the clients draw him; nothing here depends on who looks);
 --   3. never on screen (the clients hide him in every camera view, the camcorder included);
---   4. after a catch the director gives the guards a break (unseen_relief_seconds).
+--   4. after a catch the director gives the guards a break (unseen_relief_seconds);
+--   5. you can't walk up to him (Adrien, 8 Nov: "tu peux pas lui foncer dedans, ça gâche l'horreur"): a guard who
+--      comes much nearer than their bar puts him (Hunt.flees) finds him gone, further away; one who still reaches him
+--      (Hunt.touches: a sprint, a corner, a bar nearly empty) is caught.
 -- The signal bar of every guard on shift is kept here (Hunt.exposure) and sent to its guard (event Exposure).
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -149,6 +152,24 @@ local function jump(s: Status, list: { Status }, phase: string)
 	present = true
 end
 
+-- the catch: he is behind the guard, and they turn around (Controllers/Death)
+local function catch(s: Status)
+	local look = s.root.CFrame.LookVector
+	local back = Vector3.new(look.X, 0, look.Z)
+	back = if back.Magnitude > 0.01 then back.Unit else Vector3.new(0, 0, -1)
+	x, z = s.root.Position.X - back.X * C.catch_distance, s.root.Position.Z - back.Z * C.catch_distance
+	yaw = math.atan2(-(s.root.Position.X - x), -(s.root.Position.Z - z))
+	present = true
+	Net.unseen():FireAllClients(present, x, z, yaw)
+	if UnseenService.onKill then
+		UnseenService.onKill(s.player)
+	end
+	exposure[s.player], offTime[s.player] = 1, 0
+	relief = C.unseen_relief_seconds
+	unhush()
+	present = false
+end
+
 local function tick(dt: number)
 	local phase = PowerDirector.phase()
 	if not phase then
@@ -165,21 +186,25 @@ local function tick(dt: number)
 	-- the catch: an empty bar, off camera past the grace. He is behind them, and they turn around (Controllers/Death)
 	for _, s in list do
 		if Hunt.catches(exposure[s.player] or 1, s.filmed, offTime[s.player] or 0, C) then
-			local look = s.root.CFrame.LookVector
-			local back = Vector3.new(look.X, 0, look.Z)
-			back = if back.Magnitude > 0.01 then back.Unit else Vector3.new(0, 0, -1)
-			x, z = s.root.Position.X - back.X * C.catch_distance, s.root.Position.Z - back.Z * C.catch_distance
-			yaw = math.atan2(-(s.root.Position.X - x), -(s.root.Position.Z - z))
-			present = true
-			Net.unseen():FireAllClients(present, x, z, yaw)
-			if UnseenService.onKill then
-				UnseenService.onKill(s.player)
-			end
-			exposure[s.player], offTime[s.player] = 1, 0
-			relief = C.unseen_relief_seconds
-			unhush()
-			present = false
+			catch(s)
 			return
+		end
+	end
+
+	-- rule 5: nobody walks up to him. Reached: caught. Much nearer than their bar puts him: he is gone, further away
+	local fled = false
+	if present then
+		for _, s in list do
+			local p = s.root.Position
+			local d = math.sqrt((p.X - x) ^ 2 + (p.Z - z) ^ 2)
+			if Config.floorAt(p.X) == Config.floorAt(x) then
+				if Hunt.touches(d, C) then
+					catch(s)
+					return
+				elseif Hunt.flees(d, exposure[s.player] or 1, C) then
+					fled = true
+				end
+			end
 		end
 	end
 
@@ -211,9 +236,9 @@ local function tick(dt: number)
 		nextJump = 0
 	end
 
-	-- rule 1: a field on his cell sends him away (the camcorders see a trace where he was)
+	-- rule 1: a field on his cell sends him away (the camcorders see a trace where he was); rule 5 too
 	local mine = Grid.at(g, x, z)
-	if present and (not mine or not free(mine)) then
+	if present and (fled or not mine or not free(mine)) then
 		Net.event():FireAllClients("Vanish", x, z)
 		present = false
 		nextJump = 0
