@@ -40,7 +40,7 @@ local UnseenService = {}
 -- NightService sets these (it owns deaths and the night)
 UnseenService.onKill = nil :: ((player: Player) -> ())?
 UnseenService.speedScale = 1 -- the night's difficulty and the number of guards: the bars drain faster, he jumps sooner
-UnseenService.drainScale = 1 -- the shift's mode: the bars drain this many times faster (content/modes.csv)
+UnseenService.mode = nil :: any -- the shift's mode (content/modes.csv): the bar's speed, the smashes
 UnseenService.smashes = 0 -- cameras he may still smash tonight (the mode and the night)
 UnseenService.onSmash = nil :: ((cameraId: string) -> ())? -- NightService: the camera dies for the night
 UnseenService.isPlaying = nil :: ((player: Player) -> boolean)? -- on shift and not in a death
@@ -84,8 +84,20 @@ local function statuses(dt: number, phase: string): { Status }
 		if root and onShift then
 			local isFilmed = WatchService.isFilmed(player)
 			offTime[player] = if isFilmed then 0 else (offTime[player] or 0) + dt
-			-- the night's difficulty times the guard's SIGNAL upgrade (level 1: the base speed, fast)
-			local nerve = Upgrades.value(Config.upgradeById.signal, Upgrades.level(Data.get(player), "signal"))
+			-- the night's difficulty times the guard's SIGNAL upgrade (level 1: the base speed, fast), times the mode's
+			-- speed, which the same upgrade eases from drain (level 1) to drain_max (maxed) (Adrien, 8 Nov: NORMAL "2 fois
+			-- plus vite que le facile, 1,5 si tu l'as améliorée, basé sur l'amélioration")
+			local def = Config.upgradeById.signal
+			local level = Upgrades.level(Data.get(player), "signal")
+			local nerve = Upgrades.value(def, level)
+			local mode = UnseenService.mode
+			local modeScale = if mode
+				then mode.drain + (mode.drainMax - mode.drain) * math.clamp(
+					(level - 1) / math.max(def.max - 1, 1),
+					0,
+					1
+				)
+				else 1
 			exposure[player] = Hunt.exposure(
 				exposure[player] or 1,
 				false,
@@ -93,7 +105,7 @@ local function statuses(dt: number, phase: string): { Status }
 				phase,
 				dt,
 				C,
-				UnseenService.speedScale * nerve * UnseenService.drainScale
+				UnseenService.speedScale * nerve * modeScale
 			)
 			table.insert(out, { player = player, root = root, filmed = isFilmed })
 		else
@@ -196,6 +208,35 @@ local function smashTarget(s: Status): (string?, number?)
 		end
 	end
 	return best, bestCell
+end
+
+-- seconds to his next camera: the mode's period, else the default range
+local function smashPeriod(): number
+	local mode = UnseenService.mode
+	if mode and mode.smashEvery > 0 then
+		return mode.smashEvery
+	end
+	return C.smash_every[1] + rng.next() * (C.smash_every[2] - C.smash_every[1])
+end
+
+-- a camera to break out of sight: a running one (never the post's), on the guard's floor first
+local function blindTarget(s: Status): string?
+	local floor = Config.floorAt(s.root.Position.X)
+	local here, elsewhere = {}, {}
+	for _, id in WatchService.active() do
+		local cam = Config.cameraById[id]
+		if cam and not cam.always then
+			table.insert(if Config.floorAt(cam.x) == floor then here else elsewhere, id)
+		end
+	end
+	table.sort(here)
+	table.sort(elsewhere)
+	if #here > 0 then
+		return rng.pick(here)
+	elseif #elsewhere > 0 then
+		return rng.pick(elsewhere)
+	end
+	return nil
 end
 
 local function jump(s: Status, list: { Status }, phase: string)
@@ -321,10 +362,20 @@ local function tick(dt: number)
 			present = true
 			smashing = { id = camId, at = os.clock() + C.smash_delay }
 			UnseenService.smashes -= 1
-			nextSmash = os.clock() + C.smash_every[1] + rng.next() * (C.smash_every[2] - C.smash_every[1])
+			nextSmash = os.clock() + smashPeriod()
 			nextJump = os.clock() + C.smash_delay + C.smash_linger
-		else
-			nextSmash = os.clock() + C.smash_retry
+		elseif
+			UnseenService.mode
+			and UnseenService.mode.smashBlind
+			and os.clock() >= nextSmash + C.smash_blind_after
+		then
+			-- none in front of the guard for a while: one dies out of sight (the mode's clock keeps running)
+			local blind = blindTarget(status)
+			if blind and UnseenService.onSmash then
+				UnseenService.smashes -= 1
+				UnseenService.onSmash(blind)
+			end
+			nextSmash = os.clock() + smashPeriod()
 		end
 	end
 	-- another blind spot, nearer as the bar drops; soon when the guard went to another floor
@@ -353,7 +404,13 @@ end
 -- a new night: his first try at a camera comes after a while
 function UnseenService.newNight()
 	smashing = nil
-	nextSmash = os.clock() + C.smash_first[1] + rng.next() * (C.smash_first[2] - C.smash_first[1])
+	local mode = UnseenService.mode
+	nextSmash = os.clock()
+		+ (
+			if mode and mode.smashEvery > 0
+				then mode.smashEvery
+				else C.smash_first[1] + rng.next() * (C.smash_first[2] - C.smash_first[1])
+		)
 end
 
 -- Studio debug: his next try at a camera now

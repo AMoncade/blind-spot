@@ -31,6 +31,8 @@ local C = Config.C
 
 local SkillService = {}
 
+SkillService.mode = nil :: any -- the shift's mode (NightService): SPRINT locked, extra flares
+
 SkillService.isPlaying = nil :: ((player: Player) -> boolean)? -- NightService: on shift and alive
 
 local flaresLeft: { [Player]: number } = {}
@@ -52,7 +54,13 @@ end
 
 local function flaresOf(player: Player): (number, number)
 	local count, burn = Upgrades.value(Config.upgradeById.flares, Upgrades.level(Data.get(player), "flares"))
-	return count, burn or 20
+	-- the mode's extra flares (EASY: one more)
+	return count + (if SkillService.mode then SkillService.mode.flares else 0), burn or 20
+end
+
+-- SPRINT is locked in HARD and NIGHTMARE (content/modes.csv)
+local function sprintLocked(): boolean
+	return SkillService.mode ~= nil and not SkillService.mode.sprint
 end
 
 local function send(player: Player)
@@ -61,10 +69,14 @@ local function send(player: Player)
 		flareMax = (flaresOf(player)),
 		sprintReady = workspace:GetServerTimeNow() + math.max(0, (sprintReady[player] or 0) - os.clock()),
 		sprintCooldown = select(2, sprintOf(player)),
+		sprintLocked = sprintLocked(),
 	})
 end
 
 local function sprint(player: Player)
+	if sprintLocked() then
+		return
+	end
 	local now = os.clock()
 	if now < (sprintReady[player] or 0) then
 		return

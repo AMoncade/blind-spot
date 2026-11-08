@@ -8,7 +8,7 @@ local Difficulty = {}
 export type Setup = {
 	night: number, -- 1 .. the guard's unlocked night
 	guards: number, -- 1 to lift_capacity: how many guards the lift waits for
-	lives: number, -- 1 to 3: catches the team survives (the last one ends a solo night, downs a co-op guard)
+	lives: number, -- always shift_lives (1): a catch ends a solo night, downs a co-op guard
 	mode: string, -- content/modes.csv (Adrien, 8 Nov: an easy mode, a normal one with fewer cameras, a hard one)
 }
 
@@ -27,7 +27,7 @@ function Difficulty.clean(raw: unknown, maxNight: number, C: any, modes: { [stri
 	return {
 		night = int(t.night, 1, maxNight, maxNight),
 		guards = int(t.guards, 1, C.lift_capacity, 1),
-		lives = int(t.lives, 1, #C.lives_reward, C.shift_lives),
+		lives = C.shift_lives, -- one life for everyone (Adrien, 8 Nov): not a choice any more
 		mode = if type(t.mode) == "string" and (modes == nil or modes[t.mode] ~= nil)
 			then t.mode :: string
 			else C.mode_default,
@@ -39,7 +39,6 @@ function Difficulty.payMultiplier(setup: Setup, nights: { [number]: any }, C: an
 	local night = nights[setup.night]
 	local mode = modes and modes[setup.mode or C.mode_default]
 	local m = (if night then night.reward else 1)
-		* C.lives_reward[setup.lives]
 		* C.guards_reward[math.clamp(setup.guards, 1, #C.guards_reward)]
 		* (if mode then mode.pay else 1)
 	return math.floor(m * 20 + 0.5) / 20

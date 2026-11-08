@@ -162,8 +162,10 @@ def build():
 
     mods["Modes"] = ("modes.csv", [
         {"id": r["id"], "name": r["name"], "deadCams": int(r["dead_cams"]), "camRange": num(r["cam_range"]),
-         "drain": num(r["drain"]), "darkTubes": num(r["dark_tubes"]), "smashes": int(r["smashes"]),
-         "pay": num(r["pay"]), "blurb": r["blurb"]} for r in rows("modes.csv")])
+         "drain": num(r["drain"]), "drainMax": num(r["drain_max"]), "darkTubes": num(r["dark_tubes"]),
+         "smashes": int(r["smashes"]), "smashEvery": num(r["smash_every"]), "smashBlind": flag(r["smash_blind"]),
+         "sprint": flag(r["sprint"]), "flares": int(r["flares"]), "pay": num(r["pay"]), "blurb": r["blurb"]}
+        for r in rows("modes.csv")])
 
     mods["Chapters"] = ("chapters.csv", [
         {"id": r["id"], "name": r["name"], "map": r["map"], "mapNote": r["map_note"], "art": r["art"],

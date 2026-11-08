@@ -83,7 +83,7 @@ end
 
 -- Adrien, 7 Nov: before a night, choose the chapter, the map, the night, how many guards and how many lives; the
 -- screen shows how hard it is and what it pays (Logic/Difficulty, the same numbers the server uses at 6 AM).
-local setup = { night = 1, guards = 1, lives = 3, chapter = 1, mode = Config.C.mode_default }
+local setup = { night = 1, guards = 1, lives = 1, chapter = 1, mode = Config.C.mode_default }
 
 local function buildShift(gui: ScreenGui)
 	local root, body, close = Kit.window(gui, "Setup", "NEW SHIFT")
@@ -215,7 +215,7 @@ local function buildShift(gui: ScreenGui)
 				Name = "Mode" .. mode.name,
 				Size = UDim2.new(1 / #Config.Modes, -6, 1, 0),
 				LayoutOrder = k,
-				TextSize = 18,
+				TextSize = 15,
 			})
 			b.Activated:Connect(function()
 				setup.mode = mode.id
@@ -225,7 +225,7 @@ local function buildShift(gui: ScreenGui)
 			end)
 			labels[mode.id] = l
 		end
-		local colors = { easy = COLOR.green, normal = COLOR.brass, hard = COLOR.red }
+		local colors = { easy = COLOR.green, normal = COLOR.brass, hard = COLOR.red, nightmare = COLOR.red }
 		table.insert(refreshers, function()
 			for id, l in labels do
 				l.TextColor3 = if setup.mode == id then (colors :: any)[id] or COLOR.green else COLOR.dim
@@ -300,11 +300,7 @@ local function buildShift(gui: ScreenGui)
 		guardValues[k] = k
 	end
 	pick(2, "GUARDS", "guards", guardValues)
-	local livesValues = {}
-	for k = 1, #C.lives_reward do
-		livesValues[k] = k
-	end
-	pick(3, "LIVES", "lives", livesValues)
+	-- one life for everyone (Adrien, 8 Nov): no LIVES row
 
 	-- the difficulty and what it pays
 	local diff = Kit.plate(side, { Name = "Difficulty", Size = UDim2.new(1, 0, 0, 36), LayoutOrder = 4 })
@@ -361,9 +357,13 @@ local function buildShift(gui: ScreenGui)
 		local def = Config.nightByNumber[setup.night]
 		nightLabel.Text = `{setup.night}  ·  {def.name}`
 		local mult = Difficulty.payMultiplier(setup, Config.nightByNumber, C, Config.modeById)
-		local name, step = Difficulty.label(mult, C)
-		diffText.Text = name .. "  " .. string.rep("■", step) .. string.rep("□", 5 - step)
-		diffText.TextColor3 = if step >= 4 then COLOR.red elseif step >= 2 then COLOR.brass else COLOR.ink
+		-- the mode's line (one life for everyone: the mode is the difficulty)
+		local mode = Config.modeById[setup.mode] or Config.modeById[C.mode_default]
+		diffText.Text = mode.blurb
+		diffText.TextColor3 = if mode.id == "easy"
+			then COLOR.green
+			elseif mode.id == "normal" then COLOR.brass
+			else COLOR.red
 		payText.Text = string.format("PAY ×%.2f", mult)
 		Kit.setEnabled(start, ART.PlayButton, not chapter.locked)
 		startLabel.Text = if chapter.locked then "LOCKED" else "START"

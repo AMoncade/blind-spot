@@ -113,11 +113,14 @@ function Skills.start()
 		if not live or not info then
 			return
 		end
-		-- SPRINT: the cover shows the cooldown left
+		-- SPRINT: the cover shows the cooldown left (locked in HARD and NIGHTMARE)
 		local left = math.max(0, info.sprintReady - workspace:GetServerTimeNow())
-		sprint.cover.Size = UDim2.new(1, 0, math.clamp(left / math.max(info.sprintCooldown, 0.1), 0, 1), 0)
-		sprint.label.Text = if left > 0
-			then string.format("%ds", math.ceil(left))
+		sprint.cover.Size = if info.sprintLocked
+			then UDim2.fromScale(1, 1)
+			else UDim2.new(1, 0, math.clamp(left / math.max(info.sprintCooldown, 0.1), 0, 1), 0)
+		sprint.label.Text = if info.sprintLocked
+			then "LOCKED"
+			elseif left > 0 then string.format("%ds", math.ceil(left))
 			elseif keys then "SPRINT ⇧"
 			else "SPRINT"
 		-- FLARE: how many are left tonight

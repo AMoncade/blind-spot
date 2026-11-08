@@ -221,11 +221,11 @@ vest_center,0.85,studs from the jacket model's bottom to the torso's centre (too
 group_id,689591627,the game's Roblox group (Kestrel & Vane Security): its members get the un_kv uniform
 lift_floor,P1,where the lifts take the guards (the post): shown on the lift panels
 tension_start,0.75,the tension music starts when the signal bar drops under this and is loudest at 0
-lives_reward,1.6;1.25;1,the pay multiplier for 1 2 or 3 lives (the shift setup in the lobby)
+lives_reward,1,the pay multiplier per lives (one life for everyone since 8 Nov: a catch ends a solo night, downs a co-op guard)
 guards_reward,1.2;1.05;1;1,the pay multiplier for 1 2 3 or 4 guards (fewer guards: harder)
 difficulty_steps,1.2;1.5;1.95;2.6,pay multipliers where the difficulty goes up a step (5 steps: the names below)
 difficulty_names,CALM;UNEASY;TENSE;HARD;NIGHTMARE,the difficulty shown on the shift setup
-shift_lives,3,the lives a shift starts with when nobody chose (a guard walking into a lift)
+shift_lives,1,the team's lives: one (Adrien, 8 Nov: everyone has one life)
 loading_min,1.6,seconds the loading screen shows at least (it never flashes by)
 loading_max,25,seconds it waits at most before it lets the game through
 catch_tint,#d2f0ea,the colour of the catch (cold teal)
@@ -302,3 +302,4 @@ kill_dark_edge,0.15,how dark the kill screen's edges get (0 black)
 kill_red_edge,0.55,how red the kill screen's edges get (0 full red)
 catch_pitch,-24,degrees he leans back around his face in the hands shot (his hands come up beside his head)
 catch_reach_tilt,8,degrees his head and hands tilt in the hands shot
+smash_blind_after,4,seconds past his time with no camera in front of the guard before one dies out of sight (modes with smash_blind)

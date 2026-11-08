@@ -304,8 +304,9 @@ function NightService.launch(
 	-- the mode (content/modes.csv; Adrien, 8 Nov: "c'est relativement pas challengeant ... un mode facile, moins de
 	-- caméras"): dead cameras on top of the night's, shorter camera fields, a faster bar, darker tubes, his smashes
 	local mode = Config.modeById[setup and setup.mode or C.mode_default] or Config.modeById[C.mode_default]
-	UnseenService.drainScale = mode.drain
-	UnseenService.smashes = mode.smashes + math.floor((nightNumber - 1) / 2)
+	UnseenService.mode = mode
+	UnseenService.smashes = if mode.smashes < 0 then math.huge else mode.smashes + math.floor((nightNumber - 1) / 2)
+	SkillService.mode = mode
 	workspace:SetAttribute("Mode", mode.id)
 	workspace:SetAttribute("CamRange", mode.camRange)
 	UnseenService.newNight()
