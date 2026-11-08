@@ -1063,7 +1063,8 @@ function Menu.start()
 	end)
 	-- walked into an empty lift: the shift setup, as PLAY opens it
 	State.on("OpenSetup", function()
-		if not State.shift then
+		-- open, never toggle (it may already be up: it opens on the first visit too)
+		if not State.shift and not windows.Setup.Visible then
 			open("Setup")
 		end
 	end)
