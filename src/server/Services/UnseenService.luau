@@ -9,6 +9,9 @@
 --   2. your eyes don't count (the clients draw him; nothing here depends on who looks);
 --   3. never on screen (the clients hide him in every camera view, the camcorder included);
 --   4. after a catch the director gives the guards a break (unseen_relief_seconds);
+--   6. now and then he breaks a camera in front of his guard (Adrien, 8 Nov: "que le monstre puisse casser des
+--      caméras devant toi"): he stands right under one the guard can see, outside its field, and it shatters; it
+--      stays dead for the night (TaskService.smash). As many as the mode and the night allow (smashes);
 --   5. you can't walk up to him (Adrien, 8 Nov: "tu peux pas lui foncer dedans, ça gâche l'horreur"): a guard who
 --      comes much nearer than their bar puts him (Hunt.flees) finds him gone, further away; one who still reaches him
 --      (Hunt.touches: a sprint, a corner, a bar nearly empty) is caught.
@@ -39,6 +42,7 @@ UnseenService.onKill = nil :: ((player: Player) -> ())?
 UnseenService.speedScale = 1 -- the night's difficulty and the number of guards: the bars drain faster, he jumps sooner
 UnseenService.drainScale = 1 -- the shift's mode: the bars drain this many times faster (content/modes.csv)
 UnseenService.smashes = 0 -- cameras he may still smash tonight (the mode and the night)
+UnseenService.onSmash = nil :: ((cameraId: string) -> ())? -- NightService: the camera dies for the night
 UnseenService.isPlaying = nil :: ((player: Player) -> boolean)? -- on shift and not in a death
 
 local g = WatchService.grid
@@ -51,6 +55,8 @@ local target: Player? = nil
 local nextJump = 0
 local relief = 0
 local hushed: { [Player]: boolean } = {}
+local nextSmash = 0 -- os.clock() of his next try at a camera
+local smashing: { id: string, at: number }? = nil -- he stands under this camera; it breaks at `at`
 local offTime: { [Player]: number } = {}
 local exposure: { [Player]: number } = {} -- the signal bar, 1 full
 local sentExposure: { [Player]: number } = {}
@@ -147,6 +153,49 @@ local function pickCell(s: Status, distance: number, others: { Status }): number
 		return rng.pick(hidden)
 	end
 	return nil
+end
+
+-- A camera his guard can see in front of them, and a cell right under it out of every field (rule 6)
+local function smashTarget(s: Status): (string?, number?)
+	local p = s.root.Position
+	local look = Vector3.new(s.root.CFrame.LookVector.X, 0, s.root.CFrame.LookVector.Z)
+	if look.Magnitude < 0.01 then
+		return nil, nil
+	end
+	look = look.Unit
+	local floor = Config.floorAt(p.X)
+	local best, bestCell, bestScore = nil, nil, -math.huge
+	for _, id in WatchService.active() do
+		local cam = Config.cameraById[id]
+		if not cam or cam.always or Config.floorAt(cam.x) ~= floor then
+			continue
+		end
+		local to = Vector3.new(cam.x - p.X, 0, cam.z - p.Z)
+		local d = to.Magnitude
+		if d < C.smash_min or d > C.smash_max or to.Unit:Dot(look) < C.smash_front then
+			continue
+		end
+		if Grid.segmentHits(WatchService.level.occluders, p.X, p.Y + 1.5, p.Z, cam.x, cam.y - 0.6, cam.z) then
+			continue
+		end
+		-- the nearest free cell under it
+		local cell, near = nil, math.huge
+		for _, i in Grid.near(g, cam.x, cam.z, C.smash_reach) do
+			if free(i) then
+				local cx, cz = Grid.center(g, i)
+				local dd = (cx - cam.x) ^ 2 + (cz - cam.z) ^ 2
+				if dd < near then
+					cell, near = i, dd
+				end
+			end
+		end
+		-- the most in front of the guard
+		local score = to.Unit:Dot(look) - d / 200
+		if cell and score > bestScore then
+			best, bestCell, bestScore = id, cell, score
+		end
+	end
+	return best, bestCell
 end
 
 local function jump(s: Status, list: { Status }, phase: string)
@@ -252,6 +301,31 @@ local function tick(dt: number)
 		present = false
 		nextJump = 0
 	end
+	-- rule 6: a camera breaks in front of the guard
+	if smashing then
+		local sm = smashing :: { id: string, at: number }
+		if os.clock() >= sm.at then
+			smashing = nil
+			if UnseenService.onSmash then
+				UnseenService.onSmash(sm.id)
+			end
+			nextJump = os.clock() + C.smash_linger
+		else
+			nextJump = math.max(nextJump, sm.at + C.smash_linger)
+		end
+	elseif UnseenService.smashes > 0 and os.clock() >= nextSmash then
+		local camId, cell = smashTarget(status)
+		if camId and cell then
+			x, z = Grid.center(g, cell)
+			present = true
+			smashing = { id = camId, at = os.clock() + C.smash_delay }
+			UnseenService.smashes -= 1
+			nextSmash = os.clock() + C.smash_every[1] + rng.next() * (C.smash_every[2] - C.smash_every[1])
+			nextJump = os.clock() + C.smash_delay + C.smash_linger
+		else
+			nextSmash = os.clock() + C.smash_retry
+		end
+	end
 	-- another blind spot, nearer as the bar drops; soon when the guard went to another floor
 	if Config.floorAt(x) ~= Config.floorAt(status.root.Position.X) and nextJump > os.clock() + 1 then
 		nextJump = os.clock() + 1
@@ -275,6 +349,17 @@ local function tick(dt: number)
 end
 
 -- Studio debug: his next jump now
+-- a new night: his first try at a camera comes after a while
+function UnseenService.newNight()
+	smashing = nil
+	nextSmash = os.clock() + C.smash_first[1] + rng.next() * (C.smash_first[2] - C.smash_first[1])
+end
+
+-- Studio debug: his next try at a camera now
+function UnseenService.forceSmash()
+	nextSmash = 0
+end
+
 function UnseenService.forceSighting()
 	nextJump = 0
 end

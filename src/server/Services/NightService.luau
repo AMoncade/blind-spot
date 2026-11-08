@@ -290,6 +290,7 @@ function NightService.launch(
 	UnseenService.smashes = mode.smashes + math.floor((nightNumber - 1) / 2)
 	workspace:SetAttribute("Mode", mode.id)
 	workspace:SetAttribute("CamRange", mode.camRange)
+	UnseenService.newNight()
 	table.clear(playing)
 	table.clear(dead)
 	table.clear(down)
@@ -361,6 +362,10 @@ function NightService.init()
 				Net.event():FireClient(player, "Notice", "ROUND DONE · CLOCK OUT AT THE POST (P1)", true)
 			end
 		end
+	end
+	UnseenService.onSmash = function(cameraId: string)
+		TaskService.smash(cameraId)
+		Net.event():FireAllClients("Smash", cameraId)
 	end
 	TaskService.onNew = function(taskId: string)
 		StoryService.trigger("new:" .. taskId)

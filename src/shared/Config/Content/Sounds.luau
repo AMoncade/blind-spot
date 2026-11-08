@@ -105,4 +105,20 @@ return {
 		loop = false,
 		caption = "",
 	},
+	{
+		id = "cam_smash",
+		file = "",
+		asset = "9114591552",
+		volume = 0.9,
+		loop = false,
+		caption = "[ A CAMERA SHATTERS ]",
+	},
+	{
+		id = "cam_spark",
+		file = "",
+		asset = "9119583974",
+		volume = 0.7,
+		loop = false,
+		caption = "",
+	},
 }

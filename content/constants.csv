@@ -287,3 +287,13 @@ catch_chatter,0.012,studs the needles chatter
 catch_reach_rise,1,studs his eyes sit above the guard's in the hands shot (his hands are far ahead and lower)
 clockout_radius,8,studs from the post's sign-in book where a guard clocks the team out once the round is done
 mode_default,normal,the shift's mode when none is chosen (content/modes.csv)
+smash_first,35;60,seconds into the night before his first try at breaking a camera (min;max)
+smash_every,50;90,seconds between two cameras he breaks (min;max)
+smash_retry,3,seconds before he tries again when no camera fits
+smash_delay,1.4,seconds he stands under the camera before it breaks
+smash_linger,1.2,seconds he stays after it breaks
+smash_min,8,studs: the camera at least this far from the guard
+smash_max,40,studs: and at most this far
+smash_front,0.55,how much in front of the guard the camera must be (cosine of the angle)
+smash_reach,5,studs from the camera he may stand
+smash_hear,70,studs: a guard this near a camera he breaks hears it

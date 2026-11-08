@@ -8,6 +8,7 @@ local RunService = game:GetService("RunService")
 
 local Config = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"))
 local Level = require(script.Parent.Parent:WaitForChild("Level"))
+local SoundDirector = require(script.Parent:WaitForChild("SoundDirector"))
 local State = require(script.Parent.Parent:WaitForChild("State"))
 
 local C = Config.C
@@ -18,6 +19,58 @@ local CameraHeads = {}
 type Head = { id: string, head: BasePart, rest: CFrame, current: CFrame }
 
 local heads: { Head } = {}
+-- cameras the Unseen broke tonight (event Smash): their head drops at once and they spark now and then
+local smashed: { [string]: { sparks: ParticleEmitter, next: number } } = {}
+
+-- sparks at a camera head (a burst when it breaks, a few now and then after)
+local function sparksAt(head: BasePart): ParticleEmitter
+	local at = Instance.new("Attachment")
+	at.Name = "Sparks"
+	at.Parent = head
+	local p = Instance.new("ParticleEmitter")
+	p.Enabled = false
+	p.Color = ColorSequence.new(Color3.fromRGB(255, 236, 190), Color3.fromRGB(255, 150, 60))
+	p.LightEmission = 1
+	p.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.12), NumberSequenceKeypoint.new(1, 0) })
+	p.Lifetime = NumberRange.new(0.3, 0.7)
+	p.Speed = NumberRange.new(8, 18)
+	p.SpreadAngle = Vector2.new(70, 70)
+	p.Acceleration = Vector3.new(0, -40, 0)
+	p.Drag = 2
+	p.EmissionDirection = Enum.NormalId.Bottom
+	p.Parent = at
+	return p
+end
+
+-- the Unseen broke this camera (server UnseenService rule 6): glass, a short circuit, a burst of sparks, one flash
+local function smash(id: string)
+	for _, h in heads do
+		if h.id ~= id then
+			continue
+		end
+		local sparks = sparksAt(h.head)
+		sparks:Emit(40)
+		smashed[id] = { sparks = sparks, next = os.clock() + 2 + math.random() * 3 }
+		-- its head drops at once, with a jolt
+		h.current = h.rest * CFrame.Angles(math.rad(-48), 0, math.rad(26))
+		h.head.CFrame = h.current
+		local flash = Instance.new("PointLight")
+		flash.Color = Color3.fromRGB(200, 228, 255)
+		flash.Brightness = 5
+		flash.Range = 12
+		flash.Shadows = false
+		flash.Parent = h.head
+		task.delay(0.12, function()
+			flash:Destroy() -- one flash (well under 3 a second)
+		end)
+		local character = player.Character
+		local root = character and character:FindFirstChild("HumanoidRootPart")
+		if root and root:IsA("BasePart") and (root.Position - h.head.Position).Magnitude <= C.smash_hear then
+			SoundDirector.play("cam_smash")
+			SoundDirector.play("cam_spark")
+		end
+	end
+end
 
 -- the rotation from a to b, capped at maxAngle
 local function capped(rest: CFrame, wanted: CFrame, maxAngle: number): CFrame
@@ -38,6 +91,18 @@ function CameraHeads.start()
 		end
 	end
 	local maxAngle = math.rad(C.camera_turn_max)
+	State.on("Smash", smash)
+	State.on("Shift", function(onShift: boolean)
+		if not onShift then
+			for _, s in smashed do
+				local at = s.sparks.Parent
+				if at then
+					at:Destroy()
+				end
+			end
+			table.clear(smashed)
+		end
+	end)
 	RunService.RenderStepped:Connect(function(dt)
 		local character = player.Character
 		local target = character and character:FindFirstChild("Head")
@@ -54,7 +119,15 @@ function CameraHeads.start()
 				else h.rest
 			local wanted = rest
 			local broken = State.tasks and State.tasks.brokenCams
-			if broken and broken[h.id] and State.shift then
+			local s = smashed[h.id]
+			if s and State.shift then
+				-- broken by him: hanging low, sparking now and then
+				wanted = rest * CFrame.Angles(math.rad(-48), 0, math.rad(26))
+				if os.clock() >= s.next then
+					s.next = os.clock() + 2 + math.random() * 4
+					s.sparks:Emit(math.random(4, 9))
+				end
+			elseif broken and broken[h.id] and State.shift then
 				-- a dead camera hangs from its torn line
 				wanted = rest * CFrame.Angles(math.rad(-35), 0, math.rad(18))
 			end

@@ -280,6 +280,12 @@ function TaskService.clear()
 	changed()
 end
 
+-- The Unseen broke this camera (UnseenService rule 6): dead for the rest of the night
+function TaskService.smash(cameraId: string)
+	deadCams[cameraId] = true
+	changed()
+end
+
 function TaskService.isCarrying(player: Player): boolean
 	return carrying[player] ~= nil
 end
