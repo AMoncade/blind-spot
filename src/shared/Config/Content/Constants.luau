@@ -270,4 +270,6 @@ return {
 	shift_loading_max = 15,
 	descent_fade_out = 0.9,
 	descent_photo_alpha = 0.75,
+	camcorder_empty_hold = 0.7,
+	camcorder_empty_fade = 0.3,
 }

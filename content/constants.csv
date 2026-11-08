@@ -268,3 +268,5 @@ shift_loading_min,2.4,the descent's loading screen: at least this long after the
 shift_loading_max,15,the descent's loading screen: at most this long (it never blocks the night)
 descent_fade_out,0.9,the descent's loading screen: seconds to fade out onto the garage
 descent_photo_alpha,0.75,the descent's loading screen: how faint the garage's photo is behind the tape
+camcorder_empty_hold,0.7,seconds the dead camcorder screen (BATTERY EMPTY) stays up before the hands lower it
+camcorder_empty_fade,0.3,seconds for the camcorder's picture to die when the battery runs out

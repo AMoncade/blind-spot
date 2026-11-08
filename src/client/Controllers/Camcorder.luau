@@ -12,6 +12,7 @@ local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Config = require(Shared:WaitForChild("Config"))
@@ -34,6 +35,7 @@ local recLabel: TextLabel
 local clockLabel: TextLabel
 local batteryFill: Frame
 local emptyLabel: TextLabel
+local deadScreen: Frame
 local trace: Frame
 local grade: ColorCorrectionEffect
 local irPart: Part
@@ -149,7 +151,17 @@ local function buildGui()
 	recLabel = label(lcd, "Rec", "● REC", UDim2.new(0.06, 0, 0.08, 0), Vector2.new(0, 0))
 	recLabel.TextColor3 = rgb(C.rec_color)
 	clockLabel = label(lcd, "Clock", "00:00", UDim2.new(0.06, 0, 0.92, 0), Vector2.new(0, 1))
+	-- the picture dies here when the battery runs out (BATTERY EMPTY over it)
+	deadScreen = Instance.new("Frame")
+	deadScreen.Name = "Dead"
+	deadScreen.BorderSizePixel = 0
+	deadScreen.BackgroundColor3 = Color3.fromRGB(4, 6, 5)
+	deadScreen.BackgroundTransparency = 1
+	deadScreen.Size = UDim2.fromScale(1, 1)
+	deadScreen.ZIndex = 4
+	deadScreen.Parent = lcd
 	emptyLabel = label(lcd, "Empty", "BATTERY EMPTY", UDim2.new(0.5, 0, 0.5, 0), Vector2.new(0.5, 0.5))
+	emptyLabel.ZIndex = 5
 	emptyLabel.TextXAlignment = Enum.TextXAlignment.Center
 	emptyLabel.Visible = false
 	local battery = Instance.new("Frame")
@@ -207,24 +219,33 @@ local function buildGui()
 	spot.Parent = irPart
 end
 
-local function setRaised(raised: boolean)
-	if raised and (State.dead or State.battery <= 0) then
-		if State.battery <= 0 and not State.dead then
-			-- the viewfinder shows BATTERY EMPTY for a moment, without filming
-			gui.Enabled = true
-			emptyLabel.Visible = true
-			task.delay(1.5, function()
-				emptyLabel.Visible = false
-				gui.Enabled = Camcorder.raised
-			end)
-		end
+-- The battery runs out (or it is raised empty): the picture dies on the screen (dark, BATTERY EMPTY) for a moment,
+-- then the hands lower it (Adrien, 8 Nov: the camera's screen used to stay stuck on the view)
+local emptying = false
+local setRaised: (boolean) -> ()
+
+local function showEmpty()
+	if emptying then
+		return
+	end
+	emptying = true
+	emptyLabel.Visible = true
+	deadScreen.BackgroundTransparency = 1
+	TweenService:Create(deadScreen, TweenInfo.new(C.camcorder_empty_fade), { BackgroundTransparency = 0.08 }):Play()
+	task.delay(C.camcorder_empty_hold, function()
+		emptying = false
+		setRaised(false)
+	end)
+end
+
+function setRaised(raised: boolean)
+	if raised and (State.dead or emptying) then
 		return
 	end
 	if raised == Camcorder.raised then
 		return
 	end
 	Camcorder.raised = raised
-	gui.Enabled = raised
 	if raised then
 		-- the viewfinder bought in the supply room (content/shop.csv)
 		local profile = State.profile
@@ -234,21 +255,23 @@ local function setRaised(raised: boolean)
 		end
 		recLabel.TextColor3 = rgb(item.rec)
 		clockLabel.TextColor3 = rgb(item.text)
-	end
-	grade.Parent = workspace.CurrentCamera
-	grade.Enabled = raised
-	irPart.Parent = if raised then workspace.CurrentCamera else nil
-	local spot = irPart:FindFirstChildOfClass("SpotLight") :: SpotLight
-	spot.Enabled = raised
-	if raised then
-		baseExposure = Lighting:GetAttribute("BaseExposure") or Lighting.ExposureCompensation
+		emptyLabel.Visible = false
+		deadScreen.BackgroundTransparency = 1
+		gui.Enabled = true
+		grade.Parent = workspace.CurrentCamera
+		irPart.Parent = workspace.CurrentCamera
+		local spot = irPart:FindFirstChildOfClass("SpotLight") :: SpotLight
+		spot.Enabled = true
+		if not Lighting:GetAttribute("CamcorderRaised") then
+			baseExposure = Lighting:GetAttribute("BaseExposure") or Lighting.ExposureCompensation
+		end
+		-- the light follows the screen as it comes up (the render step below eases it)
 		Lighting:SetAttribute("CamcorderRaised", true)
-		-- the eyes adapt a little to the screen's glow; the full night vision is on the screen itself
-		Lighting.ExposureCompensation = baseExposure + C.nv_exposure * C.lcd_exposure_share
 		sendIn = 0
+		if State.battery <= 0 then
+			showEmpty() -- raised empty: the dead screen, then down again, without filming
+		end
 	else
-		Lighting:SetAttribute("CamcorderRaised", nil)
-		Lighting.ExposureCompensation = Lighting:GetAttribute("BaseExposure") or baseExposure
 		Net.send("Camcorder", false)
 	end
 end
@@ -342,11 +365,30 @@ function Camcorder.start()
 		end
 	end)
 
-	-- the picture follows the flip-out screen of the camcorder in the hands, every frame (after the Viewmodel moves it)
-	RunService:BindToRenderStep("BlindSpotCamcorderScreen", Enum.RenderPriority.Camera.Value + 4, function()
-		if not Camcorder.raised then
+	-- the picture follows the flip-out screen of the camcorder in the hands, every frame (after the Viewmodel moves it),
+	-- up and down: it comes on as the hands bring it up and fades as they lower it, the garage's light easing back
+	local lift = 0 -- 0 down, 1 up: in step with the Viewmodel's own (same vm_raise_seconds)
+	local function finish()
+		gui.Enabled = false
+		grade.Enabled = false
+		for _, f in surround do
+			f.Visible = false
+		end
+		irPart.Parent = nil
+		local spot = irPart:FindFirstChildOfClass("SpotLight") :: SpotLight
+		spot.Enabled = false
+		Lighting:SetAttribute("CamcorderRaised", nil)
+		Lighting.ExposureCompensation = Lighting:GetAttribute("BaseExposure") or baseExposure
+		emptyLabel.Visible = false
+		deadScreen.BackgroundTransparency = 1
+	end
+	RunService:BindToRenderStep("BlindSpotCamcorderScreen", Enum.RenderPriority.Camera.Value + 4, function(dt: number)
+		local target = if Camcorder.raised then 1 else 0
+		lift += math.clamp(target - lift, -dt / C.vm_raise_seconds, dt / C.vm_raise_seconds)
+		if not gui.Enabled then
 			return
 		end
+		local on = math.clamp((lift - C.lcd_clear_at) / (1 - C.lcd_clear_at), 0, 1)
 		local camera = workspace.CurrentCamera
 		local model = camera:FindFirstChild("Viewmodel")
 		local screen = model and model:FindFirstChild("LcdScreen", true)
@@ -368,10 +410,6 @@ function Camcorder.start()
 				x0, y0, x1, y1 = math.floor(x0), math.floor(y0), math.ceil(x1), math.ceil(y1)
 				lcd.Position = UDim2.fromOffset(x0, y0)
 				lcd.Size = UDim2.fromOffset(x1 - x0, y1 - y0)
-				-- it comes on as the hands bring it up (the glass clears at lcd_clear_at)
-				local up = (model :: Instance):GetAttribute("Raise")
-				local on =
-					math.clamp(if type(up) == "number" then (up - C.lcd_clear_at) / (1 - C.lcd_clear_at) else 1, 0, 1)
 				lcd.GroupTransparency = 1 - on
 				-- the garage around it, darker: above, below, left, right
 				local view = camera.ViewportSize
@@ -391,22 +429,34 @@ function Camcorder.start()
 			end
 		end
 		if not placed then
+			if not Camcorder.raised then
+				-- no camcorder in the hands any more (a death, the cameras): gone at once
+				finish()
+				return
+			end
 			-- no camcorder in the hands: the picture fills the screen, the old way
 			lcd.Position = UDim2.new()
 			lcd.Size = UDim2.fromScale(1, 1)
-			lcd.GroupTransparency = 0
+			lcd.GroupTransparency = 1 - on
 			for _, f in surround do
 				f.Visible = false
 			end
 		end
 		-- the full-screen night vision only without the screen in the hands
-		grade.Enabled = not placed
+		grade.Enabled = not placed and on > 0
+		-- the eyes and the IR lamp follow the screen (no jump when it goes down)
+		local base = Lighting:GetAttribute("BaseExposure") or baseExposure
+		Lighting.ExposureCompensation = base + C.nv_exposure * (if placed then C.lcd_exposure_share else 1) * on
+		local spot = irPart:FindFirstChildOfClass("SpotLight") :: SpotLight
+		spot.Brightness = C.nv_light_brightness * on
+		if not Camcorder.raised and lift <= 0 then
+			finish() -- all the way down
+		end
 	end)
 
 	State.on("Battery", function(battery: number, _max: number, serverRaised: boolean)
 		if Camcorder.raised and not serverRaised and battery <= 0 then
-			setRaised(false)
-			setRaised(true) -- the battery is empty: this only shows BATTERY EMPTY
+			showEmpty() -- the server stopped filming: the screen dies, then the hands lower it
 		end
 	end)
 	State.on("Death", function()
@@ -441,7 +491,7 @@ function Camcorder.start()
 	end)
 
 	RunService.RenderStepped:Connect(function(dt)
-		if not Camcorder.raised then
+		if not Camcorder.raised or emptying then
 			return
 		end
 		local camera = workspace.CurrentCamera
