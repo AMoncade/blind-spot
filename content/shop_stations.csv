@@ -1,6 +1,2 @@
 id,upgrade,x,y,z,note
 Counter,,53.5,3.4,135,the K&V SUPPLY counter: every upgrade (the lobby annex east of the hall)
-StandSignal,signal,42,3.2,141,the signal amplifier
-StandSprint,sprint,50,3.2,141,the boots
-StandCamera,camera,42,3.2,129,the camcorder
-StandFlares,flares,50,3.2,129,the box of flares

@@ -39,3 +39,6 @@ UI art (4th set),image,generated with Ropilot (same style as the UI art),generat
 Flare,mesh,own (tools/blender/floor_props.py),own work,,2026-11-08,ServerStorage.LevelModels.Flare,the FLARE skill's road flare
 ShopCounter + 4 stands,mesh+texture,own (tools/blender/shop_props.py; textures drawn in code),own work,,2026-11-08,ServerStorage.LobbyModels,K&V SUPPLY's counter and stands
 UpgradeSignal,image,generated with Ropilot (same style as the UI art),generated for the game,,2026-11-08,rbxassetid://118585178971829,the SIGNAL upgrade's icon
+SkillSprint,image,generated with Ropilot (same style as the UI art),generated for the game,,2026-11-08,rbxassetid://94694124413556,the SPRINT skill and upgrade icon (redrawn whole: the first one was cut at the edge)
+SkillFlare,image,generated with Ropilot (same style as the UI art),generated for the game,,2026-11-08,rbxassetid://127061981546992,the FLARE skill and upgrade icon (redrawn whole)
+UpgradeCamcorder,image,generated with Ropilot (same style as the UI art),generated for the game,,2026-11-08,rbxassetid://135420012689754,the CAMCORDER upgrade's icon

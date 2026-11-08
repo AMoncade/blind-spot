@@ -31,9 +31,10 @@ return {
 	ChapterOne = "rbxassetid://108008295756747",
 	MapHalloway = "rbxassetid://115414797157274",
 	-- the skills and the camcorder batteries (2026-11-07, same style)
-	SkillSprint = "rbxassetid://107030626273257",
+	SkillSprint = "rbxassetid://94694124413556", -- redrawn whole (8 Nov: the old boot was cut at the edge)
 	UpgradeSignal = "rbxassetid://118585178971829", -- K&V SUPPLY: the SIGNAL upgrade
-	SkillFlare = "rbxassetid://75281169634829",
+	SkillFlare = "rbxassetid://127061981546992", -- redrawn whole (8 Nov)
+	UpgradeCamcorder = "rbxassetid://135420012689754", -- K&V SUPPLY: the CAMCORDER upgrade (a camcorder and its gauge)
 	BatteryStd = "rbxassetid://126944483358853",
 	BatterySpare = "rbxassetid://102950014150945",
 	BatteryPro = "rbxassetid://99751975261511",
