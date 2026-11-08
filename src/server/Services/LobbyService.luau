@@ -45,6 +45,9 @@ type Lift = {
 }
 
 local lifts: { Lift } = {}
+-- a guard who walked into an empty lift: the shift setup was opened for them (Adrien, 8 Nov: the lift shows the PLAY
+-- menu); once per visit, until they step out of every lift
+local asked: { [Player]: string } = {}
 
 local function inside(zone: BasePart, position: Vector3): boolean
 	local p = zone.CFrame:PointToObjectSpace(position)
@@ -207,6 +210,19 @@ end
 
 local function scan()
 	local shiftRunning = NightService.running() and C.game_place_id == 0
+	-- out of every lift: the setup opens again on the next visit
+	for player, id in asked do
+		local root = rootOf(player)
+		local still = false
+		for _, lift in lifts do
+			if lift.id == id and root and inside(lift.zone, root.Position) then
+				still = true
+			end
+		end
+		if not still then
+			asked[player] = nil
+		end
+	end
 	for _, lift in lifts do
 		if lift.state == "leaving" then
 			display(lift, "GOING DOWN")
@@ -245,7 +261,13 @@ local function scan()
 				and not NightService.isPlaying(player)
 				and inside(lift.zone, root.Position)
 			then
-				if #lift.guards >= lift.size or (lift.solo and lift.solo ~= player) then
+				if #lift.guards == 0 then
+					-- an empty lift: the shift setup opens; START on it takes this lift (play)
+					if asked[player] ~= lift.id then
+						asked[player] = lift.id
+						Net.event():FireClient(player, "OpenSetup")
+					end
+				elseif #lift.guards >= lift.size or (lift.solo and lift.solo ~= player) then
 					stepOut(lift, player) -- full, or one guard's SOLO lift
 				else
 					table.insert(lift.guards, player)
@@ -301,6 +323,24 @@ local function play(player: Player, setup: Difficulty.Setup)
 		end
 	end
 	local root = rootOf(player)
+	-- standing in a lift (it opened the setup): that one, if it is empty or set up the same way with room
+	if root then
+		for _, lift in lifts do
+			if lift.state == "open" and not lift.solo and inside(lift.zone, root.Position) then
+				local fits = #lift.guards == 0
+					or (
+						not solo
+						and lift.night == setup.night
+						and lift.size == setup.guards
+						and lift.lives == setup.lives
+						and #lift.guards < lift.size
+					)
+				if fits then
+					best = lift
+				end
+			end
+		end
+	end
 	if not best or not root then
 		Net.event():FireClient(player, "Notice", "ALL LIFTS ARE BUSY", false)
 		return
@@ -363,6 +403,7 @@ function LobbyService.init()
 		end
 	end)
 	Players.PlayerRemoving:Connect(function(player)
+		asked[player] = nil
 		local lift = liftOf(player)
 		if lift then
 			remove(lift, player)

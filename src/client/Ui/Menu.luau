@@ -1061,6 +1061,12 @@ function Menu.start()
 			open(nil)
 		end
 	end)
+	-- walked into an empty lift: the shift setup, as PLAY opens it
+	State.on("OpenSetup", function()
+		if not State.shift then
+			open("Setup")
+		end
+	end)
 	State.on("Lift", function(info: any)
 		bar.Visible = info == nil
 		if info then
