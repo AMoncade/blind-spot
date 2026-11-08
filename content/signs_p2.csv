@@ -1,8 +1,8 @@
 id,x,y,z,yaw,flat,w,h,text,color,alpha,note
-P2_FloorP3W,-50,0.03,0,-90,1,9,6,P2,#d9d4c4,0.35,painted on the floor at the west end of the aisle
-P2_FloorP3E,50,0.03,0,90,1,9,6,P2,#d9d4c4,0.35,
-P2_FloorSlowW,-36,0.03,0,-90,1,9,3,SLOW,#e0b93a,0.4,
-P2_FloorSlowE,36,0.03,0,90,1,9,3,SLOW,#e0b93a,0.4,
+P2_FloorP3W,-50,0.03,-5.5,-90,1,7,5,P2,#d9d4c4,0.35,"the level, painted in its lane beside the dashed line"
+P2_FloorP3E,50,0.03,5.5,90,1,7,5,P2,#d9d4c4,0.35,"the level, painted in its lane beside the dashed line"
+P2_FloorSlowW,-36,0.03,-5,-90,1,7,3,SLOW,#e0b93a,0.4,"in its lane, beside the dashed line (Adrien, 8 Nov)"
+P2_FloorSlowE,36,0.03,5,90,1,7,3,SLOW,#e0b93a,0.4,"in its lane, beside the dashed line (Adrien, 8 Nov)"
 P2_WallP3N,-12,6.4,31.9,180,0,7,3,P2,#e7e1cf,0.1,stencil on the north wall
 P2_WallP3N2,36,6.4,31.9,180,0,7,3,P2,#e7e1cf,0.1,
 P2_WallP3S,20,6.4,-31.9,0,0,7,3,P2,#e7e1cf,0.1,stencil on the corridor wall
