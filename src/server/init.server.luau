@@ -21,6 +21,8 @@ local ORDER = {
 	{ Services, "CoopService" },
 	{ Services, "StoryService" },
 	{ Services, "NightService" },
+	{ Services, "LaunchService" },
+	{ Services, "ArrivalService" },
 	{ Services, "LobbyService" },
 	{ Services, "MenuService" },
 	{ Services, "UniformService" },

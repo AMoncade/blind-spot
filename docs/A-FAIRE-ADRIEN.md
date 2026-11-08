@@ -1,6 +1,6 @@
 # À faire par Adrien, hors du jeu
 
-Ce que Claude ne peut pas faire (droits, comptes, appareils, ou réglages réservés à Adrien par CLAUDE.md). À cocher au fur et à mesure. Mis à jour le 7 novembre 2026 (soir).
+Ce que Claude ne peut pas faire (droits, comptes, appareils, ou réglages réservés à Adrien par CLAUDE.md). À cocher au fur et à mesure. Mis à jour le 8 novembre 2026.
 
 ## Tout de suite
 
@@ -9,20 +9,27 @@ Ce que Claude ne peut pas faire (droits, comptes, appareils, ou réglages réser
 - [ ] **Vérifier son compte pour l'audio** : sans vérification d'identité, Roblox limite les imports audio à 100 par 30 jours (2 000 avec).
 - [ ] **La licence du modèle de l'Invisible** : ton fichier Tripo (`tripo_convert_…fbx`). Avec un plan Tripo payant, le modèle est à toi ; avec le plan gratuit, il est public sous CC BY 4.0 et il faut créditer Tripo (dans la description du jeu par exemple). Dis-moi lequel, je l'écris dans `assets/SOURCES.csv`.
 - [ ] **Le groupe Kestrel & Vane Security** (id 689591627) : ses membres reçoivent l'uniforme Kestrel & Vane dans la boutique (testé en Studio avec ton compte). Le jeu appartient encore à ton compte : le transférer au groupe est ton choix (revenus et accès d'équipe au groupe ; à faire avant de téléverser plus d'assets, sinon il faut les republier sous le groupe).
-- [ ] **Fusionner `phase-0` dans `main`** sur GitHub (la pull request), ou demander à Claude de le faire.
+- [x] **Fusionner `phase-0` dans `main`** : fait le 8 novembre (main avancée jusqu'à phase-0).
 
 ## Tester ce que Studio ne prouve pas
 
 - [ ] **Le test du plan, phase 0** : un ami qui ne connaît pas le jeu joue 10 minutes. A-t-il eu peur ? Noter ce qu'il n'a pas compris.
 - [ ] **Un vrai téléphone**, le plus faible sous la main (idéalement un Android de 3 à 4 Go) : fluidité (30 images par seconde visées), boutons au doigt, lisibilité des zones sûres et de la barre SIGNAL.
-- [ ] **La coop à 2, 3 ou 4** (avec des amis, sur le jeu publié ou en Team Test) : badge à rapporter au poste, surveillance par les caméras, caméra tournée vers un coéquipier, nuit perdue si tout le monde est pris.
+- [ ] **La coop à 2, 3 ou 4** (avec des amis, sur le jeu publié ou en Team Test) : les seringues (tenir 6 s sur le badge d'un coéquipier pris), surveillance par les caméras, caméra tournée vers un coéquipier, nuit perdue si tout le monde est pris.
 - [ ] **La vraie sauvegarde** : activer l'accès aux API (Game Settings, Security, Enable Studio Access to API Services) ou tester sur le jeu publié. La paie, le daily, les nuits débloquées et les cassettes doivent rester d'une session à l'autre.
 - [ ] **Les boutons à la main** : l'outil de clic simulé n'a jamais marché ; toutes les actions ont été testées par leurs intentions réseau. Essayer PLAY, SOLO, START, LEAVE, les flèches de nuit, SHOP (acheter, équiper), DAILY, INVITE, SETTINGS, TAPES.
 
 ## Publier et régler le jeu (réservé à Adrien)
 
 - [ ] **Publier la place** sur Roblox (le jeu, son nom, sa description).
-- [ ] **Créer une place de jeu séparée** dans l'univers (pour que plusieurs groupes jouent en même temps), et donner son id à Claude (`game_place_id` dans `content/constants.csv`).
+- [ ] **Les deux places : un lobby de 20, des nuits de 4** (le code est prêt : `src/shared/Config/Places.luau`, `Services/LaunchService`, `Services/ArrivalService`). Tant que `Places.Night` vaut 0, rien ne change : le lobby joue les nuits lui-même.
+  1. **Le lobby = la place de départ** « BLIND SPOT » (109730217990790). Dans Studio : Home → Game Settings → Places (ou le Creator Dashboard → ton expérience → Places → BLIND SPOT → Configure) : **Server size 20** (il est à 50).
+  2. **Créer la place « Night »** : dans Studio, View → Asset Manager → Places → clic droit → **Add New Place** (ou Creator Dashboard → Places → Create place). La renommer **Night**. Sa configuration : **Server size 4**.
+  3. **Fermer son accès direct** : dans le Creator Dashboard, la place Night → Access (ou Permissions) → décocher l'accès direct, pour qu'on n'y entre que par téléportation depuis l'univers. (Une place qui n'est pas la place de départ n'apparaît de toute façon pas sur la page du jeu.)
+  4. **Y publier le même jeu** : la place de travail ouverte dans Studio, File → **Publish to Roblox As…** → ton expérience → la place **Night** → Overwrite. Les deux places tournent le même code : chaque serveur sait lequel il est par son PlaceId.
+  5. **Me donner l'id de la place Night** (Creator Dashboard, ou `game.PlaceId` dans la barre de commande quand elle est ouverte) : je le mets dans `Places.Night`, puis tu **publies les deux places** (BLIND SPOT et Night) avec ce code.
+  6. **Tester sur le jeu publié** (les téléportations ne marchent pas dans Studio) : seul sur LIFT A (une nuit solo, puis le retour au lobby avec la paie) ; à deux sur un même ascenseur (le chef appuie sur GO) ; QUICK PLAY (LIFT C) avec deux comptes qui ne sont pas amis ; et une mort en solo (RETRY rejoue la nuit dans le même serveur, LOBBY remonte).
+  - À chaque mise à jour du jeu, publier **les deux** places.
 - [ ] **Créer les produits Robux** : VIP (499 R$ dans le plan) et Overtime, +25 % de paie (299 R$). Donner leurs ids à Claude (`content/shop.csv`, colonne `robux_product`).
 - [ ] **Le questionnaire de maturité** : viser **Mild** (pas de sang, pas de jurons, l'Invisible reste une silhouette).
 - [ ] **Les serveurs privés** : les activer (prix Roblox) pour jouer entre amis.

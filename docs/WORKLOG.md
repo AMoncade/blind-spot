@@ -200,3 +200,14 @@ Demandes d'Adrien :
   - NIGHTMARE : la barre 5 fois plus vite qu'en HARD, une caméra toutes les 20 s : en 4 à 5 minutes il ne reste presque plus que le poste. Fait pour une équipe, presque impossible en solo.
 - **Les seringues** (`Services/CoopService`) : un garde pris laisse son badge où il est tombé ; un coéquipier tient une seringue dessus 6 s et le relève là. Seringues par garde et par nuit : EASY 3, NORMAL 2, HARD 1, NIGHTMARE 0. Le livre de signature ne relève plus personne (il sert au CLOCK OUT).
 - Testé en playtest : l'écran sans LIVES avec les quatre modes, NORMAL (barre, caméra cassée hors de vue), HARD (SPRINT LOCKED), EASY (deux fusées). Les seringues demandent deux joueurs : à tester en Team Test (Studio, Test > Clients and Servers, 2 joueurs).
+
+## 2026-11-08 : deux places, un lobby de 20 et des nuits de 4
+
+Demande d'Adrien, d'après Break a Gem :
+- `Config.Places` (Lobby = la place de départ, Night = 0 en attendant) et le rôle de chaque serveur (`both`, `lobby`, `night`), spec `Party`.
+- `Services/LaunchService` : le groupe d'un ascenseur vers un serveur Night réservé (sauvegardes fermées d'abord, trois essais, un échec rouvre les sauvegardes et le dit), et le retour au lobby (sauvegardes fermées d'abord, trois essais, puis une expulsion pour ne jamais garder une sauvegarde verrouillée). Dans Studio, le retour est simulé.
+- `Services/ArrivalService` (place Night) : le groupe lu dans le TeleportData (`Logic/Party`), l'attente de tout le groupe (25 s au plus), la nuit vérifiée, la paie recalculée ; les autres remontent.
+- `Data.release`, `Data.reload`, `Data.waitFor` ; la fin de nuit (et LOBBY sur l'écran de mort) remonte par la téléportation dans un serveur Night.
+- Le monte-charge : GO réservé au chef du groupe ; LIFT C devient QUICK PLAY (des inconnus jusqu'à 4 en 15 s, NORMAL, la nuit la plus basse du groupe).
+- Côté joueur : pas de menu du lobby dans un serveur Night, l'écran de bande « WAITING FOR YOUR TEAM » jusqu'au début de la nuit, et la descente qui se referme si la téléportation échoue.
+- À faire par Adrien (`docs/A-FAIRE-ADRIEN.md`) : régler la taille des serveurs, créer la place Night, y publier, me donner son id, publier les deux places, tester sur le jeu publié.

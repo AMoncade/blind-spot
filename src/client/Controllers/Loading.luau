@@ -325,9 +325,24 @@ local function arrive()
 	hide(d)
 end
 
+-- a Night server, before the night: the tape screen waits for the rest of the group
+local function waitTeam()
+	token += 1
+	local d = show(0.3)
+	d.title.Text = C.lift_floor
+	d.sub.Text = "WAITING FOR YOUR TEAM"
+end
+
 function Loading.startDescent()
 	State.on("LiftDown", function(seconds: number)
 		descend(seconds)
+	end)
+	-- the teleport to the night didn't happen: back to the lobby's view
+	State.on("LaunchFailed", function()
+		if descent then
+			token += 1
+			hide(descent)
+		end
 	end)
 	State.on("Shift", function(onShift: boolean)
 		if onShift then
@@ -478,6 +493,10 @@ function Loading.start()
 		end
 		TweenService:Create(track, info, { BackgroundTransparency = 1 }):Play()
 		TweenService:Create(fill, info, { BackgroundTransparency = 1 }):Play()
+		-- a Night server: the group gathers behind the tape screen (it lifts when the night starts)
+		if Config.Places.current() == "night" and not State.shift then
+			waitTeam()
+		end
 		task.wait(0.7)
 		gui:Destroy()
 		if not (descent and descent.gui.Enabled) then

@@ -175,6 +175,27 @@ function Data.init()
 	end)
 end
 
+-- A teleport (Services/LaunchService): the session ends now, so the next server gets its lock; a failed teleport opens
+-- it again.
+function Data.release(player: Player)
+	release(player)
+end
+
+function Data.reload(player: Player)
+	if player.Parent == Players and not entries[player] then
+		task.spawn(load, player)
+	end
+end
+
+-- the player's profile, waiting for it up to `timeout` seconds (nil: not loaded, or they left)
+function Data.waitFor(player: Player, timeout: number): Profile?
+	local t0 = os.clock()
+	while not entries[player] and player.Parent == Players and os.clock() - t0 < timeout do
+		task.wait(0.2)
+	end
+	return Data.get(player)
+end
+
 -- re-sends the profile to one client now (it just asked)
 function Data.send(player: Player)
 	local profile = Data.get(player)

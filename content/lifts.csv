@@ -1,4 +1,4 @@
-id,label,x,y,z,note
-LiftA,LIFT A,-16,0,113.25,cabin centre on the floor; the doors face +z into the hall
-LiftB,LIFT B,0,0,113.25,
-LiftC,LIFT C,16,0,113.25,
+id,label,quick,x,y,z,note
+LiftA,LIFT A,0,-16,0,113.25,cabin centre on the floor; the doors face +z into the hall
+LiftB,LIFT B,0,0,0,113.25,
+LiftC,QUICK PLAY,1,16,0,113.25,strangers gather here: up to 4 in quick_countdown seconds (Adrien, 8 Nov)

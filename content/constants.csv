@@ -111,7 +111,6 @@ lift_ride_seconds,2.5,from closed doors to the P3 (the screen fades)
 lift_door_travel,2.9,studs each lift door slides
 lobby_return_delay,8,seconds of the 6 AM screen before the guards are back in the lobby
 lobby_scan,0.25,seconds between two checks of who stands in a lift
-game_place_id,0,the game place in a published universe; 0 = play the night in this place (Studio and phase 0)
 lobby_color_floor,#5b554d,lobby terrazzo
 lobby_color_wall,#8a847a,lobby walls
 lobby_color_trim,#1c1d1f,lobby trims and mullions
@@ -310,3 +309,9 @@ ui_max_scale,2,the UI never grows more than this
 tutorial_min,4,seconds a lesson of the first shift stays at least
 tutorial_max,9,seconds before a lesson moves on by itself
 tutorial_delay,1.5,seconds after the descent before the first lesson
+teleport_tries,3,tries of a teleport between the lobby and a Night server before giving up
+teleport_retry_delay,3,seconds between two tries
+party_wait,25,seconds a Night server waits for its whole group after the first arrival
+profile_wait,15,seconds a Night server waits for a guard's save to open
+quick_countdown,15,QUICK PLAY: seconds from the first guard in to the doors closing (Adrien, 8 Nov)
+quick_mode,normal,QUICK PLAY's mode

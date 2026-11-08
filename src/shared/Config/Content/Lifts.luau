@@ -4,6 +4,7 @@ return {
 	{
 		id = "LiftA",
 		label = "LIFT A",
+		quick = false,
 		x = -16,
 		y = 0,
 		z = 113.25,
@@ -11,13 +12,15 @@ return {
 	{
 		id = "LiftB",
 		label = "LIFT B",
+		quick = false,
 		x = 0,
 		y = 0,
 		z = 113.25,
 	},
 	{
 		id = "LiftC",
-		label = "LIFT C",
+		label = "QUICK PLAY",
+		quick = true,
 		x = 16,
 		y = 0,
 		z = 113.25,

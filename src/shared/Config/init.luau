@@ -7,6 +7,8 @@ local Content = require(if script then script:WaitForChild("Content") else "@sel
 local Config = {}
 Config.Content = Content
 Config.C = Content.Constants
+-- the experience's two places (the lobby, the Night place) and which one this server is
+Config.Places = require(if script then script:WaitForChild("Places") else "@self/Places")
 Config.Cameras = Content.Cameras
 Config.Map = Content.Map
 Config.Nights = Content.Nights

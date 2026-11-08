@@ -113,7 +113,6 @@ return {
 	lift_door_travel = 2.9,
 	lobby_return_delay = 8,
 	lobby_scan = 0.25,
-	game_place_id = 0,
 	lobby_color_floor = "#5b554d",
 	lobby_color_wall = "#8a847a",
 	lobby_color_trim = "#1c1d1f",
@@ -312,4 +311,10 @@ return {
 	tutorial_min = 4,
 	tutorial_max = 9,
 	tutorial_delay = 1.5,
+	teleport_tries = 3,
+	teleport_retry_delay = 3,
+	party_wait = 25,
+	profile_wait = 15,
+	quick_countdown = 15,
+	quick_mode = "normal",
 }

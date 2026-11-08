@@ -668,6 +668,7 @@ local function buildLift(parent: Folder, lift: typeof(Config.Lifts[1]))
 	local m = Instance.new("Model")
 	m.Name = lift.id
 	m:SetAttribute("Label", lift.label)
+	m:SetAttribute("Quick", lift.quick)
 	local zone = part(
 		m,
 		"Zone",

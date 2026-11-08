@@ -1,14 +1,15 @@
 --!strict
--- The lobby's service lifts (plan section 3, "Coop de 1 à 4"): a guard who steps into a lift joins its group (up to
--- lift_capacity); a countdown starts; any guard inside may press START to shorten it, or LEAVE to step out. At zero the
--- doors close, the lift goes down and the group starts its shift. The server decides who is inside, from positions.
--- In a published universe with Config.C.game_place_id set, the group is teleported to a reserved game server instead
--- (to check on the published game: teleports can't be proven in Studio). Otherwise the shift plays in this place, one
+-- The lobby's service lifts (plan section 3, "Coop de 1 à 4"): platforms for 1 to 4 guards. A guard who walks into an
+-- empty lift gets the shift setup (PLAY's screen); START there takes that lift; others join its group (up to its
+-- size). A countdown runs; the group's leader (the first guard in) may press GO to leave now, anyone may LEAVE. At
+-- zero the doors close and the group goes down; alone on it, a solo night. QUICK PLAY (lifts.csv quick) gathers
+-- strangers: anyone walks in, quick_countdown from the first, up to 4, NORMAL, the group's lowest unlocked night.
+-- Where the night plays (Config.Places, Adrien, 8 Nov: "un lobby de 20, des nuits de 4"): from the lobby place, the
+-- group is teleported to a reserved Night server of its own (Services/LaunchService; to check on the published game,
+-- teleports can't be proven in Studio). With no Night place yet, and in Studio, the shift plays in this server, one
 -- at a time: while it runs, the lifts show SHIFT IN PROGRESS and stay closed.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local TeleportService = game:GetService("TeleportService")
 local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -19,6 +20,7 @@ local Server = script.Parent.Parent
 local World = require(Server:WaitForChild("Core"):WaitForChild("World"))
 local Actions = require(Server:WaitForChild("Core"):WaitForChild("Actions"))
 local NightService = require(script.Parent:WaitForChild("NightService"))
+local LaunchService = require(script.Parent:WaitForChild("LaunchService"))
 local Data = require(Server:WaitForChild("Core"):WaitForChild("Data"))
 local Difficulty = require(Shared:WaitForChild("Logic"):WaitForChild("Difficulty"))
 
@@ -41,6 +43,7 @@ type Lift = {
 	size: number, -- how many guards it waits for (the shift setup; lift_capacity for guards walking in)
 	lives: number, -- the team's lives (the shift setup)
 	mode: string, -- the shift's mode (content/modes.csv)
+	quick: boolean, -- QUICK PLAY: strangers gather, no setup
 	deadline: number?, -- os.clock() when the doors close
 	state: "open" | "leaving" | "closed",
 }
@@ -191,24 +194,18 @@ local function launch(lift: Lift)
 		),
 	}
 	if #stillHere > 0 then
-		if C.game_place_id ~= 0 and not RunService:IsStudio() then
-			-- to check on the published game: a reserved server of the game place for this group
-			local options = Instance.new("TeleportOptions")
-			options.ShouldReserveServer = true
-			options:SetTeleportData({
-				night = lift.night,
-				lives = setup.lives,
-				mode = setup.mode,
-				multiplier = setup.multiplier,
-			})
-			local ok, err = pcall(function()
-				TeleportService:TeleportAsync(C.game_place_id, stillHere, options)
-			end)
-			if not ok then
-				warn("[LobbyService] teleport failed: " .. tostring(err))
+		-- QUICK PLAY: the group's lowest unlocked night, NORMAL
+		local night = lift.night
+		if lift.quick then
+			for _, player in stillHere do
+				night = math.min(night, Data.unlockedNight(player))
 			end
-		else
-			NightService.launch(stillHere, lift.night, setup)
+		end
+		local leader = if table.find(stillHere, guards[1]) then guards[1] else stillHere[1]
+		-- from the lobby place: the group's own Night server; otherwise (no Night place yet, Studio) here
+		local sent = Config.Places.current() == "lobby" and LaunchService.toNight(stillHere, leader, night, setup.mode)
+		if not sent then
+			NightService.launch(stillHere, night, setup)
 		end
 	end
 	for _, player in stillHere do
@@ -218,7 +215,7 @@ local function launch(lift: Lift)
 end
 
 local function scan()
-	local shiftRunning = NightService.running() and C.game_place_id == 0
+	local shiftRunning = NightService.running() and Config.Places.current() ~= "lobby"
 	-- out of every lift: the setup opens again on the next visit
 	for player, id in asked do
 		local root = rootOf(player)
@@ -270,7 +267,7 @@ local function scan()
 				and not NightService.isPlaying(player)
 				and inside(lift.zone, root.Position)
 			then
-				if #lift.guards == 0 then
+				if #lift.guards == 0 and not lift.quick then
 					-- an empty lift: the shift setup opens; START on it takes this lift (play)
 					if asked[player] ~= lift.id then
 						asked[player] = lift.id
@@ -285,10 +282,10 @@ local function scan()
 						lift.night = Data.unlockedNight(player)
 						lift.size = C.lift_capacity
 						lift.lives = C.shift_lives
-						lift.mode = C.mode_default
+						lift.mode = if lift.quick then C.quick_mode else C.mode_default
 					end
 					if not lift.deadline then
-						lift.deadline = os.clock() + C.lift_countdown
+						lift.deadline = os.clock() + (if lift.quick then C.quick_countdown else C.lift_countdown)
 					end
 					for _, p in lift.guards do
 						sendLift(p, lift)
@@ -319,7 +316,7 @@ local function play(player: Player, setup: Difficulty.Setup)
 	local solo = setup.guards <= 1
 	local best: Lift? = nil
 	for _, lift in lifts do
-		if lift.state == "open" and not lift.solo then
+		if lift.state == "open" and not lift.solo and not lift.quick then
 			local same = #lift.guards > 0
 				and lift.night == setup.night
 				and lift.size == setup.guards
@@ -337,7 +334,7 @@ local function play(player: Player, setup: Difficulty.Setup)
 	-- standing in a lift (it opened the setup): that one, if it is empty or set up the same way with room
 	if root then
 		for _, lift in lifts do
-			if lift.state == "open" and not lift.solo and inside(lift.zone, root.Position) then
+			if lift.state == "open" and not lift.solo and not lift.quick and inside(lift.zone, root.Position) then
 				local fits = #lift.guards == 0
 					or (
 						not solo
@@ -394,7 +391,8 @@ function LobbyService.init()
 		if not lift or lift.state ~= "open" then
 			return
 		end
-		if command == "start" then
+		if command == "start" and lift.guards[1] == player then
+			-- GO: only the group's leader (the first guard in)
 			local soon = os.clock() + C.lift_start_now
 			if lift.deadline and lift.deadline > soon then
 				lift.deadline = soon
@@ -449,6 +447,7 @@ function LobbyService.start()
 				size = C.lift_capacity,
 				lives = C.shift_lives,
 				mode = C.mode_default,
+				quick = model:GetAttribute("Quick") == true,
 				deadline = nil,
 				state = "closed", -- the first scan opens them
 			}

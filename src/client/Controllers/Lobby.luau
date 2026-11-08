@@ -119,7 +119,7 @@ function Lobby.start()
 	end)
 	local timer =
 		text(panel, "Timer", "DOORS CLOSE IN 15", UDim2.new(1, -28, 0, 26), UDim2.new(0, 14, 0, 90), THEME.dim)
-	local startButton = button(panel, "Start", "START", true, UDim2.new(0, 14, 1, -12))
+	local startButton = button(panel, "Start", "GO", true, UDim2.new(0, 14, 1, -12))
 	local leaveButton = button(panel, "Leave", "LEAVE", false, UDim2.new(0.5, 7, 1, -12))
 
 	gui.Parent = player:WaitForChild("PlayerGui")
@@ -138,7 +138,7 @@ function Lobby.start()
 		if info then
 			title.Text = `{info.label}  ·  {C.lift_floor}`
 			count.Text = `{info.count}/{info.capacity} GUARDS`
-			startButton.Visible = not info.leaving
+			startButton.Visible = not info.leaving and info.owner -- GO: the group's leader
 			leaveButton.Visible = not info.leaving
 			nightLabel.Text = `NIGHT {info.night}  ·  {info.nightName}`
 			-- only the first guard turns the night; the arrows grey out at the ends

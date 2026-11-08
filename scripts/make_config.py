@@ -131,8 +131,8 @@ def build():
     mods["LobbyMap"] = ("map_lobby.csv", blocks("map_lobby.csv"))
 
     mods["Lifts"] = ("lifts.csv", [
-        {"id": r["id"], "label": r["label"], "x": num(r["x"]), "y": num(r["y"]), "z": num(r["z"])}
-        for r in rows("lifts.csv")])
+        {"id": r["id"], "label": r["label"], "quick": flag(r["quick"]), "x": num(r["x"]), "y": num(r["y"]),
+         "z": num(r["z"])} for r in rows("lifts.csv")])
 
     mods["LobbyProps"] = ("lobby_props.csv", [
         {"id": r["id"], "model": r["model"], "x": num(r["x"]), "y": num(r["y"]), "z": num(r["z"]),

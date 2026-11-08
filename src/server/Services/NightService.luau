@@ -19,6 +19,7 @@ local Actions = require(Server:WaitForChild("Core"):WaitForChild("Actions"))
 local PowerDirector = require(script.Parent:WaitForChild("PowerDirector"))
 local UnseenService = require(script.Parent:WaitForChild("UnseenService"))
 local WatchService = require(script.Parent:WaitForChild("WatchService"))
+local LaunchService = require(script.Parent:WaitForChild("LaunchService"))
 local CamcorderService = require(script.Parent:WaitForChild("CamcorderService"))
 local Data = require(Server:WaitForChild("Core"):WaitForChild("Data"))
 local TaskService = require(script.Parent:WaitForChild("TaskService"))
@@ -115,6 +116,20 @@ end
 
 -- defined below; kill and the departures need it first
 local endNight: (outcome: string) -> ()
+
+-- the shift is over for these guards: up to the lobby (in a Night server, a teleport to the lobby place)
+local function sendUp(players: { Player })
+	if Config.Places.current() == "night" then
+		LaunchService.toLobby(players)
+		return
+	end
+	for _, player in players do
+		if player.Parent then
+			moveTo(player, World.lobbyCFrame())
+			Net.event():FireClient(player, "Shift", false)
+		end
+	end
+end
 
 function NightService.kill(player: Player)
 	if dead[player] or not running or not playing[player] then
@@ -274,12 +289,13 @@ function endNight(outcome: string)
 			return -- RETRY started the night again
 		end
 		-- back up to the lobby
+		local up = {}
 		for _, player in guards do
 			if player.Parent and (outcome ~= "lost" or waiting[player]) then
-				moveTo(player, World.lobbyCFrame())
-				Net.event():FireClient(player, "Shift", false)
+				table.insert(up, player)
 			end
 		end
+		sendUp(up)
 		table.clear(waiting)
 		table.clear(playing)
 		table.clear(dead)
@@ -409,6 +425,13 @@ function NightService.init()
 	CoopService.isDown = function(player: Player): boolean
 		return down[player] == true
 	end
+	-- Studio's simulated trip up from a Night server (ForcePlaceRole): this place's own lobby
+	LaunchService.studioLobby = function(players: { Player })
+		for _, player in players do
+			moveTo(player, World.lobbyCFrame())
+			Net.event():FireClient(player, "Shift", false)
+		end
+	end
 	CoopService.onRevive = function(player: Player, at: Vector3)
 		-- a teammate's syringe: on their feet where they fell
 		down[player] = nil
@@ -445,8 +468,7 @@ function NightService.init()
 		end
 		waiting[player] = nil
 		playing[player] = nil
-		moveTo(player, World.lobbyCFrame())
-		Net.event():FireClient(player, "Shift", false)
+		sendUp({ player })
 	end)
 	Actions.on("Ready", function(player: Player)
 		PowerDirector.broadcast(player)

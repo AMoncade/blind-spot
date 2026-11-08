@@ -1122,7 +1122,8 @@ function Menu.start()
 		end
 	end)
 	State.on("Shift", function(onShift: boolean)
-		gui.Enabled = not onShift
+		-- a Night server has no lobby: the menu never shows there
+		gui.Enabled = not onShift and Config.Places.current() ~= "night"
 		if onShift then
 			open(nil)
 		end
@@ -1154,7 +1155,7 @@ function Menu.start()
 			end
 		end
 	end)
-	gui.Enabled = not State.shift
+	gui.Enabled = not State.shift and Config.Places.current() ~= "night"
 	gui.Parent = player:WaitForChild("PlayerGui")
 	refresh()
 	Net.send("Profile")
