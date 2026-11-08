@@ -259,7 +259,8 @@ local function tick(dt: number)
 				if Hunt.touches(d, C) then
 					catch(s)
 					return
-				elseif Hunt.flees(d, exposure[s.player] or 1, C) then
+				elseif Hunt.flees(d, exposure[s.player] or 1, C) and not smashing then
+					-- (not while he breaks a camera: that one is for the guard to see)
 					fled = true
 				end
 			end
