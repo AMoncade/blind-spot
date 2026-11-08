@@ -188,3 +188,15 @@ Après une partie solo d'Adrien (« relativement très facile », « on sait pas
 - **Il casse des caméras devant toi** : sous une caméra que tu vois, hors de tout champ ; elle éclate (verre, court-circuit, étincelles, la tête tombe) et reste morte la nuit ; 1 en EASY, 2 en NORMAL, 4 en HARD, plus les nuits avancées.
 - **L'écran de mort** comme l'image d'Adrien, sans visage (chapitre 1) : sa tête lisse qui penche, puis ses deux mains griffues de chaque côté de sa tête, image figée froide et rouge, REC, SIGNAL LOST, YOU WERE CAUGHT ; la dernière vie : RETRY ou LOBBY (le rapport attend).
 - Testé en playtest : le mode HARD (6 caméras mortes, champs à 65 %), le repère d'escalier, la caméra cassée devant le garde (il reste visible), la mort finale (RETRY relance la nuit, LOBBY remonte), la mort avec des vies, le CLOCK OUT.
+
+## 2026-11-08 : une vie, quatre modes, les seringues
+
+Demandes d'Adrien :
+- **Une seule vie pour tout le monde** (plus de choix LIVES) : en solo une prise finit la nuit (RETRY ou LOBBY) ; en coop le garde tombe.
+- **Les modes** (`content/modes.csv`, spec `theModeSetsTheNight`) :
+  - EASY : comme avant (barre ×0,8, une caméra cassée par nuit), une fusée de plus.
+  - NORMAL : une caméra cassée chaque minute (hors de vue s'il n'y en a pas devant toi), la barre 2 fois plus vite qu'en EASY, 1,5 fois avec SIGNAL au maximum (l'amélioration fait glisser entre les deux).
+  - HARD : la barre 2 fois plus vite qu'en NORMAL, SPRINT verrouillé.
+  - NIGHTMARE : la barre 5 fois plus vite qu'en HARD, une caméra toutes les 20 s : en 4 à 5 minutes il ne reste presque plus que le poste. Fait pour une équipe, presque impossible en solo.
+- **Les seringues** (`Services/CoopService`) : un garde pris laisse son badge où il est tombé ; un coéquipier tient une seringue dessus 6 s et le relève là. Seringues par garde et par nuit : EASY 3, NORMAL 2, HARD 1, NIGHTMARE 0. Le livre de signature ne relève plus personne (il sert au CLOCK OUT).
+- Testé en playtest : l'écran sans LIVES avec les quatre modes, NORMAL (barre, caméra cassée hors de vue), HARD (SPRINT LOCKED), EASY (deux fusées). Les seringues demandent deux joueurs : à tester en Team Test (Studio, Test > Clients and Servers, 2 joueurs).

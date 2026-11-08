@@ -206,6 +206,7 @@ local function buildShift(gui: ScreenGui)
 		Kit.new("UIListLayout", {
 			FillDirection = Enum.FillDirection.Horizontal,
 			HorizontalAlignment = Enum.HorizontalAlignment.Right,
+			SortOrder = Enum.SortOrder.LayoutOrder, -- EASY, NORMAL, HARD, NIGHTMARE (content/modes.csv order)
 			Padding = UDim.new(0, 6),
 			Parent = options,
 		})

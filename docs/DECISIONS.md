@@ -113,3 +113,7 @@ Adrien trouvait une nuit solo trop facile (« presque tout est blanc », « tu c
 ## La fin de la ronde (8 novembre 2026)
 
 La nuit durait jusqu'à 6 h même la ronde finie : on attendait sans rien à faire. Maintenant la ronde finie, le garde retourne au poste pour pointer (CLOCK OUT), et la nuit se termine là.
+
+## Une vie, des modes qui font la difficulté, des seringues comptées (8 novembre 2026)
+
+Adrien : « tout le monde va avoir 1 vie ». La difficulté vient du mode seul : la vitesse de la barre (relative à EASY, adoucie par l'amélioration SIGNAL), le rythme des caméras cassées, SPRINT verrouillé en HARD et NIGHTMARE. En coop, se relever coûte du temps et une seringue (comptées par mode) : on ne peut plus ramener un coéquipier indéfiniment en portant son badge.
