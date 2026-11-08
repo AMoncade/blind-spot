@@ -289,7 +289,7 @@ smash_max,40,studs: and at most this far
 smash_front,0.55,how much in front of the guard the camera must be (cosine of the angle)
 smash_reach,5,studs from the camera he may stand
 smash_hear,70,studs: a guard this near a camera he breaks hears it
-retry_window,20,seconds the kill screen of a lost night waits for RETRY or LOBBY before everyone goes up
+retry_window,12,seconds the kill screen of a lost night waits for RETRY or LOBBY before everyone goes up
 catch_saturation,-0.1,colour of the catch
 catch_tilt,20,degrees his head tilts while the view pushes in (the picture)
 catch_aim_up,0.05,how much the view looks up in the hands shot (his head high in the frame)
@@ -304,3 +304,9 @@ catch_pitch,-24,degrees he leans back around his face in the hands shot (his han
 catch_reach_tilt,8,degrees his head and hands tilt in the hands shot
 smash_blind_after,4,seconds past his time with no camera in front of the guard before one dies out of sight (modes with smash_blind)
 revive_seconds,6,seconds a teammate holds the syringe over a taken guard to bring them back
+ui_reference_width,1100,the UI's scale 1 fits a screen this wide... (UiScale: bigger screens scale it up, phones stay at 1)
+ui_reference_height,520,...and this tall
+ui_max_scale,2,the UI never grows more than this
+tutorial_min,4,seconds a lesson of the first shift stays at least
+tutorial_max,9,seconds before a lesson moves on by itself
+tutorial_delay,1.5,seconds after the descent before the first lesson

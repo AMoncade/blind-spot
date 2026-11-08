@@ -26,7 +26,8 @@ local function start(name: string, background: boolean?, container: Instance?)
 end
 
 Settings.start()
-start("Loading") -- first: it covers the screen while the rest loads
+start("UiScale") -- first: every screen made after it fits the player's screen
+start("Loading") -- it covers the screen while the rest loads
 start("FirstPerson")
 start("Camcorder")
 start("Viewmodel", true)
@@ -40,6 +41,7 @@ start("Story")
 start("SoundDirector")
 start("Hud")
 start("Tasks")
+start("Tutorial")
 start("Signals")
 start("Skills")
 start("Lobby")
