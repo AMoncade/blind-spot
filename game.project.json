@@ -1,5 +1,6 @@
 {
   "name": "blind-spot",
+  "servePort": 34878,
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {

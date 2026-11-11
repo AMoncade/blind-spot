@@ -211,3 +211,11 @@ Demande d'Adrien, d'après Break a Gem :
 - Le monte-charge : GO réservé au chef du groupe ; LIFT C devient QUICK PLAY (des inconnus jusqu'à 4 en 15 s, NORMAL, la nuit la plus basse du groupe).
 - Côté joueur : pas de menu du lobby dans un serveur Night, l'écran de bande « WAITING FOR YOUR TEAM » jusqu'au début de la nuit, et la descente qui se referme si la téléportation échoue.
 - À faire par Adrien (`docs/A-FAIRE-ADRIEN.md`) : régler la taille des serveurs, créer la place Night, y publier, me donner son id, publier les deux places, tester sur le jeu publié.
+
+## 2026-11-11 : Rojo d'abord
+
+Demande d'Adrien (`docs/DECISIONS.md`, « Rojo d'abord ») :
+- `rojo serve` charge le code (port 34878 dans `game.project.json`, que `scripts/manifest.py` accepte) ; le chargeur HTTP devient le secours.
+- Les modèles de la place vers git : `models.project.json` (pour `rojo syncback`), `scripts/sync-models.sh`, `assets/rbxm/` ; la porte construit avec `build.project.json` (code et modèles, chemins `optional` : verte avant le premier export) ; `tests/Projects.spec.luau` tient les trois fichiers projet ensemble.
+- Éprouvé sur des places de test faites avec Lune, pas encore sur la vraie : un aller-retour place → syncback → build garde les ids (`MeshContent`, `ColorMapContent`, lus en XML) et ne touche jamais `src/` ; une racine absente arrête tout ; un modèle absent est refusé sans `--allow-remove`. La copie locale `Documents\Roblox\BlindSpot.rbxl` date du 6 novembre et n'a pas les modèles : le premier export attend une nouvelle copie (`docs/A-FAIRE-ADRIEN.md`).
+- Rojo 7.7.1 (CLI par `rokit.toml`, plugin Studio réinstallé ; l'ancien gardé dans `%LOCALAPPDATA%\Roblox\`).

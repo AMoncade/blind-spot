@@ -10,7 +10,7 @@ import os
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-KNOWN_TOP = {"name", "tree"}
+KNOWN_TOP = {"name", "tree", "servePort"}  # servePort only tells `rojo serve` its port; it changes nothing here
 SCRIPT_CLASS = {"": "ModuleScript", ".server": "Script", ".client": "LocalScript"}
 
 entries = []

@@ -1,10 +1,12 @@
 # À faire par Adrien, hors du jeu
 
-Ce que Claude ne peut pas faire (droits, comptes, appareils, ou réglages réservés à Adrien par CLAUDE.md). À cocher au fur et à mesure. Mis à jour le 8 novembre 2026.
+Ce que Claude ne peut pas faire (droits, comptes, appareils, ou réglages réservés à Adrien par CLAUDE.md). À cocher au fur et à mesure. Mis à jour le 11 novembre 2026.
 
 ## Tout de suite
 
-- [x] **Enregistrer la place dans Studio** : fait par Claude le 7 novembre (Ctrl+S, « Saved new changes in BLIND SPOT to Roblox » ; la place est dans le cloud, pas publiée en ligne). À refaire après chaque séance : `Documents\Roblox\BlindSpot.rbxl`. Les modèles Blender du lobby et du P3 (`ServerStorage.LobbyModels`, `ServerStorage.LevelModels`) n'existent que dans la place, pas dans GitHub.
+- [ ] **Sortir les modèles Blender dans GitHub, une première fois** (Rojo d'abord, `docs/DECISIONS.md`) : ouvrir BLIND SPOT dans Studio, **File → Save to File As** → `Documents\Roblox\BlindSpot.rbxl` (remplacer la copie du 6 novembre, qui n'a aucun modèle), puis me le dire. Je lance `./scripts/sync-models.sh`, la porte, et je commite. Ensuite, refaire la même sauvegarde locale chaque fois qu'un modèle change dans Studio.
+- [ ] **Connect dans le plugin Rojo**, à chaque ouverture de Studio où je travaille : je lance `rojo serve` (port 34878), tu cliques Connect dans l'onglet Rojo. Le plugin est en 7.7.1 depuis le 11 novembre.
+- [x] **Enregistrer la place dans Studio** : fait par Claude le 7 novembre (Ctrl+S, « Saved new changes in BLIND SPOT to Roblox » ; la place est dans le cloud, pas publiée en ligne). À refaire après chaque séance. Les modèles Blender (`ServerStorage.LobbyModels`, `ServerStorage.LevelModels`, `ReplicatedStorage.ClientModels`) n'existent que dans la place tant que la première sortie ci-dessus n'est pas faite.
 - [x] **Les sons** : remplacés par 8 effets ProSoundEffects de la bibliothèque Roblox (libres dans tout jeu Roblox, ids dans `content/sounds.csv`). Nos fichiers synthétisés restent dans `assets/sounds/` si tu préfères les importer un jour. Ancienne note : les 8 fichiers de `assets/sounds/` (hum, vent, drone, drip, motor, clack, static, tear) dans Studio, Asset Manager, Import. Donner les ids à Claude (ou les mettre dans la colonne `asset` de `content/sounds.csv`). Sans eux le jeu est muet.
 - [ ] **Vérifier son compte pour l'audio** : sans vérification d'identité, Roblox limite les imports audio à 100 par 30 jours (2 000 avec).
 - [ ] **La licence du modèle de l'Invisible** : ton fichier Tripo (`tripo_convert_…fbx`). Avec un plan Tripo payant, le modèle est à toi ; avec le plan gratuit, il est public sous CC BY 4.0 et il faut créditer Tripo (dans la description du jeu par exemple). Dis-moi lequel, je l'écris dans `assets/SOURCES.csv`.

@@ -1,0 +1,22 @@
+{
+  "name": "blind-spot",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Shared": { "$path": "src/shared" },
+      "ClientModels": { "$path": { "optional": "assets/rbxm/ClientModels" } }
+    },
+    "ServerScriptService": {
+      "Server": { "$path": "src/server" }
+    },
+    "ServerStorage": {
+      "LobbyModels": { "$path": { "optional": "assets/rbxm/LobbyModels" } },
+      "LevelModels": { "$path": { "optional": "assets/rbxm/LevelModels" } }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "Client": { "$path": "src/client" }
+      }
+    }
+  }
+}

@@ -22,7 +22,7 @@ step "selene" selene src tests tools/sim
 step "config" "$PY" scripts/make_config.py --check
 step "specs" lune run tests/run
 mkdir -p build
-step "rojo build" rojo build game.project.json -o build/BlindSpot.rbxl
+step "rojo build" rojo build build.project.json -o build/BlindSpot.rbxl
 step "manifest" "$PY" scripts/manifest.py
 
 echo

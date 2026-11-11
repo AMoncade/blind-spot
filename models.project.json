@@ -1,0 +1,13 @@
+{
+  "name": "blind-spot-models",
+  "tree": {
+    "$className": "DataModel",
+    "ServerStorage": {
+      "LobbyModels": { "$path": "assets/rbxm/LobbyModels" },
+      "LevelModels": { "$path": "assets/rbxm/LevelModels" }
+    },
+    "ReplicatedStorage": {
+      "ClientModels": { "$path": "assets/rbxm/ClientModels" }
+    }
+  }
+}
